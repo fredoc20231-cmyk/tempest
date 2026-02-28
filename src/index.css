@@ -15,7 +15,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    --primary: 187 100% 35%;
+    --primary: 216 100% 21%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 210 20% 93%;
@@ -32,27 +32,27 @@
 
     --border: 210 20% 88%;
     --input: 210 20% 88%;
-    --ring: 187 100% 35%;
+    --ring: 216 100% 21%;
 
     --radius: 0.5rem;
 
-    --chart-cyan: 187 100% 35%;
+    --chart-cyan: 216 100% 35%;
     --chart-magenta: 292 80% 45%;
     --chart-amber: 38 100% 45%;
     --chart-emerald: 160 84% 35%;
     --chart-rose: 350 80% 50%;
 
-    --glow-primary: 0 0 20px hsl(187 100% 35% / 0.2);
+    --glow-primary: 0 0 20px hsl(216 100% 21% / 0.2);
     --glow-accent: 0 0 20px hsl(292 80% 45% / 0.2);
 
-    --sidebar-background: 210 40% 96%;
-    --sidebar-foreground: 215 25% 25%;
-    --sidebar-primary: 187 100% 35%;
+    --sidebar-background: 216 30% 95%;
+    --sidebar-foreground: 216 40% 20%;
+    --sidebar-primary: 216 100% 21%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 40% 90%;
-    --sidebar-accent-foreground: 215 25% 15%;
-    --sidebar-border: 210 30% 88%;
-    --sidebar-ring: 187 100% 35%;
+    --sidebar-accent: 216 30% 88%;
+    --sidebar-accent-foreground: 216 40% 12%;
+    --sidebar-border: 216 25% 85%;
+    --sidebar-ring: 216 100% 21%;
 
     font-family: 'Inter', sans-serif;
   }
@@ -82,16 +82,9 @@
   }
 
   .gradient-mesh {
-    background: radial-gradient(ellipse at 20% 50%, hsl(187 100% 35% / 0.06) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 20%, hsl(292 80% 45% / 0.04) 0%, transparent 50%),
-                radial-gradient(ellipse at 50% 80%, hsl(38 100% 45% / 0.03) 0%, transparent 50%);
-  }
-
-  .data-grid-bg {
-    background-image: 
-      linear-gradient(hsl(210 20% 88% / 0.6) 1px, transparent 1px),
-      linear-gradient(90deg, hsl(210 20% 88% / 0.6) 1px, transparent 1px);
-    background-size: 40px 40px;
+    background: radial-gradient(ellipse at 20% 50%, hsl(216 100% 21% / 0.04) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, hsl(292 80% 45% / 0.03) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, hsl(38 100% 45% / 0.02) 0%, transparent 50%);
   }
 
   .module-card {
@@ -109,7 +102,7 @@
 
   .status-active {
     @apply bg-emerald-500;
-    box-shadow: 0 0 8px hsl(160 84% 35% / 0.4);
+    box-shadow: 0 0 8px hsl(160 84% 35% / 0.3);
   }
 
   .status-idle {

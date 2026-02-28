@@ -4,6 +4,7 @@ import type { CohortPayload } from "./ChatPanel";
 import SurvivalCurveChart from "./charts/SurvivalCurveChart";
 import ClonalDynamicsChart from "./charts/ClonalDynamicsChart";
 import RiskRadar from "./charts/RiskRadar";
+import { downloadChartAsPng, downloadTableAsCsv, downloadHtmlReport } from "./utils/downloadUtils";
 import { Dna, Activity, FlaskConical, Shield, BarChart3, FileText, Play, Download, CheckCircle2 } from "lucide-react";
 
 const moduleInfo: Record<string, { title: string; subtitle: string; icon: any; description: string }> = {
@@ -128,6 +129,7 @@ const ModulePanel = ({ module, cohort }: Props) => {
 
   const results = moduleResults[module] || [];
   const config = moduleConfig[module] || [];
+  const chartId = `module-chart-${module}`;
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-6 space-y-6">
@@ -145,6 +147,12 @@ const ModulePanel = ({ module, cohort }: Props) => {
         <div className="flex gap-2">
           <button className="flex items-center gap-2 px-3 py-2 text-xs font-mono bg-primary/10 text-primary rounded-md hover:bg-primary/20 transition-colors">
             <Play className="w-3.5 h-3.5" /> Run Analysis
+          </button>
+          <button
+            onClick={() => downloadHtmlReport(moduleInfo, moduleResults, moduleConfig)}
+            className="flex items-center gap-2 px-3 py-2 text-xs font-mono bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+          >
+            <FileText className="w-3.5 h-3.5" /> HTML Report
           </button>
           <button className="flex items-center gap-2 px-3 py-2 text-xs font-mono bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80 transition-colors">
             <Download className="w-3.5 h-3.5" /> Export
@@ -196,13 +204,29 @@ const ModulePanel = ({ module, cohort }: Props) => {
       <div className="grid grid-cols-3 gap-4">
         {/* Chart */}
         <div className="module-card col-span-2">
-          <h3 className="text-xs font-mono text-muted-foreground uppercase tracking-wide mb-4">Visualization</h3>
-          {chartForModule[module]}
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xs font-mono text-muted-foreground uppercase tracking-wide">Visualization</h3>
+            <button
+              onClick={() => downloadChartAsPng(chartId, `${module}_visualization`)}
+              className="flex items-center gap-1 px-2 py-1 text-[10px] font-mono text-muted-foreground hover:text-primary rounded border border-border hover:border-primary/40 transition-colors"
+            >
+              <Download className="w-3 h-3" /> PNG
+            </button>
+          </div>
+          <div id={chartId}>{chartForModule[module]}</div>
         </div>
 
         {/* Results */}
         <div className="module-card">
-          <h3 className="text-xs font-mono text-muted-foreground uppercase tracking-wide mb-4">Latest Results</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xs font-mono text-muted-foreground uppercase tracking-wide">Latest Results</h3>
+            <button
+              onClick={() => downloadTableAsCsv(results, `${module}_results`)}
+              className="flex items-center gap-1 px-2 py-1 text-[10px] font-mono text-muted-foreground hover:text-primary rounded border border-border hover:border-primary/40 transition-colors"
+            >
+              <Download className="w-3 h-3" /> CSV
+            </button>
+          </div>
           <div className="space-y-3">
             {results.map((r) => (
               <div key={r.metric} className="flex items-center justify-between py-2 border-b border-border last:border-0">
