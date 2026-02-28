@@ -46,11 +46,11 @@
     --glow-accent: 0 0 20px hsl(292 80% 45% / 0.2);
 
     --sidebar-background: 210 40% 96%;
-    --sidebar-foreground: 215 25% 30%;
+    --sidebar-foreground: 215 25% 25%;
     --sidebar-primary: 187 100% 35%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 210 40% 90%;
-    --sidebar-accent-foreground: 215 25% 20%;
+    --sidebar-accent-foreground: 215 25% 15%;
     --sidebar-border: 210 30% 88%;
     --sidebar-ring: 187 100% 35%;
 
