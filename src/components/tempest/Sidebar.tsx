@@ -10,9 +10,10 @@ import {
   LayoutDashboard,
   ChevronLeft,
   ChevronRight,
+  Home,
 } from "lucide-react";
 
-type Module = "overview" | "motf" | "gbsc" | "bctn" | "cnis" | "msrs" | "chat";
+type Module = "home" | "overview" | "motf" | "gbsc" | "bctn" | "cnis" | "msrs" | "chat";
 
 interface SidebarProps {
   active: Module;
@@ -20,6 +21,7 @@ interface SidebarProps {
 }
 
 const modules = [
+  { id: "home" as Module, label: "Home", icon: Home },
   { id: "overview" as Module, label: "Overview", icon: LayoutDashboard },
   { id: "motf" as Module, label: "MOTF", desc: "Tucker Decomposition", icon: Dna },
   { id: "gbsc" as Module, label: "GBSC", desc: "Survival Analysis", icon: Activity },
