@@ -46,7 +46,7 @@ const Sidebar = ({ active, onNavigate }: SidebarProps) => {
           </div>
           {!collapsed && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <span className="font-mono text-sm font-semibold text-foreground tracking-wider">TEMPEST</span>
+              <span className="font-mono text-sm font-semibold text-sidebar-foreground tracking-wider">TEMPEST</span>
               <span className="block text-[10px] text-muted-foreground font-mono">v2.1.0</span>
             </motion.div>
           )}
@@ -63,8 +63,8 @@ const Sidebar = ({ active, onNavigate }: SidebarProps) => {
               onClick={() => onNavigate(mod.id)}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-left transition-all duration-200 group relative ${
                 isActive
-                  ? "bg-primary/10 text-primary"
-                  : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                  ? "bg-primary/15 text-primary"
+                  : "text-sidebar-foreground hover:bg-primary/10 hover:text-primary"
               }`}
             >
               {isActive && (
@@ -73,7 +73,7 @@ const Sidebar = ({ active, onNavigate }: SidebarProps) => {
                   className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-primary rounded-r"
                 />
               )}
-              <mod.icon className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"}`} />
+              <mod.icon className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-primary" : "text-muted-foreground group-hover:text-primary"}`} />
               {!collapsed && (
                 <div className="overflow-hidden">
                   <span className="text-sm font-medium block">{mod.label}</span>
