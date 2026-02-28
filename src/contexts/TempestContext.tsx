@@ -33,10 +33,14 @@ interface TempestState {
   pipelineRuns: PipelineRun[];
   analysisResults: Record<string, AnalysisResult | null>;
   cohorts: Cohort[];
+  activeCohort: Cohort | null;
+  setActiveCohort: (cohort: Cohort | null) => void;
+  isLoading: boolean;
   refreshPipeline: () => Promise<void>;
   refreshResults: (module: string) => Promise<void>;
   refreshCohorts: () => Promise<void>;
   saveCohort: (cohort: Omit<Cohort, "id">) => Promise<void>;
+  resetPipeline: (module: string) => Promise<void>;
 }
 
 const TempestContext = createContext<TempestState | null>(null);
@@ -45,6 +49,8 @@ export function TempestProvider({ children }: { children: ReactNode }) {
   const [pipelineRuns, setPipelineRuns] = useState<PipelineRun[]>([]);
   const [analysisResults, setAnalysisResults] = useState<Record<string, AnalysisResult | null>>({});
   const [cohorts, setCohorts] = useState<Cohort[]>([]);
+  const [activeCohort, setActiveCohort] = useState<Cohort | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const refreshPipeline = useCallback(async () => {
     const { data } = await supabase.from("pipeline_runs").select("*").order("module");
@@ -73,12 +79,29 @@ export function TempestProvider({ children }: { children: ReactNode }) {
     await refreshCohorts();
   }, [refreshCohorts]);
 
+  const resetPipeline = useCallback(async (module: string) => {
+    const run = pipelineRuns.find((r) => r.module === module);
+    if (run) {
+      await supabase
+        .from("pipeline_runs")
+        .update({ status: "idle", progress: 0, started_at: null, completed_at: null })
+        .eq("id", run.id);
+      await refreshPipeline();
+    }
+  }, [pipelineRuns, refreshPipeline]);
+
   // Initial load
   useEffect(() => {
-    refreshPipeline();
-    refreshCohorts();
-    // Load latest results for all modules
-    ["motf", "gbsc", "bctn", "cnis", "msrs"].forEach(refreshResults);
+    const load = async () => {
+      setIsLoading(true);
+      await Promise.all([
+        refreshPipeline(),
+        refreshCohorts(),
+        ...["motf", "gbsc", "bctn", "cnis", "msrs"].map(refreshResults),
+      ]);
+      setIsLoading(false);
+    };
+    load();
   }, [refreshPipeline, refreshCohorts, refreshResults]);
 
   // Realtime subscription for pipeline updates
@@ -94,7 +117,7 @@ export function TempestProvider({ children }: { children: ReactNode }) {
   }, [refreshPipeline]);
 
   return (
-    <TempestContext.Provider value={{ pipelineRuns, analysisResults, cohorts, refreshPipeline, refreshResults, refreshCohorts, saveCohort }}>
+    <TempestContext.Provider value={{ pipelineRuns, analysisResults, cohorts, activeCohort, setActiveCohort, isLoading, refreshPipeline, refreshResults, refreshCohorts, saveCohort, resetPipeline }}>
       {children}
     </TempestContext.Provider>
   );
