@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import type { Module } from "./Sidebar";
 import type { CohortPayload } from "./ChatPanel";
@@ -5,7 +6,9 @@ import SurvivalCurveChart from "./charts/SurvivalCurveChart";
 import ClonalDynamicsChart from "./charts/ClonalDynamicsChart";
 import RiskRadar from "./charts/RiskRadar";
 import { downloadChartAsPng, downloadTableAsCsv, downloadHtmlReport } from "./utils/downloadUtils";
-import { Dna, Activity, FlaskConical, Shield, BarChart3, FileText, Play, Download, CheckCircle2 } from "lucide-react";
+import { useTempest } from "@/contexts/TempestContext";
+import { Dna, Activity, FlaskConical, Shield, BarChart3, FileText, Play, Download, CheckCircle2, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 const moduleInfo: Record<string, { title: string; subtitle: string; icon: any; description: string }> = {
   motf: {
@@ -18,62 +21,49 @@ const moduleInfo: Record<string, { title: string; subtitle: string; icon: any; d
     title: "GBSC — Gradient-Boosted Stage Classifier",
     subtitle: "XGBoost + LOTO Cross-Validation",
     icon: Activity,
-    description: "Ensemble GBDT trained on MOTF latent factors + 47 curated features (top 20 stage-specific DEGs, missense:silent ratio, PyClone dominant cluster prevalence, Vim & MKI67 spatial scores). XGBoost v1.7: 350 estimators, depth 5, η=0.04, L2 γ=1.2. LOTO CV yields 94.7% accuracy, macro-F1 = 0.93. SHAP provides per-sample feature attribution.",
+    description: "Ensemble GBDT trained on MOTF latent factors + 47 curated features. XGBoost v1.7: 350 estimators, depth 5, η=0.04, L2 γ=1.2. LOTO CV yields 94.7% accuracy, macro-F1 = 0.93. SHAP provides per-sample feature attribution.",
   },
   bctn: {
     title: "BCTN — Bayesian Clonal Trajectory Networks",
     subtitle: "Dirichlet Process Mixture + PyClone v0.13.1",
     icon: FlaskConical,
-    description: "Models subclonal architecture from somatic VAFs using Dirichlet Process Mixture (10K MCMC, 1K burn-in, Binomial emission). Tracks clonal consolidation from 5 early clusters to 1–2 dominant lineages. Expanding clone GSEA reveals cell cycle, chromatin org, vasculogenesis, rRNA processing, and immune modulation programs. Gelman-Rubin R̂ < 1.1, ARI > 0.90.",
+    description: "Models subclonal architecture from somatic VAFs using Dirichlet Process Mixture (10K MCMC, 1K burn-in, Binomial emission). Tracks clonal consolidation from 5 early clusters to 1–2 dominant lineages.",
   },
   cnis: {
     title: "CNIS — Comprehensive Neoantigen Intelligence System",
     subtitle: "NetMHCpan 4.1b + Fusion Scanning",
     icon: Shield,
-    description: "Multi-modal filtering: WES∩RNA co-detection, >10 CPM expression, absence from D0 controls, VEP high-impact, dbSNP/MGI exclusion. NetMHCpan 4.1b predicts H-2-Db/Kb binding (%Rank < 0.5 = strong). Fusion detection via STAR-Fusion∩Arriba intersection (≥5 spanning + ≥3 split reads). Identifies recurrent, stage-spanning neoantigens for immunotherapy prioritization.",
+    description: "Multi-modal filtering: WES∩RNA co-detection, >10 CPM expression, absence from D0 controls, VEP high-impact, dbSNP/MGI exclusion. NetMHCpan 4.1b predicts H-2-Db/Kb binding (%Rank < 0.5 = strong).",
   },
   msrs: {
     title: "MSRS — Multi-Scale Risk Stratification",
     subtitle: "Composite Risk Scoring with Uncertainty Quantification",
     icon: BarChart3,
-    description: "Integrates MOTF latent factors, GBSC stage probabilities, BCTN clonal trajectory forecasts, and CNIS immunogenicity scores into a unified risk profile. Bootstrap confidence intervals (n=1,000) provide calibrated uncertainty. Patient-level risk trajectories enable stage-specific therapeutic timing recommendations.",
+    description: "Integrates MOTF latent factors, GBSC stage probabilities, BCTN clonal trajectory forecasts, and CNIS immunogenicity scores into a unified risk profile. Bootstrap confidence intervals (n=1,000).",
   },
 };
 
-const moduleResults: Record<string, { metric: string; value: string; trend: string }[]> = {
+const defaultResults: Record<string, { metric: string; value: string; trend: string }[]> = {
   motf: [
     { metric: "Latent Factors", value: "12", trend: "elbow @ 90%" },
     { metric: "Variance Explained", value: "92.3%", trend: "cross-modal" },
     { metric: "LF1 ↔ Stage", value: "r = 0.94", trend: "p < 10⁻⁶" },
-    { metric: "LF2 ↔ Transitional", value: "r = 0.81", trend: "D88/99" },
-    { metric: "LF4 ↔ Compartment", value: "r = 0.88", trend: "FT/STIC/Tumor" },
   ],
   gbsc: [
     { metric: "Accuracy (LOTO)", value: "94.7%", trend: "8-fold" },
     { metric: "Macro F1", value: "0.93", trend: "4 stages" },
-    { metric: "Mean Brier Score", value: "0.047", trend: "±0.008" },
-    { metric: "Top SHAP: LF1", value: "0.342", trend: "stage driver" },
-    { metric: "Top SHAP: M:S ratio", value: "0.218", trend: "mutational" },
   ],
   bctn: [
     { metric: "D52 Clusters", value: "5", trend: "branched" },
-    { metric: "D88 M:S Ratio", value: "2.65", trend: "peak diversity" },
     { metric: "D122 Lineages", value: "1–2", trend: "consolidated" },
-    { metric: "Gelman-Rubin R̂", value: "< 1.1", trend: "converged" },
-    { metric: "Cluster ARI", value: "> 0.90", trend: "stable" },
   ],
   cnis: [
     { metric: "Meis1 (D20→D122)", value: "%Rank ↓WT", trend: "persistent" },
     { metric: "Rbm26 (4 stages)", value: "longest-lived", trend: "D21–D109" },
-    { metric: "Slfn8", value: "strong binder", trend: "D52 & D99" },
-    { metric: "Mfhas1::Tns3", value: "%Rank 0.13", trend: "fusion" },
-    { metric: "Camk1d::Arid1a", value: "dual Db/Kb", trend: "fusion" },
   ],
   msrs: [
     { metric: "Stage Classification", value: "94.7%", trend: "GBSC" },
-    { metric: "Clonal Forecast", value: "converged", trend: "BCTN" },
     { metric: "Neoantigen Targets", value: "6 recurrent", trend: "CNIS" },
-    { metric: "Bootstrap CI", value: "n = 1,000", trend: "calibrated" },
   ],
 };
 
@@ -125,11 +115,51 @@ interface Props {
 
 const ModulePanel = ({ module, cohort }: Props) => {
   const info = moduleInfo[module];
+  const { analysisResults, pipelineRuns, refreshResults } = useTempest();
+  const [running, setRunning] = useState(false);
+
   if (!info) return null;
 
-  const results = moduleResults[module] || [];
+  const pipelineRun = pipelineRuns.find((r) => r.module === module);
+  const latestResult = analysisResults[module];
+  const results = latestResult?.results?.metrics || defaultResults[module] || [];
   const config = moduleConfig[module] || [];
   const chartId = `module-chart-${module}`;
+
+  const handleRunAnalysis = async () => {
+    setRunning(true);
+    toast.info(`Starting ${module.toUpperCase()} analysis...`);
+
+    try {
+      const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/run-analysis`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ module }),
+      });
+
+      if (!resp.ok) {
+        const errData = await resp.json().catch(() => ({}));
+        toast.error(errData.error || `Analysis failed (${resp.status})`);
+        setRunning(false);
+        return;
+      }
+
+      await refreshResults(module);
+      toast.success(`${module.toUpperCase()} analysis complete!`);
+    } catch (e) {
+      toast.error("Network error running analysis.");
+      console.error(e);
+    }
+    setRunning(false);
+  };
+
+  const handleExport = () => {
+    downloadTableAsCsv(results, `${module}_results`);
+    toast.success("Results exported as CSV.");
+  };
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-6 space-y-6">
@@ -142,19 +172,37 @@ const ModulePanel = ({ module, cohort }: Props) => {
           <div>
             <h1 className="text-xl font-semibold text-foreground">{info.title}</h1>
             <p className="text-xs text-muted-foreground font-mono mt-1">{info.subtitle}</p>
+            {pipelineRun && (
+              <span className={`text-[10px] font-mono px-2 py-0.5 rounded mt-1 inline-block ${
+                pipelineRun.status === "complete" ? "bg-chart-emerald/10 text-chart-emerald" :
+                pipelineRun.status === "running" ? "bg-primary/10 text-primary" :
+                pipelineRun.status === "failed" ? "bg-destructive/10 text-destructive" :
+                "bg-muted text-muted-foreground"
+              }`}>
+                {pipelineRun.status.toUpperCase()} {pipelineRun.status === "running" && `(${pipelineRun.progress}%)`}
+              </span>
+            )}
           </div>
         </div>
         <div className="flex gap-2">
-          <button className="flex items-center gap-2 px-3 py-2 text-xs font-mono bg-primary/10 text-primary rounded-md hover:bg-primary/20 transition-colors">
-            <Play className="w-3.5 h-3.5" /> Run Analysis
+          <button
+            onClick={handleRunAnalysis}
+            disabled={running}
+            className="flex items-center gap-2 px-3 py-2 text-xs font-mono bg-primary/10 text-primary rounded-md hover:bg-primary/20 transition-colors disabled:opacity-50"
+          >
+            {running ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
+            {running ? "Running..." : "Run Analysis"}
           </button>
           <button
-            onClick={() => downloadHtmlReport(moduleInfo, moduleResults, moduleConfig)}
+            onClick={() => downloadHtmlReport(moduleInfo, { [module]: results }, moduleConfig)}
             className="flex items-center gap-2 px-3 py-2 text-xs font-mono bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
           >
             <FileText className="w-3.5 h-3.5" /> HTML Report
           </button>
-          <button className="flex items-center gap-2 px-3 py-2 text-xs font-mono bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80 transition-colors">
+          <button
+            onClick={handleExport}
+            className="flex items-center gap-2 px-3 py-2 text-xs font-mono bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80 transition-colors"
+          >
             <Download className="w-3.5 h-3.5" /> Export
           </button>
         </div>
@@ -162,11 +210,7 @@ const ModulePanel = ({ module, cohort }: Props) => {
 
       {/* Cohort banner */}
       {cohort && module === "motf" && (
-        <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-primary/5 border border-primary/20 rounded-lg p-4"
-        >
+        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="bg-primary/5 border border-primary/20 rounded-lg p-4">
           <div className="flex items-center gap-2 mb-3">
             <CheckCircle2 className="w-4 h-4 text-chart-emerald" />
             <span className="text-sm font-mono font-semibold text-foreground">Cohort Loaded: {cohort.name}</span>
@@ -200,9 +244,16 @@ const ModulePanel = ({ module, cohort }: Props) => {
         </div>
       </div>
 
+      {/* Narrative from AI results */}
+      {latestResult?.results?.narrative && (
+        <div className="module-card border-primary/20">
+          <h3 className="text-xs font-mono text-muted-foreground uppercase tracking-wide mb-2">AI Analysis Narrative</h3>
+          <p className="text-sm text-foreground leading-relaxed">{latestResult.results.narrative}</p>
+        </div>
+      )}
+
       {/* Content grid */}
       <div className="grid grid-cols-3 gap-4">
-        {/* Chart */}
         <div className="module-card col-span-2">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xs font-mono text-muted-foreground uppercase tracking-wide">Visualization</h3>
@@ -216,10 +267,11 @@ const ModulePanel = ({ module, cohort }: Props) => {
           <div id={chartId}>{chartForModule[module]}</div>
         </div>
 
-        {/* Results */}
         <div className="module-card">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xs font-mono text-muted-foreground uppercase tracking-wide">Latest Results</h3>
+            <h3 className="text-xs font-mono text-muted-foreground uppercase tracking-wide">
+              {latestResult ? "AI-Generated Results" : "Default Results"}
+            </h3>
             <button
               onClick={() => downloadTableAsCsv(results, `${module}_results`)}
               className="flex items-center gap-1 px-2 py-1 text-[10px] font-mono text-muted-foreground hover:text-primary rounded border border-border hover:border-primary/40 transition-colors"
@@ -228,7 +280,7 @@ const ModulePanel = ({ module, cohort }: Props) => {
             </button>
           </div>
           <div className="space-y-3">
-            {results.map((r) => (
+            {results.map((r: any) => (
               <div key={r.metric} className="flex items-center justify-between py-2 border-b border-border last:border-0">
                 <span className="text-xs text-muted-foreground">{r.metric}</span>
                 <div className="text-right">

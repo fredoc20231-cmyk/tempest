@@ -4,6 +4,7 @@ import StatusBar from "@/components/tempest/StatusBar";
 import OverviewPanel from "@/components/tempest/OverviewPanel";
 import ModulePanel from "@/components/tempest/ModulePanel";
 import ChatPanel, { type CohortPayload } from "@/components/tempest/ChatPanel";
+import { TempestProvider } from "@/contexts/TempestContext";
 
 const Index = () => {
   const [active, setActive] = useState<Module>("overview");
@@ -21,13 +22,15 @@ const Index = () => {
   };
 
   return (
-    <div className="flex h-screen bg-background gradient-mesh">
-      <Sidebar active={active} onNavigate={setActive} />
-      <div className="flex-1 flex flex-col min-w-0">
-        <StatusBar />
-        <main className="flex-1 overflow-y-auto">{renderContent()}</main>
+    <TempestProvider>
+      <div className="flex h-screen bg-background gradient-mesh">
+        <Sidebar active={active} onNavigate={setActive} />
+        <div className="flex-1 flex flex-col min-w-0">
+          <StatusBar />
+          <main className="flex-1 overflow-y-auto">{renderContent()}</main>
+        </div>
       </div>
-    </div>
+    </TempestProvider>
   );
 };
 
