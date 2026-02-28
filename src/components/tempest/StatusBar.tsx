@@ -2,7 +2,7 @@ import { Activity, Clock, Database, Cpu } from "lucide-react";
 import { useTempest } from "@/contexts/TempestContext";
 
 const StatusBar = () => {
-  const { pipelineRuns, cohorts } = useTempest();
+  const { pipelineRuns, cohorts, isLoading } = useTempest();
 
   const isActive = pipelineRuns.some((r) => r.status === "running");
   const datasetCount = cohorts.length;
@@ -23,7 +23,7 @@ const StatusBar = () => {
         </div>
         <div className="flex items-center gap-1.5 text-muted-foreground">
           <Database className="w-3.5 h-3.5" />
-          <span className="text-xs font-mono">{datasetCount} dataset{datasetCount !== 1 ? "s" : ""} loaded</span>
+          <span className="text-xs font-mono">{isLoading ? "Loading..." : `${datasetCount} dataset${datasetCount !== 1 ? "s" : ""} loaded`}</span>
         </div>
       </div>
       <div className="flex items-center gap-6">

@@ -7,7 +7,9 @@ import ClonalDynamicsChart from "./charts/ClonalDynamicsChart";
 import RiskRadar from "./charts/RiskRadar";
 import { downloadChartAsPng, downloadTableAsCsv, downloadHtmlReport } from "./utils/downloadUtils";
 import { useTempest } from "@/contexts/TempestContext";
-import { Dna, Activity, FlaskConical, Shield, BarChart3, FileText, Play, Download, CheckCircle2, Loader2 } from "lucide-react";
+import { mapSurvivalData, mapClonalData, mapRadarData } from "@/lib/chartDataMapper";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Dna, Activity, FlaskConical, Shield, BarChart3, FileText, Play, Download, CheckCircle2, Loader2, RotateCcw, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
 const moduleInfo: Record<string, { title: string; subtitle: string; icon: any; description: string }> = {
@@ -100,13 +102,21 @@ const moduleConfig: Record<string, { label: string; value: string }[]> = {
   ],
 };
 
-const chartForModule: Record<string, React.ReactNode> = {
-  motf: <RiskRadar />,
-  gbsc: <SurvivalCurveChart />,
-  bctn: <ClonalDynamicsChart />,
-  cnis: <SurvivalCurveChart />,
-  msrs: <RiskRadar />,
-};
+function ChartForModule({ module, results }: { module: string; results: any }) {
+  const aiResults = results?.results;
+  switch (module) {
+    case "gbsc":
+    case "cnis":
+      return <SurvivalCurveChart data={mapSurvivalData(aiResults)} />;
+    case "bctn":
+      return <ClonalDynamicsChart data={mapClonalData(aiResults)} />;
+    case "motf":
+    case "msrs":
+      return <RiskRadar data={mapRadarData(aiResults)} />;
+    default:
+      return <RiskRadar />;
+  }
+}
 
 interface Props {
   module: Exclude<Module, "overview" | "chat">;
@@ -115,7 +125,7 @@ interface Props {
 
 const ModulePanel = ({ module, cohort }: Props) => {
   const info = moduleInfo[module];
-  const { analysisResults, pipelineRuns, refreshResults } = useTempest();
+  const { analysisResults, pipelineRuns, refreshResults, resetPipeline, isLoading } = useTempest();
   const [running, setRunning] = useState(false);
 
   if (!info) return null;
@@ -125,6 +135,7 @@ const ModulePanel = ({ module, cohort }: Props) => {
   const results = latestResult?.results?.metrics || defaultResults[module] || [];
   const config = moduleConfig[module] || [];
   const chartId = `module-chart-${module}`;
+  const isFailed = pipelineRun?.status === "failed";
 
   const handleRunAnalysis = async () => {
     setRunning(true);
@@ -156,6 +167,11 @@ const ModulePanel = ({ module, cohort }: Props) => {
     setRunning(false);
   };
 
+  const handleReset = async () => {
+    await resetPipeline(module);
+    toast.success(`${module.toUpperCase()} pipeline reset to idle.`);
+  };
+
   const handleExport = () => {
     downloadTableAsCsv(results, `${module}_results`);
     toast.success("Results exported as CSV.");
@@ -185,6 +201,23 @@ const ModulePanel = ({ module, cohort }: Props) => {
           </div>
         </div>
         <div className="flex gap-2">
+          {isFailed && (
+            <>
+              <button
+                onClick={handleRunAnalysis}
+                disabled={running}
+                className="flex items-center gap-2 px-3 py-2 text-xs font-mono bg-chart-amber/10 text-chart-amber rounded-md hover:bg-chart-amber/20 transition-colors"
+              >
+                <RefreshCw className="w-3.5 h-3.5" /> Retry
+              </button>
+              <button
+                onClick={handleReset}
+                className="flex items-center gap-2 px-3 py-2 text-xs font-mono bg-destructive/10 text-destructive rounded-md hover:bg-destructive/20 transition-colors"
+              >
+                <RotateCcw className="w-3.5 h-3.5" /> Reset
+              </button>
+            </>
+          )}
           <button
             onClick={handleRunAnalysis}
             disabled={running}
@@ -264,7 +297,13 @@ const ModulePanel = ({ module, cohort }: Props) => {
               <Download className="w-3 h-3" /> PNG
             </button>
           </div>
-          <div id={chartId}>{chartForModule[module]}</div>
+          <div id={chartId}>
+            {isLoading ? (
+              <Skeleton className="h-[220px] w-full" />
+            ) : (
+              <ChartForModule module={module} results={latestResult} />
+            )}
+          </div>
         </div>
 
         <div className="module-card">
@@ -279,17 +318,28 @@ const ModulePanel = ({ module, cohort }: Props) => {
               <Download className="w-3 h-3" /> CSV
             </button>
           </div>
-          <div className="space-y-3">
-            {results.map((r: any) => (
-              <div key={r.metric} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                <span className="text-xs text-muted-foreground">{r.metric}</span>
-                <div className="text-right">
-                  <span className="text-sm font-mono text-foreground">{r.value}</span>
-                  <span className="block text-[10px] font-mono text-muted-foreground">{r.trend}</span>
+          {isLoading ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex items-center justify-between py-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-4 w-16" />
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {results.map((r: any) => (
+                <div key={r.metric} className="flex items-center justify-between py-2 border-b border-border last:border-0">
+                  <span className="text-xs text-muted-foreground">{r.metric}</span>
+                  <div className="text-right">
+                    <span className="text-sm font-mono text-foreground">{r.value}</span>
+                    <span className="block text-[10px] font-mono text-muted-foreground">{r.trend}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

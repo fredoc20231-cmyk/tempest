@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Bot, User, Loader2, Database, Search, ArrowRight, Dna } from "lucide-react";
+import { Send, Bot, User, Loader2, Database, Search, ArrowRight, Dna, Upload } from "lucide-react";
+import CohortUploader from "./CohortUploader";
 import { supabase } from "@/integrations/supabase/client";
 import { useTempest } from "@/contexts/TempestContext";
 import ReactMarkdown from "react-markdown";
@@ -251,7 +252,8 @@ const ChatPanel = ({ onNavigate, onCohortLoaded }: ChatPanelProps) => {
         <p className="text-xs text-muted-foreground mt-1">Lovable AI-powered biomedical search & MOTF pipeline orchestration</p>
       </div>
 
-      <div className="px-6 py-3 border-b border-border flex gap-2 flex-wrap">
+      <div className="px-6 py-3 border-b border-border flex gap-2 flex-wrap items-center">
+        <CohortUploader />
         {[
           "Search TCGA for HGSOC cohorts",
           "Load cohort into MOTF pipeline",
