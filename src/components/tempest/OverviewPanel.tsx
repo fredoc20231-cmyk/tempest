@@ -1,8 +1,9 @@
 import { motion } from "framer-motion";
-import { Dna, Activity, FlaskConical, Shield, BarChart3, ArrowUpRight, TrendingUp } from "lucide-react";
+import { Dna, Activity, FlaskConical, Shield, BarChart3, ArrowUpRight, TrendingUp, Download, FileText } from "lucide-react";
 import SurvivalCurveChart from "./charts/SurvivalCurveChart";
 import ClonalDynamicsChart from "./charts/ClonalDynamicsChart";
 import RiskRadar from "./charts/RiskRadar";
+import { downloadChartAsPng } from "./utils/downloadUtils";
 
 const metrics = [
   { label: "Analyses Run", value: "1,247", change: "+12%", icon: TrendingUp },
@@ -28,6 +29,21 @@ const item = {
   hidden: { opacity: 0, y: 12 },
   show: { opacity: 1, y: 0, transition: { duration: 0.35 } },
 };
+
+const ChartCard = ({ id, title, children }: { id: string; title: string; children: React.ReactNode }) => (
+  <div className="module-card col-span-1">
+    <div className="flex items-center justify-between mb-4">
+      <h3 className="text-xs font-mono text-muted-foreground uppercase tracking-wide">{title}</h3>
+      <button
+        onClick={() => downloadChartAsPng(id, title.replace(/\s+/g, "_"))}
+        className="flex items-center gap-1 px-2 py-1 text-[10px] font-mono text-muted-foreground hover:text-primary rounded border border-border hover:border-primary/40 transition-colors"
+      >
+        <Download className="w-3 h-3" /> PNG
+      </button>
+    </div>
+    <div id={id}>{children}</div>
+  </div>
+);
 
 const OverviewPanel = () => (
   <motion.div variants={container} initial="hidden" animate="show" className="space-y-6 p-6">
@@ -57,23 +73,36 @@ const OverviewPanel = () => (
 
     {/* Charts row */}
     <motion.div variants={item} className="grid grid-cols-3 gap-4">
-      <div className="module-card col-span-1">
-        <h3 className="text-xs font-mono text-muted-foreground uppercase tracking-wide mb-4">Kaplan-Meier Survival</h3>
+      <ChartCard id="chart-survival" title="Kaplan-Meier Survival">
         <SurvivalCurveChart />
-      </div>
-      <div className="module-card col-span-1">
-        <h3 className="text-xs font-mono text-muted-foreground uppercase tracking-wide mb-4">Clonal Architecture</h3>
+      </ChartCard>
+      <ChartCard id="chart-clonal" title="Clonal Architecture">
         <ClonalDynamicsChart />
-      </div>
-      <div className="module-card col-span-1">
-        <h3 className="text-xs font-mono text-muted-foreground uppercase tracking-wide mb-4">Multi-Dimensional Risk</h3>
+      </ChartCard>
+      <ChartCard id="chart-risk" title="Multi-Dimensional Risk">
         <RiskRadar />
-      </div>
+      </ChartCard>
     </motion.div>
 
-    {/* Module pipeline */}
+    {/* Pipeline status + download table */}
     <motion.div variants={item} className="module-card">
-      <h3 className="text-xs font-mono text-muted-foreground uppercase tracking-wide mb-4">Pipeline Status</h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-xs font-mono text-muted-foreground uppercase tracking-wide">Pipeline Status</h3>
+        <button
+          onClick={() => {
+            const header = "Module,Label,Status,Progress\n";
+            const rows = moduleStatus.map((m) => `"${m.id}","${m.label}","${m.status}","${m.progress}%"`).join("\n");
+            const blob = new Blob([header + rows], { type: "text/csv;charset=utf-8;" });
+            const a = document.createElement("a");
+            a.download = "pipeline_status.csv";
+            a.href = URL.createObjectURL(blob);
+            a.click();
+          }}
+          className="flex items-center gap-1 px-2 py-1 text-[10px] font-mono text-muted-foreground hover:text-primary rounded border border-border hover:border-primary/40 transition-colors"
+        >
+          <Download className="w-3 h-3" /> CSV
+        </button>
+      </div>
       <div className="space-y-3">
         {moduleStatus.map((mod) => (
           <div key={mod.id} className="flex items-center gap-4">

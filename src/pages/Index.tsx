@@ -25,7 +25,7 @@ const Index = () => {
       <Sidebar active={active} onNavigate={setActive} />
       <div className="flex-1 flex flex-col min-w-0">
         <StatusBar />
-        <main className="flex-1 overflow-y-auto data-grid-bg">{renderContent()}</main>
+        <main className="flex-1 overflow-y-auto">{renderContent()}</main>
       </div>
     </div>
   );
