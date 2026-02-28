@@ -14,7 +14,123 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      analysis_results: {
+        Row: {
+          config: Json
+          created_at: string
+          id: string
+          module: string
+          results: Json
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          id?: string
+          module: string
+          results?: Json
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          id?: string
+          module?: string
+          results?: Json
+        }
+        Relationships: []
+      }
+      chat_messages: {
+        Row: {
+          action: Json | null
+          content: string
+          created_at: string
+          id: string
+          role: string
+          tools: Json | null
+        }
+        Insert: {
+          action?: Json | null
+          content: string
+          created_at?: string
+          id?: string
+          role: string
+          tools?: Json | null
+        }
+        Update: {
+          action?: Json | null
+          content?: string
+          created_at?: string
+          id?: string
+          role?: string
+          tools?: Json | null
+        }
+        Relationships: []
+      }
+      cohorts: {
+        Row: {
+          created_at: string
+          id: string
+          latent_factors: number | null
+          modalities: Json | null
+          name: string
+          samples: number
+          tensor_shape: string | null
+          timepoints: Json | null
+          variance_explained: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          latent_factors?: number | null
+          modalities?: Json | null
+          name: string
+          samples?: number
+          tensor_shape?: string | null
+          timepoints?: Json | null
+          variance_explained?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          latent_factors?: number | null
+          modalities?: Json | null
+          name?: string
+          samples?: number
+          tensor_shape?: string | null
+          timepoints?: Json | null
+          variance_explained?: string | null
+        }
+        Relationships: []
+      }
+      pipeline_runs: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          module: string
+          progress: number
+          started_at: string | null
+          status: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          module: string
+          progress?: number
+          started_at?: string | null
+          status?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          module?: string
+          progress?: number
+          started_at?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
