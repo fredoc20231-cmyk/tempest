@@ -4,14 +4,17 @@ import StatusBar from "@/components/tempest/StatusBar";
 import OverviewPanel from "@/components/tempest/OverviewPanel";
 import ModulePanel from "@/components/tempest/ModulePanel";
 import ChatPanel, { type CohortPayload } from "@/components/tempest/ChatPanel";
+import HomePanel from "@/components/tempest/HomePanel";
 import { TempestProvider } from "@/contexts/TempestContext";
 
 const Index = () => {
-  const [active, setActive] = useState<Module>("overview");
+  const [active, setActive] = useState<Module>("home");
   const [cohort, setCohort] = useState<CohortPayload | null>(null);
 
   const renderContent = () => {
     switch (active) {
+      case "home":
+        return <HomePanel onNavigate={(m) => setActive(m as Module)} />;
       case "overview":
         return <OverviewPanel />;
       case "chat":
