@@ -1,6 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, Bot, User, Loader2, Database, Search, ArrowRight, Dna } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useTempest } from "@/contexts/TempestContext";
+import ReactMarkdown from "react-markdown";
 
 interface Message {
   id: string;
@@ -35,39 +38,22 @@ const HGSOC_COHORT: CohortPayload = {
   varianceExplained: "92.3%",
 };
 
-const sampleResponses: Record<string, { content: string; tools: string[]; action?: { label: string; module: string } }> = {
-  default: {
-    content: "I can search TCGA, cBioPortal, and ICGC databases. Try asking about HGSOC cohorts, running survival analyses on staged timepoints, or loading a multi-omic dataset into the MOTF tensor pipeline.",
-    tools: [],
-  },
-  tcga: {
-    content: `Found **847 samples** matching TCGA-OV (High-Grade Serous Ovarian Carcinoma). Key statistics from integrated analysis:\n\n• **TP53 mutation rate:** 96% (near-universal)\n• Median OS: 44.6 months\n• BRCA1/2 germline: 22%\n• HRD-positive: 50%\n\nOur GEM model recapitulates key hallmarks: Trp53/Rb1 deletion + KrasG12D in Pax8+ FT secretory cells across 8 longitudinal timepoints (D0–D122).\n\nShall I load the **HGSOC GEM cohort** into the MOTF pipeline for tensor decomposition?`,
-    tools: ["ConnectorRegistry.search()", "TCGA.query(project=TCGA-OV)"],
-    action: { label: "Load into MOTF Pipeline", module: "motf" },
-  },
-  motf: {
-    content: `Loading HGSOC GEM longitudinal cohort into **MOTF — Multi-Omic Tensor Factorization**...\n\n**Tensor constructed:** T ∈ ℝ^(8 × 12,451 × 4)\n• Samples: 8 timepoints (D0–D122)\n• Features: 12,451 genes/variants/spots\n• Modalities: RNA-seq, WES, Spatial, Neoantigen\n\n**wNTD decomposition complete:**\n• Latent factors retained: **12** (elbow at 90% variance)\n• Cross-modal variance explained: **92.3%**\n• LF1 ↔ Stage progression: r = 0.94 (p < 10⁻⁶)\n• LF2 ↔ Transitional phase: r = 0.81\n• LF4 ↔ FT/STIC/Tumor compartment: r = 0.88\n\nMOTF latent space is ready. Downstream modules (GBSC, BCTN, CNIS, MSRS) can now consume these factors.`,
-    tools: ["MOTF.construct_tensor()", "MOTF.wNTD(rank=12)", "MOTF.annotate_factors(PROGENy)"],
-    action: { label: "View MOTF Results", module: "motf" },
-  },
-  survival: {
-    content: `Running **GBSC** (Gradient-Boosted Stage Classifier) on MOTF latent factors + 47 curated features...\n\n**LOTO Cross-Validation Results:**\n• Overall accuracy: **94.7%**\n• Macro F1: **0.93**\n\n| Stage | Precision | Recall | AUC-ROC |\n|---|---|---|---|\n| Early (D0/20/21) | 0.96 | 0.95 | 0.98 |\n| Intermediate (D52) | 0.91 | 0.90 | 0.96 |\n| Transitional (D88/99) | 0.93 | 0.92 | 0.94 |\n| Advanced (D109/122) | 0.95 | 0.96 | 0.97 |\n\nTop SHAP features: LF1 (0.342), missense:silent ratio (0.218), Vim spatial score (0.187).`,
-    tools: ["GBSC.train(XGBoost)", "GBSC.loto_cv()", "GBSC.shap_explain()"],
-    action: { label: "View Survival Analysis", module: "gbsc" },
-  },
-  neoantigen: {
-    content: `**CNIS — Neoantigen Intelligence** pipeline complete.\n\nHigh-confidence expressed neoantigens (NetMHCpan 4.1b, H-2-Db/Kb):\n\n• **Meis1** → TFFFXXMVLF — D20 & D122 (early genesis, late persistence)\n• **Rbm26** → FFFFFXXVFP — D21, D52, D99, D109 (longest-lived, 4 stages)\n• **Slfn8** → YMKVDIAYAI — D52 & D99 (strong binder)\n• **Zkscan7** → HTQENPYECC — D20 & D122 (stage-spanning)\n\nFusion-derived:\n• **Mfhas1::Tns3** — %Rank 0.13 (strong binder)\n• **Camk1d::Arid1a** — dual H-2-Db/Kb affinity\n\nRecurrent neoantigens span non-adjacent timepoints → antigen-bearing clones persist through progression.`,
-    tools: ["CNIS.netmhcpan(alleles=[H-2-Db,H-2-Kb])", "CNIS.fusion_scan(STAR-Fusion∩Arriba)"],
-    action: { label: "View Neoantigen Landscape", module: "cnis" },
-  },
-  clonal: {
-    content: `**BCTN — Bayesian Clonal Trajectory Network** analysis:\n\n**PyClone subclonal architecture (Dirichlet Process, 10K MCMC):**\n\nDay 52: 5 distinct clusters → branched architecture\nDay 88: Peak diversification, missense:silent = **2.65**\nDay 92–122: Consolidation to **1–2 dominant lineages**\n\nClonally expanded gene programs:\n• Cell cycle control (CDK/Cyclin)\n• Chromatin organization (SWI/SNF)\n• Vasculogenesis (VEGF axis)\n• rRNA processing\n• Immune modulation (Marco, M2-like polarization)\n\nGelman-Rubin R̂ < 1.1 across all chains. ARI > 0.90 confirms cluster stability.`,
-    tools: ["BCTN.pyclone(model=DPM)", "BCTN.trajectory_forecast()", "BCTN.gsea(clonal_genes)"],
-    action: { label: "View Clonal Dynamics", module: "bctn" },
-  },
-};
+function parseAction(text: string): { label: string; module: string } | undefined {
+  const match = text.match(/ACTION:\s*(\{[^}]+\})/);
+  if (!match) return undefined;
+  try {
+    return JSON.parse(match[1]);
+  } catch {
+    return undefined;
+  }
+}
+
+function stripAction(text: string): string {
+  return text.replace(/ACTION:\s*\{[^}]+\}/, "").trim();
+}
 
 const ChatPanel = ({ onNavigate, onCohortLoaded }: ChatPanelProps) => {
+  const { saveCohort } = useTempest();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
@@ -79,62 +65,192 @@ const ChatPanel = ({ onNavigate, onCohortLoaded }: ChatPanelProps) => {
   const [loading, setLoading] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
 
+  // Load persisted messages on mount
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("chat_messages")
+        .select("*")
+        .order("created_at", { ascending: true });
+      if (data && data.length > 0) {
+        setMessages(data.map((m: any) => ({
+          id: m.id,
+          role: m.role,
+          content: m.content,
+          tools: m.tools || undefined,
+          action: m.action || undefined,
+        })));
+      }
+    })();
+  }, []);
+
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  const persistMessage = async (msg: Message) => {
+    await supabase.from("chat_messages").insert({
+      id: msg.id,
+      role: msg.role,
+      content: msg.content,
+      tools: msg.tools || null,
+      action: msg.action || null,
+    });
+  };
+
   const handleSend = async () => {
     if (!input.trim() || loading) return;
-    const userMsg: Message = { id: Date.now().toString(), role: "user", content: input };
+    const userMsg: Message = { id: crypto.randomUUID(), role: "user", content: input };
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
     setLoading(true);
 
-    await new Promise((r) => setTimeout(r, 1200 + Math.random() * 800));
+    await persistMessage(userMsg);
 
+    // Check for cohort loading intent
     const lower = input.toLowerCase();
-    let key = "default";
-    if (lower.includes("load") && (lower.includes("motf") || lower.includes("tensor") || lower.includes("pipeline"))) {
-      key = "motf";
-    } else if (lower.includes("tcga") || lower.includes("hgsoc") || lower.includes("ovarian") || lower.includes("lung")) {
-      key = "tcga";
-    } else if (lower.includes("survival") || lower.includes("kaplan") || lower.includes("stage") || lower.includes("gbsc")) {
-      key = "survival";
-    } else if (lower.includes("neoantigen") || lower.includes("cnis") || lower.includes("immunogen")) {
-      key = "neoantigen";
-    } else if (lower.includes("clonal") || lower.includes("bctn") || lower.includes("pyclone") || lower.includes("trajectory")) {
-      key = "clonal";
+    if (lower.includes("load") && (lower.includes("motf") || lower.includes("tensor") || lower.includes("pipeline") || lower.includes("cohort"))) {
+      if (onCohortLoaded) onCohortLoaded(HGSOC_COHORT);
+      await saveCohort({
+        name: HGSOC_COHORT.name,
+        samples: HGSOC_COHORT.samples,
+        timepoints: HGSOC_COHORT.timepoints,
+        modalities: HGSOC_COHORT.modalities,
+        tensor_shape: HGSOC_COHORT.tensorShape,
+        latent_factors: HGSOC_COHORT.latentFactors,
+        variance_explained: HGSOC_COHORT.varianceExplained,
+      });
     }
 
-    const resp = sampleResponses[key];
+    // Stream from AI edge function
+    let assistantContent = "";
+    const assistantId = crypto.randomUUID();
 
-    if (key === "motf" && onCohortLoaded) {
-      onCohortLoaded(HGSOC_COHORT);
+    try {
+      const chatHistory = [...messages.filter(m => m.id !== "welcome"), userMsg].map(m => ({
+        role: m.role,
+        content: m.content,
+      }));
+
+      const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ messages: chatHistory }),
+      });
+
+      if (!resp.ok || !resp.body) {
+        let errMsg = "Failed to get response from AI.";
+        try {
+          const errData = await resp.json();
+          errMsg = errData.error || errMsg;
+        } catch {}
+        const errAssistant: Message = { id: assistantId, role: "assistant", content: errMsg };
+        setMessages((prev) => [...prev, errAssistant]);
+        await persistMessage(errAssistant);
+        setLoading(false);
+        return;
+      }
+
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let textBuffer = "";
+      let streamDone = false;
+
+      while (!streamDone) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        textBuffer += decoder.decode(value, { stream: true });
+
+        let newlineIndex: number;
+        while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
+          let line = textBuffer.slice(0, newlineIndex);
+          textBuffer = textBuffer.slice(newlineIndex + 1);
+
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (line.startsWith(":") || line.trim() === "") continue;
+          if (!line.startsWith("data: ")) continue;
+
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") { streamDone = true; break; }
+
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+            if (content) {
+              assistantContent += content;
+              setMessages((prev) => {
+                const last = prev[prev.length - 1];
+                if (last?.role === "assistant" && last.id === assistantId) {
+                  return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: stripAction(assistantContent) } : m);
+                }
+                return [...prev, { id: assistantId, role: "assistant", content: stripAction(assistantContent) }];
+              });
+            }
+          } catch {
+            textBuffer = line + "\n" + textBuffer;
+            break;
+          }
+        }
+      }
+
+      // Final flush
+      if (textBuffer.trim()) {
+        for (let raw of textBuffer.split("\n")) {
+          if (!raw) continue;
+          if (raw.endsWith("\r")) raw = raw.slice(0, -1);
+          if (raw.startsWith(":") || raw.trim() === "") continue;
+          if (!raw.startsWith("data: ")) continue;
+          const jsonStr = raw.slice(6).trim();
+          if (jsonStr === "[DONE]") continue;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+            if (content) assistantContent += content;
+          } catch {}
+        }
+      }
+
+      // Parse action from response
+      const action = parseAction(assistantContent);
+      const cleanContent = stripAction(assistantContent);
+
+      // Update final message with action
+      setMessages((prev) =>
+        prev.map((m) => m.id === assistantId ? { ...m, content: cleanContent, action } : m)
+      );
+
+      await persistMessage({ id: assistantId, role: "assistant", content: cleanContent, action });
+    } catch (e) {
+      console.error("Chat stream error:", e);
+      const errAssistant: Message = { id: assistantId, role: "assistant", content: "An error occurred while processing your request. Please try again." };
+      setMessages((prev) => {
+        const last = prev[prev.length - 1];
+        if (last?.id === assistantId) return prev.map((m, i) => i === prev.length - 1 ? errAssistant : m);
+        return [...prev, errAssistant];
+      });
+      await persistMessage(errAssistant);
     }
 
-    setMessages((prev) => [
-      ...prev,
-      { id: (Date.now() + 1).toString(), role: "assistant", content: resp.content, tools: resp.tools, action: resp.action },
-    ]);
     setLoading(false);
   };
 
-  const handleAction = (module: string) => {
-    onNavigate?.(module as any);
+  const handleQuickAction = (q: string) => {
+    setInput(q);
   };
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
       <div className="px-6 py-4 border-b border-border">
         <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
           <Bot className="w-5 h-5 text-primary" />
           TEMPEST AI Agent
         </h2>
-        <p className="text-xs text-muted-foreground mt-1">Claude-powered biomedical search & MOTF pipeline orchestration</p>
+        <p className="text-xs text-muted-foreground mt-1">Lovable AI-powered biomedical search & MOTF pipeline orchestration</p>
       </div>
 
-      {/* Quick actions */}
       <div className="px-6 py-3 border-b border-border flex gap-2 flex-wrap">
         {[
           "Search TCGA for HGSOC cohorts",
@@ -145,7 +261,7 @@ const ChatPanel = ({ onNavigate, onCohortLoaded }: ChatPanelProps) => {
         ].map((q) => (
           <button
             key={q}
-            onClick={() => setInput(q)}
+            onClick={() => handleQuickAction(q)}
             className="text-xs px-3 py-1.5 rounded-full border border-border text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors font-mono"
           >
             {q}
@@ -153,7 +269,6 @@ const ChatPanel = ({ onNavigate, onCohortLoaded }: ChatPanelProps) => {
         ))}
       </div>
 
-      {/* Messages */}
       <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
         <AnimatePresence>
           {messages.map((msg) => (
@@ -170,19 +285,12 @@ const ChatPanel = ({ onNavigate, onCohortLoaded }: ChatPanelProps) => {
                 </div>
               )}
               <div className={`max-w-[80%] ${msg.role === "user" ? "bg-primary/10 text-foreground" : "bg-card"} rounded-lg px-4 py-3 border border-border`}>
-                {msg.tools && msg.tools.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 mb-2">
-                    {msg.tools.map((t) => (
-                      <span key={t} className="text-[10px] font-mono px-2 py-0.5 rounded bg-primary/10 text-primary flex items-center gap-1">
-                        <Search className="w-2.5 h-2.5" /> {t}
-                      </span>
-                    ))}
-                  </div>
-                )}
-                <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                <div className="text-sm prose prose-sm max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-li:text-foreground prose-td:text-foreground prose-th:text-foreground">
+                  <ReactMarkdown>{msg.content}</ReactMarkdown>
+                </div>
                 {msg.action && (
                   <button
-                    onClick={() => handleAction(msg.action!.module)}
+                    onClick={() => onNavigate?.(msg.action!.module)}
                     className="mt-3 flex items-center gap-2 px-3 py-2 text-xs font-mono bg-primary/10 text-primary rounded-md hover:bg-primary/20 transition-colors border border-primary/20"
                   >
                     <Dna className="w-3.5 h-3.5" />
@@ -206,14 +314,13 @@ const ChatPanel = ({ onNavigate, onCohortLoaded }: ChatPanelProps) => {
             </div>
             <div className="bg-card rounded-lg px-4 py-3 border border-border flex items-center gap-2">
               <Loader2 className="w-4 h-4 text-primary animate-spin" />
-              <span className="text-xs text-muted-foreground font-mono">Querying databases & running pipeline...</span>
+              <span className="text-xs text-muted-foreground font-mono">Querying AI & running pipeline...</span>
             </div>
           </motion.div>
         )}
         <div ref={endRef} />
       </div>
 
-      {/* Input */}
       <div className="px-6 py-4 border-t border-border">
         <div className="flex items-center gap-3 bg-secondary/50 rounded-lg px-4 py-2 border border-border focus-within:border-primary/40 transition-colors">
           <Database className="w-4 h-4 text-muted-foreground flex-shrink-0" />
