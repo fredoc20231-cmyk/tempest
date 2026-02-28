@@ -3,19 +3,20 @@ import Sidebar, { type Module } from "@/components/tempest/Sidebar";
 import StatusBar from "@/components/tempest/StatusBar";
 import OverviewPanel from "@/components/tempest/OverviewPanel";
 import ModulePanel from "@/components/tempest/ModulePanel";
-import ChatPanel from "@/components/tempest/ChatPanel";
+import ChatPanel, { type CohortPayload } from "@/components/tempest/ChatPanel";
 
 const Index = () => {
   const [active, setActive] = useState<Module>("overview");
+  const [cohort, setCohort] = useState<CohortPayload | null>(null);
 
   const renderContent = () => {
     switch (active) {
       case "overview":
         return <OverviewPanel />;
       case "chat":
-        return <ChatPanel />;
+        return <ChatPanel onNavigate={(m) => setActive(m as Module)} onCohortLoaded={setCohort} />;
       default:
-        return <ModulePanel module={active} />;
+        return <ModulePanel module={active} cohort={cohort} />;
     }
   };
 
