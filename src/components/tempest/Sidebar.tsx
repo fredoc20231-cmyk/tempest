@@ -11,9 +11,10 @@ import {
   ChevronLeft,
   ChevronRight,
   Home,
+  FileText,
 } from "lucide-react";
 
-type Module = "home" | "overview" | "motf" | "gbsc" | "bctn" | "cnis" | "msrs" | "chat";
+type Module = "home" | "overview" | "motf" | "gbsc" | "bctn" | "cnis" | "msrs" | "chat" | "report";
 
 interface SidebarProps {
   active: Module;
@@ -29,6 +30,7 @@ const modules = [
   { id: "cnis" as Module, label: "CNIS", desc: "Neoantigen Intel", icon: Shield },
   { id: "msrs" as Module, label: "MSRS", desc: "Risk Scoring", icon: BarChart3 },
   { id: "chat" as Module, label: "AI Agent", desc: "NL Search", icon: MessageSquare },
+  { id: "report" as Module, label: "Analysis Report", desc: "Full Report", icon: FileText },
 ];
 
 const Sidebar = ({ active, onNavigate }: SidebarProps) => {
