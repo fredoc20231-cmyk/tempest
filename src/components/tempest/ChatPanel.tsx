@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Bot, User, Loader2, Database, Search, ArrowRight, Dna, Upload } from "lucide-react";
+import { Send, Bot, User, Loader2, Database, Search, ArrowRight, Dna, Upload, Paperclip, X, FileText } from "lucide-react";
 import CohortUploader from "./CohortUploader";
 import { supabase } from "@/integrations/supabase/client";
 import { useTempest } from "@/contexts/TempestContext";
@@ -54,17 +54,29 @@ function stripAction(text: string): string {
   return text.replace(/ACTION:\s*\{[^}]+\}/, "").trim();
 }
 
+const SUPPORTED_TEXT_EXTENSIONS = [".csv", ".tsv", ".txt", ".json", ".md", ".xml", ".yaml", ".yml", ".vcf", ".bed", ".gff", ".gtf", ".fasta", ".fa", ".fastq", ".fq", ".sam", ".maf"];
+const MAX_FILE_CHARS = 50000;
+
+interface AttachedFile {
+  name: string;
+  content: string;
+  size: number;
+  truncated: boolean;
+}
+
 const ChatPanel = ({ onNavigate, onCohortLoaded }: ChatPanelProps) => {
   const { saveCohort } = useTempest();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
       role: "assistant",
-      content: "Welcome to the TEMPEST AI Agent. I have access to the HGSOC GEM longitudinal dataset (8 timepoints, D0–D122) with RNA-seq, WES, spatial transcriptomics, and neoantigen data.\n\nAsk me to load cohorts into the MOTF pipeline, run survival staging, or explore the neoantigen landscape.",
+      content: "Welcome to the TEMPEST AI Agent. I have access to the HGSOC GEM longitudinal dataset (8 timepoints, D0–D122) with RNA-seq, WES, spatial transcriptomics, and neoantigen data.\n\nYou can **upload files** (CSV, TSV, TXT, VCF, MAF, FASTA, JSON, etc.) and I'll analyze them in the context of tumor evolution and cancer progression.\n\nAsk me to load cohorts into the MOTF pipeline, run survival staging, or explore the neoantigen landscape.",
     },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
 
   // Load persisted messages on mount
@@ -100,11 +112,58 @@ const ChatPanel = ({ onNavigate, onCohortLoaded }: ChatPanelProps) => {
     });
   };
 
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    const newFiles: AttachedFile[] = [];
+    for (const file of Array.from(files)) {
+      const ext = "." + file.name.split(".").pop()?.toLowerCase();
+      if (!SUPPORTED_TEXT_EXTENSIONS.includes(ext)) {
+        alert(`Unsupported file type: ${ext}. Supported: ${SUPPORTED_TEXT_EXTENSIONS.join(", ")}`);
+        continue;
+      }
+      try {
+        const text = await file.text();
+        const truncated = text.length > MAX_FILE_CHARS;
+        newFiles.push({
+          name: file.name,
+          content: truncated ? text.slice(0, MAX_FILE_CHARS) : text,
+          size: file.size,
+          truncated,
+        });
+      } catch {
+        alert(`Failed to read file: ${file.name}`);
+      }
+    }
+    setAttachedFiles((prev) => [...prev, ...newFiles]);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const removeFile = (name: string) => {
+    setAttachedFiles((prev) => prev.filter((f) => f.name !== name));
+  };
+
+  const buildMessageWithFiles = (text: string, files: AttachedFile[]): string => {
+    if (files.length === 0) return text;
+    let msg = text || "Analyze the uploaded file(s) in the context of cancer progression and tumor evolution.";
+    files.forEach((f) => {
+      msg += `\n\n---\n📎 **File: ${f.name}** (${(f.size / 1024).toFixed(1)} KB${f.truncated ? ", truncated to first 50K chars" : ""})\n\`\`\`\n${f.content}\n\`\`\``;
+    });
+    return msg;
+  };
+
   const handleSend = async () => {
-    if (!input.trim() || loading) return;
-    const userMsg: Message = { id: crypto.randomUUID(), role: "user", content: input };
+    if ((!input.trim() && attachedFiles.length === 0) || loading) return;
+    const fullContent = buildMessageWithFiles(input, attachedFiles);
+    const displayContent = attachedFiles.length > 0
+      ? `${input || "Analyze uploaded file(s)"}\n\n${attachedFiles.map((f) => `📎 ${f.name} (${(f.size / 1024).toFixed(1)} KB)`).join("\n")}`
+      : input;
+    const userMsg: Message = { id: crypto.randomUUID(), role: "user", content: displayContent };
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
+    const filesToSend = [...attachedFiles];
+    setAttachedFiles([]);
     setLoading(true);
 
     await persistMessage(userMsg);
@@ -129,7 +188,7 @@ const ChatPanel = ({ onNavigate, onCohortLoaded }: ChatPanelProps) => {
     const assistantId = crypto.randomUUID();
 
     try {
-      const chatHistory = [...messages.filter(m => m.id !== "welcome"), userMsg].map(m => ({
+      const chatHistory = [...messages.filter(m => m.id !== "welcome"), { role: "user" as const, content: fullContent }].map(m => ({
         role: m.role,
         content: m.content,
       }));
@@ -333,20 +392,49 @@ const ChatPanel = ({ onNavigate, onCohortLoaded }: ChatPanelProps) => {
         <div ref={endRef} />
       </div>
 
-      <div className="px-6 py-4 border-t border-border">
-        <div className="flex items-center gap-3 bg-secondary/50 rounded-lg px-4 py-2 border border-border focus-within:border-primary/40 transition-colors">
-          <Database className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+      <div className="px-6 py-4 border-t border-border space-y-2">
+        {/* Attached files preview */}
+        {attachedFiles.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {attachedFiles.map((f) => (
+              <div key={f.name} className="flex items-center gap-1.5 px-2 py-1 bg-primary/10 rounded-md border border-primary/20 text-xs font-mono text-primary">
+                <FileText className="w-3 h-3" />
+                <span className="max-w-[150px] truncate">{f.name}</span>
+                <span className="text-muted-foreground">({(f.size / 1024).toFixed(1)}K)</span>
+                <button onClick={() => removeFile(f.name)} className="hover:text-destructive transition-colors">
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+        <div className="flex items-center gap-2 bg-secondary/50 rounded-lg px-4 py-2 border border-border focus-within:border-primary/40 transition-colors">
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept=".csv,.tsv,.txt,.json,.md,.xml,.yaml,.yml,.vcf,.bed,.gff,.gtf,.fasta,.fa,.fastq,.fq,.sam,.maf"
+            onChange={handleFileSelect}
+            className="hidden"
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors flex-shrink-0"
+            title="Attach file (CSV, TSV, VCF, MAF, FASTA, etc.)"
+          >
+            <Paperclip className="w-4 h-4" />
+          </button>
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            placeholder="Load cohort into MOTF, search TCGA, run survival analysis..."
+            placeholder="Upload data or ask about cancer progression..."
             className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none font-mono"
           />
           <button
             onClick={handleSend}
-            disabled={!input.trim() || loading}
+            disabled={(!input.trim() && attachedFiles.length === 0) || loading}
             className="p-1.5 rounded-md bg-primary/10 text-primary hover:bg-primary/20 disabled:opacity-30 transition-colors"
           >
             <Send className="w-4 h-4" />
