@@ -5,6 +5,7 @@ import CohortUploader from "./CohortUploader";
 import { supabase } from "@/integrations/supabase/client";
 import { useTempest } from "@/contexts/TempestContext";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 interface Message {
@@ -349,6 +350,7 @@ const ChatPanel = ({ onNavigate, onCohortLoaded }: ChatPanelProps) => {
               <div className={`max-w-[85%] ${msg.role === "user" ? "bg-primary/10 text-foreground" : "bg-card"} rounded-lg px-4 py-3 border border-border`}>
                 <div className="text-sm prose prose-sm max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-li:text-foreground prose-td:text-foreground prose-th:text-foreground">
                   <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
                     components={{
                       table: ({ children }) => (
                         <div className="overflow-x-auto my-3 rounded-md border border-border">
