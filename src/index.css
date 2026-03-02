@@ -112,7 +112,7 @@
 
   /* Markdown table styles for chat and report panels */
   .prose table {
-    @apply w-full border-collapse text-sm font-mono;
+    @apply w-full border-collapse text-sm font-mono my-3;
   }
   .prose thead {
     @apply bg-secondary;
@@ -128,5 +128,22 @@
   }
   .prose tbody tr:hover {
     @apply bg-secondary/50;
+  }
+
+  /* Markdown section headers in chat */
+  .prose h2 {
+    @apply text-sm font-semibold text-foreground mt-4 mb-2 pb-1 border-b border-border;
+  }
+  .prose h3 {
+    @apply text-sm font-medium text-foreground mt-3 mb-1;
+  }
+  .prose hr {
+    @apply my-3 border-border;
+  }
+  .prose p {
+    @apply mb-2;
+  }
+  .prose ul, .prose ol {
+    @apply mb-2 pl-4;
   }
 }
