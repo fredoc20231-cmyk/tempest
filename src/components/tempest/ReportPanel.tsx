@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { useTempest } from "@/contexts/TempestContext";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Download, FileText, CheckCircle2, AlertTriangle, Clock, ArrowRight, Dna, Activity, FlaskConical, Shield, BarChart3, Lightbulb } from "lucide-react";
 import { downloadHtmlReport } from "./utils/downloadUtils";
 
@@ -129,25 +130,44 @@ const ReportPanel = () => {
       {/* Pipeline Log */}
       <div className="module-card">
         <h2 className="text-sm font-mono font-semibold text-foreground uppercase tracking-wide mb-4">Pipeline Execution Log</h2>
-        <div className="space-y-2">
-          {moduleOrder.map((mod, idx) => {
-            const run = pipelineRuns.find((r) => r.module === mod);
-            const meta = moduleMeta[mod];
-            return (
-              <div key={mod} className="flex items-center gap-3 py-2 border-b border-border last:border-0">
-                <span className="text-xs font-mono text-muted-foreground w-6">{idx + 1}.</span>
-                {statusIcon(mod)}
-                <meta.icon className="w-4 h-4 text-primary" />
-                <span className="text-sm font-mono text-foreground flex-1">{mod.toUpperCase()}</span>
-                <span className="text-xs text-muted-foreground font-mono">
-                  {run?.status === "complete" && run.completed_at
-                    ? new Date(run.completed_at).toLocaleTimeString()
-                    : run?.status || "not started"}
-                </span>
-              </div>
-            );
-          })}
-        </div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-12 font-mono text-[11px]">Step</TableHead>
+              <TableHead className="font-mono text-[11px]">Module</TableHead>
+              <TableHead className="font-mono text-[11px]">Status</TableHead>
+              <TableHead className="font-mono text-[11px]">Completed At</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {moduleOrder.map((mod, idx) => {
+              const run = pipelineRuns.find((r) => r.module === mod);
+              const meta = moduleMeta[mod];
+              return (
+                <TableRow key={mod}>
+                  <TableCell className="font-mono text-xs text-muted-foreground">{idx + 1}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <meta.icon className="w-4 h-4 text-primary" />
+                      <span className="text-sm font-mono text-foreground">{mod.toUpperCase()}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1.5">
+                      {statusIcon(mod)}
+                      <span className="text-xs font-mono">{run?.status || "not started"}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-xs font-mono text-muted-foreground">
+                    {run?.status === "complete" && run.completed_at
+                      ? new Date(run.completed_at).toLocaleTimeString()
+                      : "—"}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
       </div>
 
       {/* Module-by-Module Analysis */}
@@ -183,15 +203,24 @@ const ReportPanel = () => {
 
               {/* Metrics if available */}
               {metrics && Array.isArray(metrics) && metrics.length > 0 && (
-                <div className="grid grid-cols-3 gap-2">
-                  {metrics.map((m: any, i: number) => (
-                    <div key={i} className="bg-secondary/30 rounded-md p-2">
-                      <span className="text-[10px] text-muted-foreground font-mono">{m.metric}</span>
-                      <span className="block text-sm font-mono text-foreground">{m.value}</span>
-                      {m.trend && <span className="text-[10px] font-mono text-muted-foreground">{m.trend}</span>}
-                    </div>
-                  ))}
-                </div>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="font-mono text-[11px]">Metric</TableHead>
+                      <TableHead className="font-mono text-[11px]">Value</TableHead>
+                      <TableHead className="font-mono text-[11px]">Trend</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {metrics.map((m: any, i: number) => (
+                      <TableRow key={i}>
+                        <TableCell className="text-xs font-mono text-muted-foreground">{m.metric}</TableCell>
+                        <TableCell className="text-sm font-mono text-foreground">{m.value}</TableCell>
+                        <TableCell className="text-xs font-mono text-muted-foreground">{m.trend || "—"}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               )}
 
               {isFailed && (
