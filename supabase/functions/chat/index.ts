@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -80,6 +81,31 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
+    // Fetch training datasets to enrich the model context
+    let trainingContext = "";
+    try {
+      const supabase = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+      );
+      const { data: trainingData } = await supabase
+        .from("datasets")
+        .select("name, source, category, description, data, record_count")
+        .eq("is_training", true)
+        .order("created_at", { ascending: false })
+        .limit(5);
+
+      if (trainingData && trainingData.length > 0) {
+        const summaries = trainingData.map((ds: any) => {
+          const preview = JSON.stringify(ds.data?.slice?.(0, 5) || ds.data, null, 1);
+          return `### ${ds.name}\n- Source: ${ds.source} | Category: ${ds.category} | Records: ${ds.record_count}\n- Description: ${ds.description}\n- Data preview:\n${preview}`;
+        });
+        trainingContext = `\n\nENRICHMENT DATA (from public databases marked as training datasets — use this to ground your responses with real data):\n${summaries.join("\n\n")}`;
+      }
+    } catch (err) {
+      console.error("Failed to fetch training datasets:", err);
+    }
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -89,7 +115,7 @@ serve(async (req) => {
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
         messages: [
-          { role: "system", content: SYSTEM_PROMPT },
+          { role: "system", content: SYSTEM_PROMPT + trainingContext },
           ...messages,
         ],
         stream: true,

@@ -12,9 +12,10 @@ import {
   ChevronRight,
   Home,
   FileText,
+  Database,
 } from "lucide-react";
 
-type Module = "home" | "overview" | "motf" | "gbsc" | "bctn" | "cnis" | "msrs" | "chat" | "report";
+type Module = "home" | "overview" | "motf" | "gbsc" | "bctn" | "cnis" | "msrs" | "chat" | "report" | "datasources";
 
 interface SidebarProps {
   active: Module;
@@ -29,6 +30,7 @@ const modules = [
   { id: "bctn" as Module, label: "BCTN", desc: "Clonal Dynamics", icon: FlaskConical },
   { id: "cnis" as Module, label: "CNIS", desc: "Neoantigen Intel", icon: Shield },
   { id: "msrs" as Module, label: "MSRS", desc: "Risk Scoring", icon: BarChart3 },
+  { id: "datasources" as Module, label: "Data Sources", desc: "Public Databases", icon: Database },
   { id: "chat" as Module, label: "AI Agent", desc: "NL Search", icon: MessageSquare },
   { id: "report" as Module, label: "Analysis Report", desc: "Full Report", icon: FileText },
 ];
