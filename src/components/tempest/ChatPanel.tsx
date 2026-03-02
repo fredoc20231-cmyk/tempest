@@ -346,16 +346,20 @@ const ChatPanel = ({ onNavigate, onCohortLoaded }: ChatPanelProps) => {
                   <Bot className="w-4 h-4 text-primary" />
                 </div>
               )}
-              <div className={`max-w-[80%] ${msg.role === "user" ? "bg-primary/10 text-foreground" : "bg-card"} rounded-lg px-4 py-3 border border-border`}>
+              <div className={`max-w-[85%] ${msg.role === "user" ? "bg-primary/10 text-foreground" : "bg-card"} rounded-lg px-4 py-3 border border-border`}>
                 <div className="text-sm prose prose-sm max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-li:text-foreground prose-td:text-foreground prose-th:text-foreground">
                   <ReactMarkdown
                     components={{
-                      table: ({ children }) => <Table>{children}</Table>,
-                      thead: ({ children }) => <TableHeader>{children}</TableHeader>,
+                      table: ({ children }) => (
+                        <div className="overflow-x-auto my-3 rounded-md border border-border">
+                          <Table>{children}</Table>
+                        </div>
+                      ),
+                      thead: ({ children }) => <TableHeader className="bg-secondary">{children}</TableHeader>,
                       tbody: ({ children }) => <TableBody>{children}</TableBody>,
-                      tr: ({ children }) => <TableRow>{children}</TableRow>,
-                      th: ({ children }) => <TableHead className="font-mono text-[11px]">{children}</TableHead>,
-                      td: ({ children }) => <TableCell className="font-mono text-sm">{children}</TableCell>,
+                      tr: ({ children }) => <TableRow className="hover:bg-secondary/50">{children}</TableRow>,
+                      th: ({ children }) => <TableHead className="font-mono text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2">{children}</TableHead>,
+                      td: ({ children }) => <TableCell className="font-mono text-sm px-3 py-2 leading-relaxed">{children}</TableCell>,
                     }}
                   >{msg.content}</ReactMarkdown>
                 </div>

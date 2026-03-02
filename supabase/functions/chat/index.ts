@@ -54,8 +54,9 @@ STRUCTURE:
 
 TABLES (critical):
 - ALWAYS use markdown tables (| syntax) for ANY quantitative data: metrics, comparisons, parameters, gene lists, mutation calls, scores, counts, timings, etc.
+- ALWAYS use markdown tables for structured component descriptions, specifications, mechanisms, or multi-attribute comparisons.
 - NEVER embed numbers, percentages, p-values, or scores inside paragraph text. Put them in a table.
-- Use descriptive column headers like: Metric | Value | Interpretation, or Rank | Gene | Score | Clinical Relevance.
+- Use descriptive column headers like: Metric | Value | Interpretation, or Component | Specification | Rationale.
 - Keep tables compact: no empty columns, no redundant rows.
 - After each table, add one short paragraph of biological/clinical interpretation — never before the table.
 
