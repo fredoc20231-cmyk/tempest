@@ -28,6 +28,13 @@ ACTION:{"label":"Run Survival Analysis","module":"gbsc"}
 
 Only include one ACTION per response, and only when relevant.
 
+FORMATTING RULES — you MUST follow these:
+- When presenting metrics, comparisons, parameters, or quantitative results, ALWAYS use a markdown table with | syntax. Use columns like: Metric | Value | Interpretation (or similar).
+- Do NOT mix numeric results into running paragraph text. Separate the table from narrative interpretation.
+- After the table, include a short paragraph with the biological or clinical interpretation.
+- For lists of genes, neoantigens, or features, use a table with columns like: Rank | Gene/Feature | Score | Notes.
+- Keep narrative text concise and outside of tables.
+
 Keep responses focused, technical, and actionable. You are speaking to computational biology researchers.`;
 
 serve(async (req) => {

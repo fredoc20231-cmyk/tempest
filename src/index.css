@@ -109,4 +109,24 @@
     @apply bg-amber-500;
     box-shadow: 0 0 8px hsl(38 100% 45% / 0.3);
   }
+
+  /* Markdown table styles for chat and report panels */
+  .prose table {
+    @apply w-full border-collapse text-sm font-mono;
+  }
+  .prose thead {
+    @apply bg-secondary;
+  }
+  .prose th {
+    @apply text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border;
+  }
+  .prose td {
+    @apply px-3 py-2 border border-border text-foreground;
+  }
+  .prose tbody tr:nth-child(even) {
+    @apply bg-secondary/30;
+  }
+  .prose tbody tr:hover {
+    @apply bg-secondary/50;
+  }
 }

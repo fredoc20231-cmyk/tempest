@@ -5,6 +5,7 @@ import CohortUploader from "./CohortUploader";
 import { supabase } from "@/integrations/supabase/client";
 import { useTempest } from "@/contexts/TempestContext";
 import ReactMarkdown from "react-markdown";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 interface Message {
   id: string;
@@ -288,7 +289,16 @@ const ChatPanel = ({ onNavigate, onCohortLoaded }: ChatPanelProps) => {
               )}
               <div className={`max-w-[80%] ${msg.role === "user" ? "bg-primary/10 text-foreground" : "bg-card"} rounded-lg px-4 py-3 border border-border`}>
                 <div className="text-sm prose prose-sm max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-li:text-foreground prose-td:text-foreground prose-th:text-foreground">
-                  <ReactMarkdown>{msg.content}</ReactMarkdown>
+                  <ReactMarkdown
+                    components={{
+                      table: ({ children }) => <Table>{children}</Table>,
+                      thead: ({ children }) => <TableHeader>{children}</TableHeader>,
+                      tbody: ({ children }) => <TableBody>{children}</TableBody>,
+                      tr: ({ children }) => <TableRow>{children}</TableRow>,
+                      th: ({ children }) => <TableHead className="font-mono text-[11px]">{children}</TableHead>,
+                      td: ({ children }) => <TableCell className="font-mono text-sm">{children}</TableCell>,
+                    }}
+                  >{msg.content}</ReactMarkdown>
                 </div>
                 {msg.action && (
                   <button
