@@ -101,6 +101,51 @@ export type Database = {
         }
         Relationships: []
       }
+      datasets: {
+        Row: {
+          category: string
+          created_at: string
+          data: Json
+          description: string | null
+          id: string
+          is_training: boolean
+          metadata: Json
+          name: string
+          record_count: number
+          source: string
+          source_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          data?: Json
+          description?: string | null
+          id?: string
+          is_training?: boolean
+          metadata?: Json
+          name: string
+          record_count?: number
+          source: string
+          source_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          data?: Json
+          description?: string | null
+          id?: string
+          is_training?: boolean
+          metadata?: Json
+          name?: string
+          record_count?: number
+          source?: string
+          source_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       pipeline_runs: {
         Row: {
           completed_at: string | null
