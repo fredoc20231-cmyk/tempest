@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { GitBranch, Play, Loader2, Download, FileText, RefreshCw, RotateCcw, Info, Bot, X, ChevronDown, ChevronUp } from "lucide-react";
+import { GitBranch, Play, Loader2, Download, FileText, RefreshCw, RotateCcw, Info, Bot, X, ChevronDown, ChevronUp, Shield } from "lucide-react";
 import BifurcationChart from "./charts/BifurcationChart";
 import { downloadChartAsPng, downloadTableAsCsv, downloadHtmlReport } from "./utils/downloadUtils";
 import { useTempest } from "@/contexts/TempestContext";
@@ -316,6 +316,62 @@ const TrajectoryPanel = () => {
         </div>
       </div>
 
+      {/* NAD+ Immune Evasion Axis */}
+      <div className="module-card border-destructive/20">
+        <div className="flex items-center gap-2 mb-3">
+          <Shield className="w-4 h-4 text-destructive" />
+          <h3 className="text-xs font-mono text-muted-foreground uppercase tracking-wide">NAD⁺-Mediated T Cell Suppression in TME (Khaled et al.)</h3>
+        </div>
+        <p className="text-xs text-muted-foreground leading-relaxed mb-4">
+          Exogenous NAD⁺ in the tumor microenvironment suppresses CD8⁺ T cell proliferation by shutting down de novo purine and pyrimidine biosynthesis
+          via PRPS1 inhibition and 5-PRPP depletion — a novel immunosuppressive mechanism with direct implications for trajectory-dependent immunotherapy timing.
+        </p>
+        <div className="overflow-x-auto mb-4">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="font-mono text-[11px]">Mechanism Step</TableHead>
+                <TableHead className="font-mono text-[11px]">Detail</TableHead>
+                <TableHead className="font-mono text-[11px]">Evidence</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {[
+                { step: "1. NAD⁺ catabolism", detail: "NAD⁺ → ADP-ribose → AMP via ecto-enzymes", evidence: "Metabolomics: NAD⁺, ADP-ribose most consumed" },
+                { step: "2. Purine salvage activation", detail: "AMP feeds salvage pathway → negative feedback on de novo", evidence: "↑ xanthine, inosine, R5P in salvage pathway" },
+                { step: "3. PRPS1 inhibition", detail: "De novo purine shutdown → 5-PRPP depleted to undetectable", evidence: "5-PRPP undetectable in NAD⁺-treated cell pellets" },
+                { step: "4. Pyrimidine block", detail: "Orotate → UMP requires 5-PRPP; conversion halted", evidence: "Orotate accumulation; ¹⁵N-Gln tracing confirms shutdown" },
+                { step: "5. T cell arrest", detail: "Nucleotide starvation → S-phase arrest → apoptosis", evidence: "↓ proliferation, ↓ viability; CD8⁺ most affected" },
+                { step: "6. IFN paradox", detail: "Nucleotide imbalance → mtDNA release → cGAS-STING → IFN", evidence: "Hallmark GSEA: IFN-α/γ signaling UP" },
+              ].map((r) => (
+                <TableRow key={r.step}>
+                  <TableCell className="text-xs font-mono font-semibold text-foreground">{r.step}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground">{r.detail}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground">{r.evidence}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+        <div className="grid grid-cols-3 gap-3">
+          <div className="bg-destructive/5 rounded-md p-3 border border-destructive/10">
+            <span className="text-[10px] text-muted-foreground font-mono uppercase">Rescue Strategy</span>
+            <span className="block text-xs font-mono text-foreground mt-1">PRPS1 GOF Mutant</span>
+            <span className="block text-[10px] text-muted-foreground mt-1">Superactive PRPS1 overrides NAD⁺ suppression; full T cell rescue</span>
+          </div>
+          <div className="bg-destructive/5 rounded-md p-3 border border-destructive/10">
+            <span className="text-[10px] text-muted-foreground font-mono uppercase">Metabolic Bypass</span>
+            <span className="block text-xs font-mono text-foreground mt-1">Cytidine + Uridine</span>
+            <span className="block text-[10px] text-muted-foreground mt-1">Pyrimidine supplementation fully rescues; purines alone insufficient</span>
+          </div>
+          <div className="bg-destructive/5 rounded-md p-3 border border-destructive/10">
+            <span className="text-[10px] text-muted-foreground font-mono uppercase">TME Context</span>
+            <span className="block text-xs font-mono text-foreground mt-1">IDO1 → ↑ NAD⁺</span>
+            <span className="block text-[10px] text-muted-foreground mt-1">Epacadostat (IDO1i) increases TME NAD⁺; TILs have ↓ NAMPT</span>
+          </div>
+        </div>
+      </div>
+
       {/* Clinical Implications */}
       <div className="module-card border-chart-amber/20">
         <div className="flex items-center gap-2 mb-3">
@@ -331,17 +387,17 @@ const TrajectoryPanel = () => {
             </span>
           </div>
           <div className="bg-secondary/50 rounded-md p-3">
-            <span className="text-xs font-semibold text-foreground block mb-1">Combination Therapy Rationale</span>
+            <span className="text-xs font-semibold text-foreground block mb-1">NAD⁺-Aware Immunotherapy</span>
             <span className="text-xs text-muted-foreground leading-relaxed block">
-              In a multi-attractor system, pushing the tumor out of one basin may land it in another.
-              Simultaneous targeting of immune + angiogenic + proliferative programs is required for durable response.
+              Pre-bifurcation: T cells functional, neoantigen targeting viable. Post-bifurcation: TME NAD⁺ rises,
+              T cell arrest via PRPS1 inhibition. PRPS1-engineered CAR-T + pyrimidine support could overcome this.
             </span>
           </div>
           <div className="bg-secondary/50 rounded-md p-3">
             <span className="text-xs font-semibold text-foreground block mb-1">Temporal-Clonal Strategy</span>
             <span className="text-xs text-muted-foreground leading-relaxed block">
               Early-stage (adjuvant): truncal neoantigen vaccines (MEIS1) to eliminate residual disease.
-              Late-stage (recurrent): fusion neoantigens (Mfhas1::Tns3) to target dominant late clones.
+              Late-stage (recurrent): fusion neoantigens (Mfhas1::Tns3) + PRPS1-GOF T cells to overcome NAD⁺ suppression.
             </span>
           </div>
           <div className="bg-secondary/50 rounded-md p-3">

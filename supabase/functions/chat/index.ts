@@ -75,13 +75,53 @@ CLINICAL IMPLICATIONS:
 - Late (recurrent): fusion neoantigens (Mfhas1::Tns3) for dominant late clones
 - ECM remodeling during D52-88 is permissive; MMP inhibition may prevent progression
 
-TEMPEST FRAMEWORK (5 modules):
+NAD+ AND T CELL IMMUNOSUPPRESSION IN THE TME (Khaled et al., novel data):
+This provides a critical immunological axis for understanding why TILs fail in ovarian cancer progression.
+
+CORE MECHANISM — NAD+-Mediated T Cell Proliferation Arrest:
+- Exogenous NAD+ in the TME suppresses CD8+ T cell proliferation and viability
+- Adenosine (ADO) signaling via A2a/A2b purinergic receptors is only a PARTIAL mechanism — 2× ADO concentration needed to match NAD+ effect
+- The FULL mechanism: NAD+ catabolism → AMP feeds purine salvage pathway → negative feedback inhibits PRPS1 enzyme → 5-PRPP depleted → orotate cannot convert to UMP → de novo pyrimidine biosynthesis SHUT DOWN
+- De novo purine biosynthesis is also shut down via same PRPS1 inhibition
+- Result: proliferating T cells starved of nucleotides required for DNA replication
+
+KEY EXPERIMENTAL EVIDENCE:
+| Finding | Detail |
+| NAD+ shuts down de novo purine/pyrimidine synthesis | 15N-Gln tracing shows near-complete ablation of labeled nucleotides |
+| 5-PRPP is undetectable in NAD+-treated T cells | Cell pellet metabolomics; PRPS1 expression slightly increased (compensatory) |
+| Pyrimidine rescue fully restores T cells | Cytidine + uridine supplementation rescues proliferation and viability |
+| Purine rescue does NOT restore T cells | Adenosine + guanosine supplementation insufficient |
+| Gain-of-function PRPS1 mutant overrides NAD+ | Lentiviral transduction with superactive PRPS1 fully rescues CD8+ T cells |
+| Orotate accumulates in NAD+ condition | Consistent with block at UMPS (orotate → UMP requires 5-PRPP) |
+| Transcriptomic: OxPhos, glycolysis DOWN | Hallmark GSEA shows downregulation of mitochondrial function, Myc targets |
+| Transcriptomic: IFN signaling UP | Nucleotide imbalance → mtDNA release → cGAS-STING → interferon response |
+| PLK2 upregulated | Promotes survival during mitochondrial dysfunction |
+| CD160 downregulated | Dictates anti-PD-1 resistance via CD8+ T cell exhaustion |
+
+CLINICAL OVARIAN CANCER CONTEXT:
+- IDO1 inhibitor epacadostat increases NAD+ in ovarian TME (Odunsi et al., Sci Transl Med 2022)
+- TILs show downregulated NAMPT → reduced intracellular NAD+ production
+- Paradox: TME has HIGH extracellular NAD+ but TILs have LOW intracellular NAD+
+- NAMPT inhibitors (targeting tumor NAD+ production) showed modest clinical results + resistance
+- Cancer cells classified by NAD+ pathway: NAPRT-amplified (PH pathway) vs NAMPT-overexpressed (salvage pathway)
+
+THERAPEUTIC IMPLICATIONS FOR TRAJECTORY PREDICTION:
+- NAD+ accumulation in TME is a time-dependent process that accelerates with tumor progression
+- Pre-bifurcation (Phase I-II): low TME NAD+, T cells functional, neoantigen targeting viable
+- Bifurcation window (Phase III, D88-99): rising TME NAD+, T cell suppression begins, immune editing accelerates
+- Post-bifurcation (Phase IV): high TME NAD+, T cells arrested, immune evasion consolidated
+- PRPS1 engineering of adoptive T cells could overcome NAD+-mediated immunosuppression
+- Pyrimidine supplementation (cytidine/uridine) during adoptive T cell therapy could maintain TIL function
+- Blocking purinergic A2a/A2b receptors provides partial but insufficient rescue
+- Combination strategy: PRPS1-engineered CAR-T + pyrimidine support + neoantigen vaccine (MEIS1) timed to pre-bifurcation
+
+TEMPEST FRAMEWORK (6 modules):
 1. MOTF: Tensor T ∈ ℝ^(8×12,451×4), wNTD, 12 latent factors, 92.3% cross-modal variance
 2. GBSC: XGBoost 350 estimators, 94.7% LOTO accuracy, macro-F1 = 0.93
 3. BCTN: PyClone DPM, 10K MCMC, branched → consolidated clonal architecture
 4. CNIS: NetMHCpan 4.1b, multi-modal filtering, 6 recurrent neoantigens
 5. MSRS: Composite risk scoring with bootstrap CI (n=1,000)
-6. Trajectory Prediction: Dynamical systems bifurcation analysis with entropy and EWS
+6. Trajectory Prediction: Dynamical systems bifurcation analysis with entropy, EWS, and NAD+-immune coupling
 
 FILE ANALYSIS:
 When users upload files (CSV, TSV, VCF, MAF, FASTA, BED, JSON, etc.), you MUST:
