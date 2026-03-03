@@ -9,7 +9,7 @@ import { downloadChartAsPng, downloadTableAsCsv, downloadHtmlReport } from "./ut
 import { useTempest } from "@/contexts/TempestContext";
 import { mapSurvivalData, mapClonalData, mapRadarData } from "@/lib/chartDataMapper";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Dna, Activity, FlaskConical, Shield, BarChart3, FileText, Play, Download, CheckCircle2, Loader2, RotateCcw, RefreshCw } from "lucide-react";
+import { Dna, Activity, FlaskConical, Shield, BarChart3, FileText, Play, Download, CheckCircle2, Loader2, RotateCcw, RefreshCw, GitBranch } from "lucide-react";
 import { toast } from "sonner";
 
 const moduleInfo: Record<string, { title: string; subtitle: string; icon: any; description: string }> = {

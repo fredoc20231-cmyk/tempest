@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Dna, Activity, FlaskConical, Shield, BarChart3, ArrowRight, Zap, Brain, Globe, Lock } from "lucide-react";
+import { Dna, Activity, FlaskConical, Shield, BarChart3, ArrowRight, Zap, Brain, Globe, Lock, GitBranch } from "lucide-react";
 
 const container = {
   hidden: { opacity: 0 },
@@ -43,7 +43,7 @@ const modules = [
     id: "cnis",
     label: "CNIS",
     title: "Neoantigen Intelligence",
-    desc: "Predict immunogenic neoantigen candidates from somatic mutations, integrating HLA binding affinity, clonality, and expression filters.",
+    desc: "Predict immunogenic neoantigen candidates from somatic mutations, integrating HLA binding affinity, clonality, and expression filters. Cross-species validation with tiered prioritization.",
     icon: Shield,
     color: "text-chart-emerald",
     bg: "bg-chart-emerald/10",
@@ -52,10 +52,19 @@ const modules = [
     id: "msrs",
     label: "MSRS",
     title: "Multi-Scale Risk Scoring",
-    desc: "Aggregate molecular, clinical, and microenvironmental features into a composite risk score with interpretable feature attribution.",
+    desc: "Aggregate molecular, clinical, and microenvironmental features into a composite risk score with interpretable feature attribution and bootstrap confidence intervals.",
     icon: BarChart3,
     color: "text-chart-rose",
     bg: "bg-chart-rose/10",
+  },
+  {
+    id: "trajectory",
+    label: "Trajectory",
+    title: "Cancer Trajectory Prediction",
+    desc: "Predict future cancer evolution using dynamical systems theory. Models epigenetic landscape bifurcations, transcriptomic entropy, and early warning signals to identify branching transitions.",
+    icon: GitBranch,
+    color: "text-chart-magenta",
+    bg: "bg-chart-magenta/10",
   },
 ];
 
