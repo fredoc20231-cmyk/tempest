@@ -7,6 +7,7 @@ import ChatPanel, { type CohortPayload } from "@/components/tempest/ChatPanel";
 import HomePanel from "@/components/tempest/HomePanel";
 import ReportPanel from "@/components/tempest/ReportPanel";
 import DataSourcesPanel from "@/components/tempest/DataSourcesPanel";
+import TrajectoryPanel from "@/components/tempest/TrajectoryPanel";
 import { TempestProvider } from "@/contexts/TempestContext";
 
 const Index = () => {
@@ -25,6 +26,8 @@ const Index = () => {
         return <ReportPanel />;
       case "datasources":
         return <DataSourcesPanel />;
+      case "trajectory":
+        return <TrajectoryPanel />;
       default:
         return <ModulePanel module={active} cohort={cohort} />;
     }

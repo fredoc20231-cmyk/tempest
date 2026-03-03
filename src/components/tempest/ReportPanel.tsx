@@ -2,17 +2,18 @@ import { motion } from "framer-motion";
 import { useTempest } from "@/contexts/TempestContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Download, FileText, CheckCircle2, AlertTriangle, Clock, ArrowRight, Dna, Activity, FlaskConical, Shield, BarChart3, Lightbulb } from "lucide-react";
+import { Download, FileText, CheckCircle2, AlertTriangle, Clock, ArrowRight, Dna, Activity, FlaskConical, Shield, BarChart3, Lightbulb, GitBranch } from "lucide-react";
 import { downloadHtmlReport } from "./utils/downloadUtils";
 
-const moduleOrder = ["motf", "gbsc", "bctn", "cnis", "msrs"] as const;
+const moduleOrder = ["motf", "gbsc", "bctn", "cnis", "msrs", "trajectory"] as const;
 
 const moduleMeta: Record<string, { title: string; icon: any; purpose: string }> = {
   motf: { title: "MOTF — Multi-Omic Tensor Factorization", icon: Dna, purpose: "Decomposes multi-omic data into latent factors that capture cross-modal variance and correlate with disease stage." },
   gbsc: { title: "GBSC — Gradient-Boosted Stage Classifier", icon: Activity, purpose: "Classifies tumor stage from latent factors + curated features using ensemble gradient boosting with SHAP explainability." },
   bctn: { title: "BCTN — Bayesian Clonal Trajectory Networks", icon: FlaskConical, purpose: "Models subclonal architecture and tracks clonal consolidation over longitudinal timepoints." },
-  cnis: { title: "CNIS — Comprehensive Neoantigen Intelligence System", icon: Shield, purpose: "Identifies and ranks candidate neoantigens via multi-modal filtering and MHC binding prediction." },
+  cnis: { title: "CNIS — Comprehensive Neoantigen Intelligence System", icon: Shield, purpose: "Identifies and ranks candidate neoantigens via multi-modal filtering, MHC binding prediction, and cross-species validation tiers." },
   msrs: { title: "MSRS — Multi-Scale Risk Stratification", icon: BarChart3, purpose: "Integrates all upstream module outputs into a unified risk profile with bootstrap confidence intervals." },
+  trajectory: { title: "Trajectory Prediction — Dynamical Systems Framework", icon: GitBranch, purpose: "Models cancer evolution as stochastic gradient flow on an epigenetic landscape, predicting bifurcation points where tumors transition from single to multi-attractor systems." },
 };
 
 const defaultInterpretations: Record<string, string> = {
@@ -21,6 +22,7 @@ const defaultInterpretations: Record<string, string> = {
   bctn: "Clonal architecture analysis shows branched topology at D52 (5 clusters) consolidating to 1–2 dominant lineages by D122. This pattern is consistent with selective sweeps under immune or therapeutic pressure.",
   cnis: "Six recurrent neoantigens survived multi-modal filtering. Meis1-derived peptide shows persistent strong MHC-I binding (%Rank ↓WT) from D20→D122. Rbm26 neoantigen spans 4 stages (D21–D109), making it a prime vaccine candidate.",
   msrs: "Composite risk scoring integrates all upstream modules. Bootstrap confidence intervals (n=1,000) show narrowing uncertainty at later timepoints, consistent with clonal consolidation. Overall risk trajectory supports escalating intervention at the D52–D75 window.",
+  trajectory: "Dynamical systems analysis identifies a supercritical pitchfork bifurcation at the D88–99 window. Transcriptomic entropy S(t) peaks at Day 99, consistent with maximum heterogeneity at the branch point. Early warning signals (variance increase 2.4×, rising autocorrelation) are detected at D88, supporting approach to critical transition. Post-bifurcation, the system occupies two distinct attractors corresponding to immune-evasive and proliferative programs. The epigenetic barrier U(x) drops below the critical threshold during the transitional phase, enabling stochastic commitment to divergent fates.",
 };
 
 const nextSteps = [
