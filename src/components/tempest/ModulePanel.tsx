@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import type { Module } from "./Sidebar";
 import type { CohortPayload } from "./ChatPanel";
 import SurvivalCurveChart from "./charts/SurvivalCurveChart";
@@ -9,8 +9,11 @@ import { downloadChartAsPng, downloadTableAsCsv, downloadHtmlReport } from "./ut
 import { useTempest } from "@/contexts/TempestContext";
 import { mapSurvivalData, mapClonalData, mapRadarData } from "@/lib/chartDataMapper";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Dna, Activity, FlaskConical, Shield, BarChart3, FileText, Play, Download, CheckCircle2, Loader2, RotateCcw, RefreshCw, GitBranch } from "lucide-react";
+import { Dna, Activity, FlaskConical, Shield, BarChart3, FileText, Play, Download, CheckCircle2, Loader2, RotateCcw, RefreshCw, GitBranch, Bot, X, ChevronDown, ChevronUp } from "lucide-react";
 import { toast } from "sonner";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const moduleInfo: Record<string, { title: string; subtitle: string; icon: any; description: string }> = {
   motf: {
@@ -125,8 +128,9 @@ interface Props {
 
 const ModulePanel = ({ module, cohort }: Props) => {
   const info = moduleInfo[module];
-  const { analysisResults, pipelineRuns, refreshResults, resetPipeline, isLoading } = useTempest();
+  const { analysisResults, pipelineRuns, refreshResults, resetPipeline, isLoading, aiContext, setAIContext } = useTempest();
   const [running, setRunning] = useState(false);
+  const [contextExpanded, setContextExpanded] = useState(true);
 
   if (!info) return null;
 
@@ -268,6 +272,58 @@ const ModulePanel = ({ module, cohort }: Props) => {
           </div>
         </motion.div>
       )}
+
+      {/* AI Context Banner */}
+      <AnimatePresence>
+        {aiContext?.module === module && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="module-card border-primary/30 bg-primary/5"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <Bot className="w-4 h-4 text-primary" />
+                <h3 className="text-xs font-mono text-primary uppercase tracking-wide">AI Agent Analysis Context</h3>
+              </div>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setContextExpanded(!contextExpanded)}
+                  className="p-1 rounded text-muted-foreground hover:text-primary transition-colors"
+                >
+                  {contextExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                </button>
+                <button
+                  onClick={() => setAIContext(null)}
+                  className="p-1 rounded text-muted-foreground hover:text-destructive transition-colors"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+            {contextExpanded && (
+              <div className="text-sm prose prose-sm max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-li:text-foreground prose-td:text-foreground prose-th:text-foreground max-h-[300px] overflow-y-auto">
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    table: ({ children }) => (
+                      <div className="overflow-x-auto my-2 rounded-md border border-border">
+                        <Table>{children}</Table>
+                      </div>
+                    ),
+                    thead: ({ children }) => <thead className="bg-secondary">{children}</thead>,
+                    tbody: ({ children }) => <tbody>{children}</tbody>,
+                    tr: ({ children }) => <tr className="hover:bg-secondary/50 border-b border-border">{children}</tr>,
+                    th: ({ children }) => <th className="font-mono text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 text-left">{children}</th>,
+                    td: ({ children }) => <td className="font-mono text-sm px-3 py-2 leading-relaxed">{children}</td>,
+                  }}
+                >{aiContext.content}</ReactMarkdown>
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Description */}
       <div className="module-card">

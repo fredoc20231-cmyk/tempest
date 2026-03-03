@@ -66,7 +66,7 @@ interface AttachedFile {
 }
 
 const ChatPanel = ({ onNavigate, onCohortLoaded }: ChatPanelProps) => {
-  const { saveCohort } = useTempest();
+  const { saveCohort, setAIContext } = useTempest();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
@@ -367,7 +367,14 @@ const ChatPanel = ({ onNavigate, onCohortLoaded }: ChatPanelProps) => {
                 </div>
                 {msg.action && (
                   <button
-                    onClick={() => onNavigate?.(msg.action!.module)}
+                    onClick={() => {
+                      setAIContext({
+                        module: msg.action!.module,
+                        content: msg.content,
+                        timestamp: Date.now(),
+                      });
+                      onNavigate?.(msg.action!.module);
+                    }}
                     className="mt-3 flex items-center gap-2 px-3 py-2 text-xs font-mono bg-primary/10 text-primary rounded-md hover:bg-primary/20 transition-colors border border-primary/20"
                   >
                     <Dna className="w-3.5 h-3.5" />
