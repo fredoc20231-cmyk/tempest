@@ -29,12 +29,20 @@ interface Cohort {
   variance_explained: string | null;
 }
 
+interface AIContext {
+  module: string;
+  content: string;
+  timestamp: number;
+}
+
 interface TempestState {
   pipelineRuns: PipelineRun[];
   analysisResults: Record<string, AnalysisResult | null>;
   cohorts: Cohort[];
   activeCohort: Cohort | null;
   setActiveCohort: (cohort: Cohort | null) => void;
+  aiContext: AIContext | null;
+  setAIContext: (ctx: AIContext | null) => void;
   isLoading: boolean;
   refreshPipeline: () => Promise<void>;
   refreshResults: (module: string) => Promise<void>;
@@ -50,6 +58,7 @@ export function TempestProvider({ children }: { children: ReactNode }) {
   const [analysisResults, setAnalysisResults] = useState<Record<string, AnalysisResult | null>>({});
   const [cohorts, setCohorts] = useState<Cohort[]>([]);
   const [activeCohort, setActiveCohort] = useState<Cohort | null>(null);
+  const [aiContext, setAIContext] = useState<AIContext | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const refreshPipeline = useCallback(async () => {
@@ -117,7 +126,7 @@ export function TempestProvider({ children }: { children: ReactNode }) {
   }, [refreshPipeline]);
 
   return (
-    <TempestContext.Provider value={{ pipelineRuns, analysisResults, cohorts, activeCohort, setActiveCohort, isLoading, refreshPipeline, refreshResults, refreshCohorts, saveCohort, resetPipeline }}>
+    <TempestContext.Provider value={{ pipelineRuns, analysisResults, cohorts, activeCohort, setActiveCohort, aiContext, setAIContext, isLoading, refreshPipeline, refreshResults, refreshCohorts, saveCohort, resetPipeline }}>
       {children}
     </TempestContext.Provider>
   );
