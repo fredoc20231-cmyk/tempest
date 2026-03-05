@@ -8,6 +8,7 @@ import HomePanel from "@/components/tempest/HomePanel";
 import ReportPanel from "@/components/tempest/ReportPanel";
 import DataSourcesPanel from "@/components/tempest/DataSourcesPanel";
 import TrajectoryPanel from "@/components/tempest/TrajectoryPanel";
+import TTIPanel from "@/components/tempest/TTIPanel";
 import { TempestProvider } from "@/contexts/TempestContext";
 
 const Index = () => {
@@ -28,6 +29,8 @@ const Index = () => {
         return <DataSourcesPanel />;
       case "trajectory":
         return <TrajectoryPanel />;
+      case "tti":
+        return <TTIPanel />;
       default:
         return <ModulePanel module={active} cohort={cohort} />;
     }

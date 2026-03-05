@@ -14,9 +14,10 @@ import {
   FileText,
   Database,
   GitBranch,
+  Hexagon,
 } from "lucide-react";
 
-type Module = "home" | "overview" | "motf" | "gbsc" | "bctn" | "cnis" | "msrs" | "trajectory" | "chat" | "report" | "datasources";
+type Module = "home" | "overview" | "motf" | "gbsc" | "bctn" | "cnis" | "msrs" | "trajectory" | "tti" | "chat" | "report" | "datasources";
 
 interface SidebarProps {
   active: Module;
@@ -32,6 +33,7 @@ const modules = [
   { id: "cnis" as Module, label: "CNIS", desc: "Neoantigen Intel", icon: Shield },
   { id: "msrs" as Module, label: "MSRS", desc: "Risk Scoring", icon: BarChart3 },
   { id: "trajectory" as Module, label: "Trajectory", desc: "Bifurcation Prediction", icon: GitBranch },
+  { id: "tti" as Module, label: "TTI Platform", desc: "Topological Transition Index", icon: Hexagon },
   { id: "datasources" as Module, label: "Data Sources", desc: "Public Databases", icon: Database },
   { id: "chat" as Module, label: "AI Agent", desc: "NL Search", icon: MessageSquare },
   { id: "report" as Module, label: "Analysis Report", desc: "Full Report", icon: FileText },
