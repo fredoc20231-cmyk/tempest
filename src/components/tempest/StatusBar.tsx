@@ -29,7 +29,7 @@ const StatusBar = () => {
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-1.5 text-muted-foreground">
           <Cpu className="w-3.5 h-3.5" />
-          <span className="text-xs font-mono">{completedCount}/5 modules done</span>
+          <span className="text-xs font-mono">{completedCount}/{pipelineRuns.length || "—"} modules done</span>
         </div>
         <div className="flex items-center gap-1.5 text-muted-foreground">
           <Activity className="w-3.5 h-3.5" />
