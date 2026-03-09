@@ -9,6 +9,7 @@ import ReportPanel from "@/components/tempest/ReportPanel";
 import DataSourcesPanel from "@/components/tempest/DataSourcesPanel";
 import TrajectoryPanel from "@/components/tempest/TrajectoryPanel";
 import TTIPanel from "@/components/tempest/TTIPanel";
+import ArticlePanel from "@/components/tempest/ArticlePanel";
 import { TempestProvider } from "@/contexts/TempestContext";
 
 const Index = () => {
