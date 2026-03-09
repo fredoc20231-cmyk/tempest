@@ -36,9 +36,9 @@ const moduleInfo: Record<string, { title: string; subtitle: string; icon: any; d
   },
   cnis: {
     title: "CNIS — Comprehensive Neoantigen Intelligence System",
-    subtitle: "NetMHCpan 4.1b + Fusion Scanning",
+    subtitle: "NetMHCpan 4.1b + Arriba Fusion + COSMIC Validation",
     icon: Shield,
-    description: "Multi-modal filtering: WES∩RNA co-detection, >10 CPM expression, absence from D0 controls, VEP high-impact, dbSNP/MGI exclusion. NetMHCpan 4.1b predicts H-2-Db/Kb binding (%Rank < 0.5 = strong).",
+    description: "Database-validated neoantigen analysis: 4,499 candidates (11 mutation + 4,488 fusion) across D0–D122. GATK4 Mutect2 → SnpEff → NetMHCpan 4.1b (H-2-Db/Kb). Fusion detection via STAR-Fusion∩Arriba. Multi-modal filtering: WES∩RNA co-detection, >10 CPM expression, absence from D0 controls, VEP high-impact, dbSNP/MGI exclusion. COSMIC v98 cross-validation confirms MEIS1, ARID1A (46-70% OC), KAT6A, NSD3 as validated targets. Priority scoring: 3×(−log10(rank_el%)) + 1.5×log2(peak_expr) + log2(stages+1) + 1.5×DE.",
   },
   msrs: {
     title: "MSRS — Multi-Scale Risk Stratification",

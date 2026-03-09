@@ -271,19 +271,39 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
           </AccordionTrigger>
           <AccordionContent>
             <p className="text-sm text-foreground leading-relaxed mb-3">
-              The CNIS module predicts neoantigens from somatic mutations using NetMHCpan 4.1b binding affinity
-              predictions, then applies a multi-modal filtering pipeline integrating expression level,
-              clonal prevalence, and cross-species conservation:
+              The CNIS module implements a database-validated neoantigen discovery pipeline integrating whole-exome
+              sequencing (GATK4 Mutect2), RNA-seq differential expression (limma-voom with TMM normalisation), fusion
+              detection (STAR-Fusion ∩ Arriba), and MHC binding prediction (NetMHCpan 4.1b for H-2-Db/Kb). The
+              pipeline yielded <strong>4,499 neoantigen candidates</strong> (11 mutation-derived + 4,488 fusion-derived)
+              across the longitudinal D0–D122 series.
+            </p>
+            <p className="text-sm text-foreground leading-relaxed mb-3">
+              Multi-modal filtering applies: WES∩RNA co-detection, &gt;10 CPM expression, absence from D0 controls,
+              VEP high-impact annotation, and dbSNP/MGI exclusion. Candidates are ranked by a composite priority score:
+            </p>
+            <Equation label="Eq. CNIS">
+              Score = 3·(−log₁₀(%Rank)) + 1.5·log₂(peak_expr + 0.5) + log₂(stages + 1) + 1.5·DE_up
+            </Equation>
+            <p className="text-sm text-foreground leading-relaxed mb-3">
+              Cross-species validation proceeds through four tiers:
             </p>
             <div className="bg-secondary/30 border border-border rounded-md p-4 mb-3 text-sm font-mono">
-              <p className="text-foreground mb-1"><strong>Tier 1:</strong> GEM-specific — predicted binding &lt; 500 nM, gene expressed (TPM &gt; 1)</p>
-              <p className="text-foreground mb-1"><strong>Tier 2:</strong> Ortholog-mapped — human ortholog exists with conserved epitope region</p>
-              <p className="text-foreground mb-1"><strong>Tier 3:</strong> Cross-validated — binding confirmed in both mouse and human HLA contexts</p>
-              <p className="text-foreground"><strong>Tier 4:</strong> Clinically prioritised — Tier 3 + clonal (φ &gt; 0.3) + rising trajectory</p>
+              <p className="text-foreground mb-1"><strong>Tier 1:</strong> GEM-specific + COSMIC validated — binding &lt; 500 nM, expressed, gene confirmed in human cancer databases (e.g., MEIS1: 19% immunogenicity, CD8⁺ recruitment)</p>
+              <p className="text-foreground mb-1"><strong>Tier 2:</strong> Ortholog-mapped — human ortholog exists with functional relevance (e.g., SLFN8 → SLFN11 platinum sensitivity biomarker)</p>
+              <p className="text-foreground mb-1"><strong>Tier 3:</strong> Cross-validated — binding confirmed in both mouse MHC and human HLA contexts, gene has COSMIC-3D structural data</p>
+              <p className="text-foreground"><strong>Tier 4:</strong> Clinically prioritised — Tier 3 + clonal (φ &gt; 0.3) + rising trajectory + validated expression (FDR &lt; 0.05)</p>
             </div>
+            <p className="text-sm text-foreground leading-relaxed mb-3">
+              <strong>Key validated targets:</strong> MEIS1 F378X (Tier 1, trunk mutation D20→D122, 19% human immunogenicity,
+              CD8⁺ T-cell infiltration via CCL18/CCL4/CXCL7); ARID1A fusion partner (COSMIC: 46-70% clear cell OC);
+              KAT6A (overexpressed in OC, β-catenin regulation); NSD3 (25 COSMIC-3D structures, drug resistance).
+              The strongest MHC-I binder is the Mfhas1::Tns3 fusion junction peptide HAFPGDDPI (%Rank 0.133, strong binder),
+              representing a late-stage immunotherapy target for dominant post-bifurcation clones.
+            </p>
             <p className="text-sm text-foreground leading-relaxed mb-2">
-              Key markers such as MEIS1 and SLFN11 have been identified as Tier 4 neoantigens with cross-species
-              validation, representing candidates for personalised vaccine or adoptive cell therapy design.
+              RNA/WES integration confirms 993 predicted H-2-Db binders with expression validation: 823 upregulated
+              and 763 downregulated genes (Pre+Early vs Peak, FDR &lt; 0.05). PyClone clonality analysis identified
+              17 clonal clusters mapping neoantigen emergence to clonal dynamics across the longitudinal series.
             </p>
           </AccordionContent>
         </AccordionItem>
