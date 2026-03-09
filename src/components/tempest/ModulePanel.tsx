@@ -103,7 +103,12 @@ const moduleConfig: Record<string, { label: string; value: string }[]> = {
     { label: "Predictor", value: "NetMHCpan 4.1b" },
     { label: "Alleles", value: "H-2-Db, H-2-Kb" },
     { label: "Strong Binder", value: "%Rank < 0.5" },
-    { label: "Fusion", value: "STAR-Fusion∩Arriba" },
+    { label: "Weak Binder", value: "%Rank 0.5–2.0" },
+    { label: "Fusion", value: "STAR∩Arriba (374 events)" },
+    { label: "WES", value: "GATK4 Mutect2" },
+    { label: "Expression", value: "limma-voom, TMM norm" },
+    { label: "Clonality", value: "PyClone (17 clusters)" },
+    { label: "Validation", value: "COSMIC v98" },
   ],
   msrs: [
     { label: "Inputs", value: "MOTF+GBSC+BCTN+CNIS" },

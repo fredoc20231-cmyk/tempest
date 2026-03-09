@@ -26,12 +26,14 @@ const defaultInterpretations: Record<string, string> = {
 };
 
 const nextSteps = [
-  "Validate top neoantigen candidates (Meis1, Rbm26) with in-vitro binding assays and T-cell reactivity screens.",
-  "Expand cohort enrollment to confirm GBSC generalizability beyond the current 8-sample LOTO framework.",
-  "Run BCTN with additional timepoints (if available) to refine the D52–D75 intervention window.",
-  "Cross-reference CNIS neoantigen candidates against published immunopeptidome databases for clinical prioritization.",
-  "Generate patient-specific risk trajectories using MSRS to guide personalized treatment escalation or de-escalation.",
-  "Consider spatial transcriptomics re-analysis at the D52 branch point to characterize the tumor microenvironment during clonal selection.",
+  "Synthesize top neoantigen peptides (MEIS1 TFFFXXMVLF, Camk1d::Arid1a AVLRNHPVQWI, Mfhas1::Tns3 HAFPGDDPI) and wild-type controls for MHC binding validation (IC50 < 500 nM).",
+  "Run H-2-Db/Kb competitive binding assays with stability testing (>4 hours) for all 8 high-priority candidates.",
+  "Perform C57BL/6 splenocyte immunogenicity testing: ELISpot (IFN-γ, IL-2, TNF-α) targeting >100 SFC/10⁶ cells and CD8+ flow cytometry (>2-fold activation).",
+  "Search COSMIC/FusionGDB/TumorFusions for human equivalents of Camk1d::Arid1a and Nsd3::Kat6a fusions (60-80% success probability).",
+  "Validate ARID1A fusion neoantigen in ARID1A-mutant clear cell OC patient samples (46-70% frequency provides large validation cohort).",
+  "Generate patient-specific MSRS risk trajectories integrating validated CNIS neoantigen data to guide personalized vaccine timing relative to D88-99 bifurcation window.",
+  "Design combination protocol: PRPS1-engineered CAR-T + pyrimidine support (cytidine/uridine) + MEIS1 neoantigen vaccine timed to pre-bifurcation window.",
+  "Sequence 50+ HGSOC patient tumors (RNA-seq) for novel fusion discovery to expand human translation candidates (40-60% success probability).",
 ];
 
 const ReportPanel = () => {
