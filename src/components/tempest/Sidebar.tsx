@@ -15,9 +15,10 @@ import {
   Database,
   GitBranch,
   Hexagon,
+  BookOpen,
 } from "lucide-react";
 
-type Module = "home" | "overview" | "motf" | "gbsc" | "bctn" | "cnis" | "msrs" | "trajectory" | "tti" | "chat" | "report" | "datasources";
+type Module = "home" | "overview" | "motf" | "gbsc" | "bctn" | "cnis" | "msrs" | "trajectory" | "tti" | "chat" | "report" | "datasources" | "article";
 
 interface SidebarProps {
   active: Module;
