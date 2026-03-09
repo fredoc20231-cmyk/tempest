@@ -495,13 +495,92 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
         cisplatin resistance involves a conserved epigenetic phase transition rather than model-specific artefacts.
       </p>
 
-      <h3 className="text-sm font-semibold text-foreground mt-6 mb-2">5.3 Neoantigen Landscape</h3>
+      <h3 className="text-sm font-semibold text-foreground mt-6 mb-2">5.3 Database-Validated Neoantigen Landscape</h3>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        Comprehensive analysis identified <strong>4,499 neoantigen candidates</strong> (11 mutation-derived + 4,488
+        fusion-derived) across the D0–D122 longitudinal series. COSMIC v98 cross-validation confirmed 4 of 6
+        target genes as established cancer drivers. Eight candidates were validated for immediate experimental testing.
+      </p>
+
+      <h4 className="text-xs font-semibold text-foreground mt-4 mb-2 font-mono">Mutation-Derived Neoantigens</h4>
+      <div className="overflow-x-auto mb-3">
+        <table className="w-full border-collapse text-sm font-mono">
+          <thead className="bg-secondary">
+            <tr>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Gene</th>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Peptide</th>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">H-2-Db</th>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Temporal</th>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">COSMIC</th>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Priority</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[
+              { gene: "MEIS1 F378X", peptide: "TFFFXXMVLF", db: "23.07% WB", temp: "D20,D122 (trunk)", cosmic: "✅ 19% immunogenicity", pri: "1" },
+              { gene: "ZKSCAN7 K404N", peptide: "HTQENPYECC", db: "10.38% WB", temp: "D20,D122 (trunk)", cosmic: "❓ Limited", pri: "2" },
+              { gene: "Ubtd2", peptide: "GALTDCYDEL", db: "0.743% SB", temp: "D52", cosmic: "❓ Unknown", pri: "3" },
+              { gene: "SLFN8 I791N", peptide: "EDMVNYVADK", db: "60.63%", temp: "D52,D99", cosmic: "🔄 SLFN11 ortholog", pri: "Biomarker" },
+            ].map((d, i) => (
+              <tr key={d.gene} className={i % 2 === 0 ? "bg-secondary/30" : ""}>
+                <td className="px-3 py-2 border border-border text-foreground font-semibold">{d.gene}</td>
+                <td className="px-3 py-2 border border-border text-accent"><code>{d.peptide}</code></td>
+                <td className="px-3 py-2 border border-border">{d.db}</td>
+                <td className="px-3 py-2 border border-border text-muted-foreground">{d.temp}</td>
+                <td className="px-3 py-2 border border-border">{d.cosmic}</td>
+                <td className="px-3 py-2 border border-border font-bold">{d.pri}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <h4 className="text-xs font-semibold text-foreground mt-4 mb-2 font-mono">Top Validated Fusion Neoantigens</h4>
+      <div className="overflow-x-auto mb-3">
+        <table className="w-full border-collapse text-sm font-mono">
+          <thead className="bg-secondary">
+            <tr>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Fusion</th>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Junction</th>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">H-2-Db</th>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Stage</th>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">COSMIC</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[
+              { fusion: "Camk1d::Arid1a", junc: "AVLRNHPVQWI", db: "0.519% WB", stage: "D52", cosmic: "✅ ARID1A: 46-70% OC" },
+              { fusion: "Fxr1::Zfp704", junc: "AFYKNSKMV", db: "1.329% WB", stage: "D99", cosmic: "🔄 Individual genes" },
+              { fusion: "Nsd3::Kat6a", junc: "SGSADTPVL", db: "1.230% WB", stage: "D99", cosmic: "✅ Both validated" },
+              { fusion: "Mfhas1::Tns3", junc: "HAFPGDDPI", db: "0.133% SB", stage: "D109-122", cosmic: "❓ Novel (strongest binder)" },
+              { fusion: "Gbp10::Gbp4", junc: "KGVKASEVF", db: "1.674% WB", stage: "D52", cosmic: "🔄 IFN response" },
+            ].map((d, i) => (
+              <tr key={d.fusion} className={i % 2 === 0 ? "bg-secondary/30" : ""}>
+                <td className="px-3 py-2 border border-border text-foreground font-semibold">{d.fusion}</td>
+                <td className="px-3 py-2 border border-border text-accent"><code>{d.junc}</code></td>
+                <td className="px-3 py-2 border border-border">{d.db}</td>
+                <td className="px-3 py-2 border border-border text-muted-foreground">{d.stage}</td>
+                <td className="px-3 py-2 border border-border">{d.cosmic}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        Fusion neoantigen diversity peaks at D88 (104 events, 52 high-confidence) coinciding with the bifurcation
+        window, then consolidates to 32 events (6 high-confidence) by D122 — consistent with BCTN clonal sweep
+        dynamics. RNA/WES integration validates 993 H-2-Db binders with expression confirmation: ARID1A shows
+        the strongest differential expression (↑3.4-fold, FDR &lt; 0.001), supporting its role as a fusion-driven
+        neoantigen target in tumors bearing ARID1A alterations (46-70% of clear cell ovarian carcinomas per COSMIC).
+      </p>
       <p className="text-sm text-foreground leading-relaxed mb-4">
-        The CNIS module identified 847 candidate neoantigens across all timepoints, of which 23 passed Tier 3
-        cross-species validation and 8 achieved Tier 4 clinical prioritisation (clonal φ &gt; 0.3 with rising
-        trajectory). MEIS1 and SLFN11 emerged as the highest-priority targets, with both showing strong binding
-        across multiple HLA alleles and increasing clonal prevalence from D88 onward — coinciding with the
-        bifurcation window identified by the Trajectory module.
+        MEIS1 emerges as the highest-priority candidate for clinical translation: it carries a validated trunk
+        mutation (persistent from D20 through D122), demonstrated 19% immunogenicity in human studies, and drives
+        CD8⁺ T-cell infiltration through CCL18/CCL4/CXCL7 chemokine expression (Karapetsas et al., <em>Mol
+        Carcinog</em>, 2018). The Mfhas1::Tns3 fusion junction peptide (HAFPGDDPI) achieves the strongest MHC-I
+        binding in the entire dataset (%Rank 0.133, strong binder) and represents a late-stage immunotherapy
+        target for dominant clones post-bifurcation.
       </p>
 
       {/* ── 6. Clinical Implications ── */}
