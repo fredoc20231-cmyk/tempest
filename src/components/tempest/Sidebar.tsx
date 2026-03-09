@@ -15,9 +15,10 @@ import {
   Database,
   GitBranch,
   Hexagon,
+  BookOpen,
 } from "lucide-react";
 
-type Module = "home" | "overview" | "motf" | "gbsc" | "bctn" | "cnis" | "msrs" | "trajectory" | "tti" | "chat" | "report" | "datasources";
+type Module = "home" | "overview" | "motf" | "gbsc" | "bctn" | "cnis" | "msrs" | "trajectory" | "tti" | "chat" | "report" | "datasources" | "article";
 
 interface SidebarProps {
   active: Module;
@@ -37,6 +38,7 @@ const modules = [
   { id: "datasources" as Module, label: "Data Sources", desc: "Public Databases", icon: Database },
   { id: "chat" as Module, label: "AI Agent", desc: "NL Search", icon: MessageSquare },
   { id: "report" as Module, label: "Analysis Report", desc: "Full Report", icon: FileText },
+  { id: "article" as Module, label: "Article", desc: "Scientific Paper", icon: BookOpen },
 ];
 
 const Sidebar = ({ active, onNavigate }: SidebarProps) => {
