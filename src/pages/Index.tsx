@@ -32,6 +32,8 @@ const Index = () => {
         return <TrajectoryPanel />;
       case "tti":
         return <TTIPanel />;
+      case "article":
+        return <ArticlePanel onNavigate={(m) => setActive(m as Module)} />;
       default:
         return <ModulePanel module={active} cohort={cohort} />;
     }
