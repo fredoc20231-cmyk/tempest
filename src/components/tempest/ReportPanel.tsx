@@ -20,18 +20,20 @@ const defaultInterpretations: Record<string, string> = {
   motf: "Tensor factorization resolved 12 latent factors explaining 92.3% of cross-modal variance. LF1 shows strong stage correlation (r = 0.94, p < 10⁻⁶), suggesting a dominant axis of disease progression captured across RNA-seq, WES, and spatial modalities.",
   gbsc: "Stage classification achieved 94.7% accuracy (macro-F1 = 0.93) under leave-one-timepoint-out cross-validation. SHAP analysis highlights LF1 and immune-related features as top contributors, confirming biological relevance of the latent space.",
   bctn: "Clonal architecture analysis shows branched topology at D52 (5 clusters) consolidating to 1–2 dominant lineages by D122. This pattern is consistent with selective sweeps under immune or therapeutic pressure.",
-  cnis: "Six recurrent neoantigens survived multi-modal filtering. Meis1-derived peptide shows persistent strong MHC-I binding (%Rank ↓WT) from D20→D122. Rbm26 neoantigen spans 4 stages (D21–D109), making it a prime vaccine candidate.",
+  cnis: "Database-validated analysis of 4,499 neoantigen candidates (11 mutation-derived + 4,488 fusion-derived) across D0–D122. COSMIC cross-validation confirms 4/6 target genes. MEIS1 F378X (Tier 1, 23.07% WB) shows persistent trunk expression with 19% human immunogenicity and CD8+ T-cell recruitment via CCL18/CCL4/CXCL7. Top fusion targets: Camk1d::Arid1a (0.519% WB, ARID1A mutated in 46-70% of clear cell OC), Mfhas1::Tns3 (0.133% SB, strongest binder), Nsd3::Kat6a (both COSMIC-validated histone modifiers). Fusion landscape peaks at D88 (104 events, 52 high-confidence) then consolidates, consistent with BCTN clonal sweep dynamics. RNA/WES integration validates 993 H-2-Db binders with expression confirmation (ARID1A ↑3.4-fold FDR<0.001).",
   msrs: "Composite risk scoring integrates all upstream modules. Bootstrap confidence intervals (n=1,000) show narrowing uncertainty at later timepoints, consistent with clonal consolidation. Overall risk trajectory supports escalating intervention at the D52–D75 window.",
   trajectory: "Dynamical systems analysis identifies a supercritical pitchfork bifurcation at the D88–99 window. Transcriptomic entropy S(t) peaks at Day 99, consistent with maximum heterogeneity at the branch point. Early warning signals (variance increase 2.4×, rising autocorrelation) are detected at D88, supporting approach to critical transition. Post-bifurcation, the system occupies two distinct attractors corresponding to immune-evasive and proliferative programs. The epigenetic barrier U(x) drops below the critical threshold during the transitional phase, enabling stochastic commitment to divergent fates.",
 };
 
 const nextSteps = [
-  "Validate top neoantigen candidates (Meis1, Rbm26) with in-vitro binding assays and T-cell reactivity screens.",
-  "Expand cohort enrollment to confirm GBSC generalizability beyond the current 8-sample LOTO framework.",
-  "Run BCTN with additional timepoints (if available) to refine the D52–D75 intervention window.",
-  "Cross-reference CNIS neoantigen candidates against published immunopeptidome databases for clinical prioritization.",
-  "Generate patient-specific risk trajectories using MSRS to guide personalized treatment escalation or de-escalation.",
-  "Consider spatial transcriptomics re-analysis at the D52 branch point to characterize the tumor microenvironment during clonal selection.",
+  "Synthesize top neoantigen peptides (MEIS1 TFFFXXMVLF, Camk1d::Arid1a AVLRNHPVQWI, Mfhas1::Tns3 HAFPGDDPI) and wild-type controls for MHC binding validation (IC50 < 500 nM).",
+  "Run H-2-Db/Kb competitive binding assays with stability testing (>4 hours) for all 8 high-priority candidates.",
+  "Perform C57BL/6 splenocyte immunogenicity testing: ELISpot (IFN-γ, IL-2, TNF-α) targeting >100 SFC/10⁶ cells and CD8+ flow cytometry (>2-fold activation).",
+  "Search COSMIC/FusionGDB/TumorFusions for human equivalents of Camk1d::Arid1a and Nsd3::Kat6a fusions (60-80% success probability).",
+  "Validate ARID1A fusion neoantigen in ARID1A-mutant clear cell OC patient samples (46-70% frequency provides large validation cohort).",
+  "Generate patient-specific MSRS risk trajectories integrating validated CNIS neoantigen data to guide personalized vaccine timing relative to D88-99 bifurcation window.",
+  "Design combination protocol: PRPS1-engineered CAR-T + pyrimidine support (cytidine/uridine) + MEIS1 neoantigen vaccine timed to pre-bifurcation window.",
+  "Sequence 50+ HGSOC patient tumors (RNA-seq) for novel fusion discovery to expand human translation candidates (40-60% success probability).",
 ];
 
 const ReportPanel = () => {
