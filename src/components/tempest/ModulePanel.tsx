@@ -63,8 +63,16 @@ const defaultResults: Record<string, { metric: string; value: string; trend: str
     { metric: "D122 Lineages", value: "1–2", trend: "consolidated" },
   ],
   cnis: [
-    { metric: "Meis1 (D20→D122)", value: "%Rank ↓WT", trend: "persistent" },
-    { metric: "Rbm26 (4 stages)", value: "longest-lived", trend: "D21–D109" },
+    { metric: "Total Candidates", value: "4,499", trend: "11 mutation + 4,488 fusion" },
+    { metric: "High-Priority Targets", value: "8", trend: "validated for testing" },
+    { metric: "MEIS1 F378X (Tier 1)", value: "23.07% WB", trend: "D20→D122 trunk, 19% immunogenicity" },
+    { metric: "Camk1d::Arid1a", value: "0.519% WB", trend: "ARID1A: 46-70% OC (COSMIC)" },
+    { metric: "Fxr1::Zfp704", value: "1.329% WB", trend: "dual MHC binding (Db+Kb)" },
+    { metric: "Nsd3::Kat6a", value: "1.230% WB", trend: "histone modifier fusion (COSMIC)" },
+    { metric: "Mfhas1::Tns3", value: "0.133% SB", trend: "strongest binder, late (D109-122)" },
+    { metric: "Fusion Events", value: "374", trend: "164 high-confidence, peak D88" },
+    { metric: "RNA/WES Integration", value: "993 binders", trend: "823 up / 763 down DEGs" },
+    { metric: "COSMIC Validated Genes", value: "4/6", trend: "MEIS1, ARID1A, KAT6A, NSD3" },
   ],
   msrs: [
     { metric: "Stage Classification", value: "94.7%", trend: "GBSC" },
