@@ -431,44 +431,56 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
       {/* ── 5. Results ── */}
       <SectionHeading id="results" number="5" title="Results" />
 
-      <h3 className="text-sm font-semibold text-foreground mt-6 mb-2">5.1 GEM Model Longitudinal Analysis</h3>
+      <h3 className="text-sm font-semibold text-foreground mt-6 mb-2">5.1 GEM Model Longitudinal Staging Framework</h3>
       <p className="text-sm text-foreground leading-relaxed mb-3">
-        The platform was applied to a genetically engineered mouse (GEM) model of HGSOC treated with cisplatin,
-        sampled at eight timepoints: D0, D7, D14, D21, D88, D99, D109, D122. Multi-omic profiling included
-        bulk RNA-seq, ATAC-seq, and whole-exome sequencing at each timepoint.
+        The platform was applied to a genetically engineered mouse (GEM) model of HGSOC (C57BL/6, conditional
+        Trp53/Rb1 deletion + LSL-KrasG12D in Pax8-expressing FT secretory epithelium), sampled at nine timepoints
+        post-tamoxifen induction. D0 represents the <strong>control/baseline</strong> (normal fallopian tube epithelium,
+        pre-oncogenic activation) and serves as the reference for all differential expression, mutation, and
+        trajectory analyses. The following staging framework was derived from integrated multi-omic profiling:
       </p>
       <div className="overflow-x-auto mb-4">
         <table className="w-full border-collapse text-sm font-mono">
           <thead className="bg-secondary">
             <tr>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Day</th>
               <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Phase</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Timepoints</th>
               <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Biological State</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Key Observations</th>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Key Molecular Events</th>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Neoantigen Landscape</th>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Clinical Analog</th>
             </tr>
           </thead>
           <tbody>
-            <tr className="bg-secondary/30">
-              <td className="px-3 py-2 border border-border">I — Baseline</td>
-              <td className="px-3 py-2 border border-border">D0–D21</td>
-              <td className="px-3 py-2 border border-border">Treatment-sensitive</td>
-              <td className="px-3 py-2 border border-border">Stable regulatory state, low clonal diversity, H(t) stable</td>
-            </tr>
-            <tr>
-              <td className="px-3 py-2 border border-border">II — Transition</td>
-              <td className="px-3 py-2 border border-border">D88–D99</td>
-              <td className="px-3 py-2 border border-border">Critical window</td>
-              <td className="px-3 py-2 border border-border">EWS detected, variance ↑, autocorrelation ↑, H(t) spike</td>
-            </tr>
-            <tr className="bg-secondary/30">
-              <td className="px-3 py-2 border border-border">III — Resistant</td>
-              <td className="px-3 py-2 border border-border">D109–D122</td>
-              <td className="px-3 py-2 border border-border">Committed resistance</td>
-              <td className="px-3 py-2 border border-border">New attractor, NAMPT ↑, clonal sweep, TTI &gt; 7.0</td>
-            </tr>
+            {[
+              { day: "D0", phase: "0 — Baseline", state: "Normal FT epithelium", events: "Pre-tamoxifen. No oncogenic activation. Reference for all comparisons.", neo: "None — reference", clinical: "Healthy tissue" },
+              { day: "D20", phase: "I — Initiation", state: "STIC precursor", events: "Steroidogenic reprogramming (Hsd3b1, Cyp11a1). 588↑/668↓ DEGs. First trunk mutations: Meis1 F378X, Zkscan7 K404N.", neo: "11 fusions (1 HC). Trunk mutations emerge.", clinical: "STIC/p53 signature" },
+              { day: "D21", phase: "I — Initiation", state: "STIC precursor", events: "Tight PCA clustering with D20. Rbm26 S990FX first detected (persists to D109).", neo: "Low diversity.", clinical: "Early STIC" },
+              { day: "D52", phase: "II — Expansion", state: "Active proliferation", events: "3,164 variants. M:S=2.18. 4-6 subclones. Chromatin remodeling. ECM (Col1a1, Pdpn).", neo: "57 fusions (16 HC). Ubtd2, Camk1d::Arid1a emerge.", clinical: "Stage I-II OC" },
+              { day: "D88", phase: "III — Bifurcation", state: "Critical window OPENS", events: "3,772 variants (PEAK). M:S=2.65. EWS: variance ↑2.4×. S(t) rising.", neo: "104 fusions (52 HC) — PEAK. Nsd3::Kat6a.", clinical: "Chemo-naïve advanced" },
+              { day: "D99", phase: "III — Bifurcation", state: "Critical window CLOSES", events: "S(t) PEAKS. Glycam1+Marco (M2 polarisation). 62↑/61↓ stage markers.", neo: "96→28 fusions. Fxr1::Zfp704, Stxbp3.", clinical: "Platinum-sensitive relapse" },
+              { day: "D109", phase: "IV — Consolidation", state: "Post-bifurcation", events: "1-2 dominant clones. NAD+ → T cell PRPS1 inhibition → immune arrest.", neo: "27 fusions (10 HC). Mfhas1::Tns3 appears.", clinical: "Platinum-resistant" },
+              { day: "D122", phase: "IV — Consolidation", state: "Terminal/resistant", events: "M:S=1.16 (sweep complete). Insulin/IGF + PI3K-AKT + MKI67. Trp53::Sat2.", neo: "32 fusions (6 HC). Persistent targets only.", clinical: "Refractory disease" },
+            ].map((d, i) => (
+              <tr key={d.day} className={i % 2 === 0 ? "bg-secondary/30" : ""}>
+                <td className="px-3 py-2 border border-border text-accent font-bold">{d.day}</td>
+                <td className="px-3 py-2 border border-border text-foreground font-semibold text-xs">{d.phase}</td>
+                <td className="px-3 py-2 border border-border text-foreground">{d.state}</td>
+                <td className="px-3 py-2 border border-border text-muted-foreground text-xs">{d.events}</td>
+                <td className="px-3 py-2 border border-border text-muted-foreground text-xs">{d.neo}</td>
+                <td className="px-3 py-2 border border-border text-xs italic">{d.clinical}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        This framework establishes that cancer progression in this model is not continuous but proceeds through
+        discrete phase transitions. The D88–D99 bifurcation window represents a critical state where the regulatory
+        landscape becomes bistable — interventions before this window (Phase I–II) target a plastic, reversible state,
+        while post-bifurcation (Phase IV) requires fundamentally different therapeutic strategies due to immune
+        evasion consolidation via the NAD⁺/PRPS1 axis.
+      </p>
 
       <h3 className="text-sm font-semibold text-foreground mt-6 mb-2">5.2 TTI Cross-Model Validation</h3>
       <p className="text-sm text-foreground leading-relaxed mb-3">
