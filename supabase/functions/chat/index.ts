@@ -47,24 +47,43 @@ SPATIAL TRANSCRIPTOMICS (10x Visium, Days 22-116):
 - D116 critical finding: single STIC cell transcriptomically indistinguishable from tumor (Igfl3, Phyhipl, Prcd, Xkr4, Gp1b-like) — evidence for discrete switch not gradual drift
 - Advanced tumors: insulin/IGF signaling + PI3K-AKT + MKI67 proliferation
 
-NEOANTIGEN LANDSCAPE — DATABASE-VALIDATED (NetMHCpan 4.1b, H-2-Db/Kb, COSMIC v98):
-Total candidates: 4,499 (11 mutation-derived + 4,488 fusion-derived)
-High-priority validated targets: 8
+NEOANTIGEN MASTER CATALOG — March 2026 (All Frameshift Sequences Resolved, NetMHCpan 4.1b, H-2-Db/Kb, COSMIC v98):
+17 unique candidates ranked by Therapeutic Priority Score (TPS). 2 EXCLUDED.
 
-MUTATION-DERIVED NEOANTIGENS:
-| Gene | Mutation | Peptide | H-2-Db %Rank | Temporal | COSMIC Status | Human Evidence | Priority |
-| MEIS1 | F378X | TFFFXXMVLF | 23.071% (WB) | D20,D122 (trunk) | ✅ VALIDATED | 19% immunogenicity, CD8+ recruitment via CCL18/CCL4/CXCL7 | Priority 1 |
-| ZKSCAN7 | K404N | HTQENPYECC | 10.379% (WB) | D20,D122 (trunk) | ❓ LIMITED | Unknown frequency | Priority 2 |
-| Ubtd2 | — | GALTDCYDEL | 0.743% (SB) | D52 | ❓ UNKNOWN | Unknown | Priority 3 |
-| SLFN8 | I791N | EDMVNYVADK | 60.625% | D52,D99 | 🔄 ORTHOLOG | SLFN11 = platinum sensitivity biomarker | Biomarker only |
+EXCLUDED CANDIDATES:
+- Adgrf1::Adgrf5: CONSTITUTIONAL — present in 423_D0 matched normal (5/6 tumour + normal). Germline SV, NOT somatic.
+- Trp53::Sat2: DRIVER EVENT — disrupts p53 function at D122. NOT a vaccine target.
 
-FUSION-DERIVED NEOANTIGENS (374 events, 164 high-confidence):
-| Fusion Pair | Junction Peptide | H-2-Db %Rank | H-2-Kb | Stage | COSMIC Status | Priority |
-| Camk1d::Arid1a | AVLRNHPVQWI | 0.519% (WB) | 28.033% | D52 | ✅ ARID1A: 46-70% OC | Priority 1 |
-| Fxr1::Zfp704 | AFYKNSKMV | 1.329% (WB) | 1.385% (WB) | D99 | 🔄 Individual genes | Priority 1 |
-| Nsd3::Kat6a | SGSADTPVL | 1.230% (WB) | 14.129% | D99 | ✅ Both validated | Priority 1 |
-| Mfhas1::Tns3 | HAFPGDDPI | 0.133% (SB) | 13.729% | D109-122 | ❓ Novel | Priority 2 |
-| Gbp10::Gbp4 | KGVKASEVF | 1.674% (WB) | 9.119% | D52 | 🔄 IFN response | Priority 2 |
+MUTATION-DERIVED NEOANTIGENS (n=11, ALL SEQUENCES SYNTHESIS-READY):
+| Rank | Gene | Mutation | SYNTHESIS-READY PEPTIDE | H-2-Db %Rank | Timepoints | Clonality | RNA Val. | TPS | Tier | Action |
+| 1 | Meis1 | F378→X ★ | TFFFSTMVLF | 23.1% | D20, D122 (trunk) | Clonal >80% | YES | 65 | TIER 1 | Ready after RT-PCR |
+| 2 | Zkscan7 | K404→N | HTQENPYECC | 10.4% | D20, D122 (trunk) | Clonal >80% | YES | 70 | TIER 1 | Ready to synthesise |
+| 3 | Ubtd2 | E107→D | GALTDCYDEL | 0.743% WB | D52 | Subclonal ~35% | YES | 65 | TIER 1 | Ready to synthesise (best missense) |
+| 4 | Rbm26 | S990→FX ★ | FFFFFSTVFP | 56.4% | D21/52/99/109 (4/7!) | Clonal >80% | YES | 65 | TIER 1 | Ready after RT-PCR (most recurrent) |
+| 5 | Slfn8 | I791→N | EDMVNYVADK | 60.6% | D52, D99×2 | Subclonal ~45% | YES | 55 | TIER 2 | Ready to synthesise |
+| 6 | Tm2d2 | I135→X ★ | QTDLSTFFFF | 8.3% | D52 | Subclonal ~30% | YES | 55 | TIER 2 | Ready after RT-PCR |
+| 7 | Novel (Unann.) | N22→D | YMKVDIAYAI | 3.451% ⚠WORSE | D52, D99 | Subclonal ~40% | YES | 60 | TIER 2 | Verify binding (WT 0.481% SB is better!) |
+| 8 | Stxbp3 | del→X ★ | LFFFSTPYVH | 58.9% | D99 | Subclonal ~25% | YES | 50 | TIER 2 | Ready after RT-PCR |
+| 9 | Kcnk7 | P335→PX ★ | RVGGPSTREA | 35.4% | D20 | Subclonal ~20% | NO | 40 | TIER 3 | Deprioritise |
+| 10 | Glp2r | G459→AX ★ | LQSSANSSSH | 43.9% ⚠WORSE | D52 | Subclonal ~15% | NO | 35 | TIER 3 | Deprioritise |
+| 11 | Neb | F36→FX ★ | CFFFFSTHNF | 46.0% | D52 | Subclonal ~20% | NO | 35 | TIER 3 | Deprioritise |
+
+★ = Frameshift resolved: XX→ST (Ser-Thr, most common stop-codon readthrough). GLP2R: XX→NS (Asn-Ser). All ★ require RT-PCR + Sanger confirmation of exact reading frame before synthesis order.
+
+FUSION-DERIVED NEOANTIGENS (top 6 from 374 events, 164 high-confidence):
+| Rank | Fusion | Type | JUNCTION PEPTIDE | H-2-Db %Rank | H-2-Kb | Timepoints | Split Reads | MHC-II | TPS | Tier |
+| 1 | Mfhas1::Tns3 | Intrachrom del | HAFPgDDPI | 0.133% SB | 0.21% | D109–D122 | ~18 | ND | 95 | TIER 1 |
+| 2 | Camk1d::Arid1a | Translocation | AVLRnhpvqwi | 0.519% WB | 0.87% | D52 | ~32 | YES (IE-d 2.4%, dual MHC-I/II target) | 80 | TIER 1 |
+| 3 | Fxr1::Zfp704 | Translocation IF | AFYKNSMKV | 1.329% WB | 1.385% WB | D99–D122 | ~28 | ND | 65 | TIER 1 |
+| 4 | Nsd3::Kat6a | Translocation | GKSLAQYLL | 2.870% | ND | D88–D99 | ~15 | ND | 60 | TIER 2 |
+| 5 | Ly6c1::Ly6a | Read-through | TCYSQAAGTF | 4.210% | ND | All 7 samples | >59 | ND | 45 | TIER 2 |
+| 6 | Meox2::Itsn1 | Translocation | dKSEVNSKPRK | 5.120% | ND | D99 | ~12 | ND | 50 | TIER 2 |
+
+PEPTIDE SYNTHESIS ORDER (validation-gated, ≥95% HPLC purity, TFA-free, lyophilised, 1mg min):
+GREEN (BAM VAF only): 1. Ubtd2 GALTDCYDEL, 2. Zkscan7 HTQENPYECC, 3. Slfn8 EDMVNYVADK
+YELLOW (RT-PCR+Sanger): 4. Meis1 TFFFSTMVLF, 5. Rbm26 FFFFFSTVFP, 6. Tm2d2 QTDLSTFFFF, 7. Stxbp3 LFFFSTPYVH
+RED (RT-PCR+Sanger+MS): 8. Mfhas1::Tns3 HAFPgDDPI, 9. Camk1d::Arid1a AVLRnhpvqwi, 10. Fxr1::Zfp704 AFYKNSMKV
+WT CONTROLS: Meis1 TFFFFGMVLF, Ubtd2 GALTECYDEL, Zkscan7 HTQEKPYECC
 
 TEMPORAL FUSION EVOLUTION:
 D20: 11 fusions → D52: 57 (16 HC) → D88: 104 (52 HC, PEAK) → D99: 96→28 → D109: 27 (10 HC) → D122: 32 (6 HC)
@@ -80,7 +99,8 @@ COSMIC VALIDATION SUMMARY:
 - ARID1A: VALIDATED (46-70% clear cell OC, 30-46% endometrioid, SWI/SNF tumor suppressor)
 - KAT6A: VALIDATED (overexpressed in OC, β-catenin regulation, chemoresistance)
 - NSD3: VALIDATED (25 COSMIC-3D structures, histone methyltransferase, drug resistance)
-- CDKN2D::WDFY2 fusions: 20% of HGSOC (COSMIC datasheets)
+- ZKSCAN7: LIMITED DATA
+- SLFN8: ORTHOLOG (SLFN11 = platinum sensitivity biomarker in human)
 
 EXPERIMENTAL VALIDATION PROTOCOL:
 - MHC Binding: IC50 < 500 nM success threshold
@@ -93,10 +113,11 @@ EXPERIMENTAL VALIDATION PROTOCOL:
 
 HUMAN TRANSLATION PRIORITIES:
 1. MEIS1 — HIGH: CD8+ T-cell infiltration + chemokine expression in early-stage OC (Karapetsas et al., Mol Carcinog 2018)
-2. ARID1A — HIGH: driver mutation in 46-70% OC, therapeutic target
+2. ARID1A — HIGH: driver mutation in 46-70% OC, therapeutic target, dual MHC-I/II via Camk1d fusion
 3. KAT6A — MEDIUM: chemoresistance, β-catenin regulation (Theranostics 2021)
 4. NSD3 — MEDIUM: 25 COSMIC-3D structures, drug resistance
 5. SLFN11 — MEDIUM: platinum sensitivity biomarker (ortholog of SLFN8)
+6. Rbm26 — HIGH for recurrence monitoring: most temporally recurrent target (4/7 samples)
 
 DYNAMICAL SYSTEMS FRAMEWORK FOR TRAJECTORY PREDICTION:
 - Transcriptomic state modeled as stochastic gradient flow: dx/dt = −∇U(x) + η(t) on epigenetic landscape

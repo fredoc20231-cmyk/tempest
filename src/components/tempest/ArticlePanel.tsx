@@ -572,52 +572,113 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
         </table>
       </div>
 
-      <h4 className="text-xs font-semibold text-foreground mt-4 mb-2 font-mono">Top Validated Fusion Neoantigens</h4>
+      <h4 className="text-xs font-semibold text-foreground mt-4 mb-2 font-mono">Table 2 — Fusion-Derived Neoantigens (Junction Sequences from Arriba 2.5.1 Breakpoint Analysis)</h4>
+      <p className="text-sm text-muted-foreground mb-2">
+        All junction peptides computationally derived. Mandatory pre-synthesis: RT-PCR → Sanger → H-2-Db IP + LC-MS/MS.
+        Adgrf1::Adgrf5 = CONSTITUTIONAL EXCLUDE (present in 423_D0 matched normal). Trp53::Sat2 = DRIVER EXCLUDE.
+      </p>
       <div className="overflow-x-auto mb-3">
         <table className="w-full border-collapse text-sm font-mono">
           <thead className="bg-secondary">
             <tr>
               <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Fusion</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Junction</th>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Type</th>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Junction Peptide</th>
               <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">H-2-Db</th>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">H-2-Kb</th>
               <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Stage</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">COSMIC</th>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Split Reads</th>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">TPS</th>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Tier</th>
             </tr>
           </thead>
           <tbody>
             {[
-              { fusion: "Camk1d::Arid1a", junc: "AVLRNHPVQWI", db: "0.519% WB", stage: "D52", cosmic: "✅ ARID1A: 46-70% OC" },
-              { fusion: "Fxr1::Zfp704", junc: "AFYKNSKMV", db: "1.329% WB", stage: "D99", cosmic: "🔄 Individual genes" },
-              { fusion: "Nsd3::Kat6a", junc: "SGSADTPVL", db: "1.230% WB", stage: "D99", cosmic: "✅ Both validated" },
-              { fusion: "Mfhas1::Tns3", junc: "HAFPGDDPI", db: "0.133% SB", stage: "D109-122", cosmic: "❓ Novel (strongest binder)" },
-              { fusion: "Gbp10::Gbp4", junc: "KGVKASEVF", db: "1.674% WB", stage: "D52", cosmic: "🔄 IFN response" },
+              { fusion: "Mfhas1::Tns3", type: "Intrachrom del", junc: "HAFPgDDPI", db: "0.133% SB", kb: "0.21%", stage: "D109–D122", reads: "~18", tps: "95", tier: "TIER 1" },
+              { fusion: "Camk1d::Arid1a", type: "Translocation", junc: "AVLRnhpvqwi", db: "0.519% WB", kb: "0.87%", stage: "D52", reads: "~32", tps: "80", tier: "TIER 1" },
+              { fusion: "Fxr1::Zfp704", type: "Translocation (IF)", junc: "AFYKNSMKV", db: "1.329% WB", kb: "1.385% WB", stage: "D99–D122", reads: "~28", tps: "65", tier: "TIER 1" },
+              { fusion: "Nsd3::Kat6a", type: "Translocation", junc: "GKSLAQYLL", db: "2.870%", kb: "ND", stage: "D88–D99", reads: "~15", tps: "60", tier: "TIER 2" },
+              { fusion: "Ly6c1::Ly6a", type: "Read-through", junc: "TCYSQAAGTF", db: "4.210%", kb: "ND", stage: "D52–D122", reads: ">59", tps: "45", tier: "TIER 2" },
+              { fusion: "Meox2::Itsn1", type: "Translocation", junc: "dKSEVNSKPRK", db: "5.120%", kb: "ND", stage: "D99", reads: "~12", tps: "50", tier: "TIER 2" },
             ].map((d, i) => (
               <tr key={d.fusion} className={i % 2 === 0 ? "bg-secondary/30" : ""}>
                 <td className="px-3 py-2 border border-border text-foreground font-semibold">{d.fusion}</td>
+                <td className="px-3 py-2 border border-border text-xs text-muted-foreground">{d.type}</td>
                 <td className="px-3 py-2 border border-border text-accent"><code>{d.junc}</code></td>
                 <td className="px-3 py-2 border border-border">{d.db}</td>
+                <td className="px-3 py-2 border border-border">{d.kb}</td>
                 <td className="px-3 py-2 border border-border text-muted-foreground">{d.stage}</td>
-                <td className="px-3 py-2 border border-border">{d.cosmic}</td>
+                <td className="px-3 py-2 border border-border text-xs">{d.reads}</td>
+                <td className="px-3 py-2 border border-border font-bold">{d.tps}</td>
+                <td className="px-3 py-2 border border-border"><span className={`text-xs px-1.5 py-0.5 rounded ${d.tier === "TIER 1" ? "bg-chart-emerald/10 text-chart-emerald" : "bg-chart-amber/10 text-chart-amber"}`}>{d.tier}</span></td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
+      <h4 className="text-xs font-semibold text-foreground mt-4 mb-2 font-mono">Table 3 — Peptide Synthesis Order Tracker (Validation-Gated)</h4>
+      <div className="overflow-x-auto mb-3">
+        <table className="w-full border-collapse text-sm font-mono">
+          <thead className="bg-secondary">
+            <tr>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">#</th>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Gene</th>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Peptide</th>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Source</th>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">%Rank</th>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Pre-Synthesis Gate</th>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[
+              { n: "1", gene: "Ubtd2", pep: "GALTDCYDEL", src: "Missense", rank: "0.743 WB", gate: "BAM VAF ≥0.05 only", status: "PENDING" },
+              { n: "2", gene: "Zkscan7", pep: "HTQENPYECC", src: "Missense", rank: "10.4%", gate: "BAM VAF ≥0.05 only", status: "PENDING" },
+              { n: "3", gene: "Slfn8", pep: "EDMVNYVADK", src: "Missense", rank: "60.6%", gate: "BAM VAF ≥0.05 (×3)", status: "PENDING" },
+              { n: "4", gene: "Meis1 ★", pep: "TFFFSTMVLF", src: "Frameshift", rank: "23.1%", gate: "RT-PCR + Sanger frame", status: "NOT STARTED" },
+              { n: "5", gene: "Rbm26 ★", pep: "FFFFFSTVFP", src: "Frameshift", rank: "56.4%", gate: "RT-PCR + Sanger ST frame", status: "NOT STARTED" },
+              { n: "6", gene: "Mfhas1::Tns3", pep: "HAFPgDDPI", src: "Fusion", rank: "0.133 SB", gate: "RT-PCR → Sanger → H-2-Db MS", status: "NOT STARTED" },
+              { n: "7", gene: "Camk1d::Arid1a", pep: "AVLRnhpvqwi", src: "Fusion", rank: "0.519 WB", gate: "RT-PCR → Sanger → MS (MHC-I/II)", status: "NOT STARTED" },
+              { n: "8", gene: "Fxr1::Zfp704", pep: "AFYKNSMKV", src: "Fusion (IF)", rank: "1.329 WB", gate: "RT-PCR → Sanger → H-2-Kb MS", status: "NOT STARTED" },
+            ].map((d, i) => (
+              <tr key={d.gene} className={i % 2 === 0 ? "bg-secondary/30" : ""}>
+                <td className="px-3 py-2 border border-border font-bold">{d.n}</td>
+                <td className="px-3 py-2 border border-border text-foreground font-semibold">{d.gene}</td>
+                <td className="px-3 py-2 border border-border text-accent"><code>{d.pep}</code></td>
+                <td className="px-3 py-2 border border-border text-xs text-muted-foreground">{d.src}</td>
+                <td className="px-3 py-2 border border-border">{d.rank}</td>
+                <td className="px-3 py-2 border border-border text-xs text-muted-foreground">{d.gate}</td>
+                <td className="px-3 py-2 border border-border"><span className={`text-xs px-1.5 py-0.5 rounded ${d.status === "PENDING" ? "bg-chart-amber/10 text-chart-amber" : "bg-destructive/10 text-destructive"}`}>{d.status}</span></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="text-sm text-muted-foreground mb-3 italic">
+        Gate colour key: GREEN = BAM confirmation only (fastest path). YELLOW = RT-PCR + Sanger required. RED = full RT-PCR + MS validation.
+        All peptides: ≥95% HPLC purity, TFA-free, lyophilised, 1 mg minimum.
+      </p>
+
       <p className="text-sm text-foreground leading-relaxed mb-3">
         Fusion neoantigen diversity peaks at D88 (104 events, 52 high-confidence) coinciding with the bifurcation
         window, then consolidates to 32 events (6 high-confidence) by D122 — consistent with BCTN clonal sweep
-        dynamics. RNA/WES integration validates 993 H-2-Db binders with expression confirmation: ARID1A shows
-        the strongest differential expression (↑3.4-fold, FDR &lt; 0.001), supporting its role as a fusion-driven
-        neoantigen target in tumors bearing ARID1A alterations (46-70% of clear cell ovarian carcinomas per COSMIC).
+        dynamics. The master catalog identifies <strong>17 unique neoantigen candidates</strong> ranked by Therapeutic
+        Priority Score (TPS): 7 Tier 1 (TPS 65–95), 7 Tier 2 (TPS 45–60), and 3 Tier 3 (TPS 35–40, deprioritised).
+      </p>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        <strong>Critical exclusions:</strong> Adgrf1::Adgrf5 (present in 423_D0 matched normal — constitutional/germline
+        structural variant, not somatic) and Trp53::Sat2 (p53 disruption — driver event, not a vaccine target). The
+        Novel (Unannotated) N22→D mutation (YMKVDIAYAI) is flagged as the mutant peptide binds <em>worse</em> than
+        wildtype (3.451% vs 0.481% SB), requiring verification of differential presentation before proceeding.
       </p>
       <p className="text-sm text-foreground leading-relaxed mb-4">
-        MEIS1 emerges as the highest-priority candidate for clinical translation: it carries a validated trunk
-        mutation (persistent from D20 through D122), demonstrated 19% immunogenicity in human studies, and drives
-        CD8⁺ T-cell infiltration through CCL18/CCL4/CXCL7 chemokine expression (Karapetsas et al., <em>Mol
-        Carcinog</em>, 2018). The Mfhas1::Tns3 fusion junction peptide (HAFPGDDPI) achieves the strongest MHC-I
-        binding in the entire dataset (%Rank 0.133, strong binder) and represents a late-stage immunotherapy
-        target for dominant clones post-bifurcation.
+        Mfhas1::Tns3 (HAFPgDDPI) achieves the strongest MHC-I binding in the entire dataset (%Rank 0.133, strong
+        binder, TPS 95/100) and represents the top fusion candidate for late-stage immunotherapy. Rbm26 S990→FX
+        (FFFFFSTVFP) is the most temporally recurrent mutation-derived neoantigen, detected across 4 of 7 samples
+        (D21/D52/D99/D109), suggesting it as a clonal trunk target. The dual MHC-I/II binding capacity of
+        Camk1d::Arid1a (H-2-Db WB + IE-d 2.4% MHC-II) makes it the sole candidate suitable for combined CD4+/CD8+
+        vaccine design, leveraging the ARID1A driver status (46–70% clear cell OC per COSMIC).
       </p>
 
       {/* ── 6. Clinical Implications ── */}
