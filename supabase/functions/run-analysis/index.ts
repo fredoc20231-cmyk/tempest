@@ -6,10 +6,32 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const TEMPORAL_FRAMEWORK = `TEMPORAL STAGING FRAMEWORK — GEM HGSOC Model (C57BL/6, Trp53/Rb1/KrasG12D):
+D = Day post-tamoxifen induction. D0 is CONTROL/BASELINE (pre-induction, normal fallopian tube epithelium).
+| Day | Stage | Phase | Biological State | Key Events | Clinical Analog |
+| D0 | Control | 0 — Baseline | Normal FT epithelium | Pre-tamoxifen. No oncogenic activation. Reference for all comparisons. | Healthy tissue |
+| D20 | Early | I — Initiation | STIC precursor | Steroidogenic reprogramming (Hsd3b1, Cyp11a1). 588↑/668↓ DEGs. First trunk mutations (Meis1, Zkscan7) appear. | STIC/p53 signature |
+| D21 | Early | I — Initiation | STIC precursor | Tight PCA clustering with D20. Rbm26 frameshift first detected. Low clonal diversity. | Early STIC |
+| D52 | Intermediate | II — Expansion | Active proliferation | 3,164 somatic variants. Missense:silent=2.18 (positive selection). 4-6 subclonal clusters. Chromatin remodeling + cell cycle activation. Ubtd2, Camk1d::Arid1a fusion emerge. Neoantigen diversity begins expanding. | Stage I-II OC |
+| D88 | Transitional | III — Bifurcation | Critical window OPENS | 3,772 variants (PEAK). Missense:silent=2.65 (PEAK diversification). 104 fusions (52 HC) — PEAK fusion diversity. EWS detected: variance ↑2.4×. Nsd3::Kat6a fusion. Shannon entropy S(t) begins rising. | Chemo-naïve advanced |
+| D92 | Transitional | III — Bifurcation | Bifurcation in progress | Missense:silent declining to 1.27. Clonal sweep initiating. D116 spatial: single STIC cell transcriptomically = tumor (Igfl3, Phyhipl, Prcd). | Treatment window |
+| D99 | Transitional | III — Bifurcation | Critical window CLOSES | S(t) PEAKS. Autocorrelation rising. Glycam1+Marco = M2-like macrophage polarization. Fxr1::Zfp704 fusion. Immune microenvironment remodeling. Stxbp3 frameshift. 62↑/61↓ stage markers. | Platinum-sensitive relapse |
+| D109 | Advanced | IV — Consolidation | Post-bifurcation | Clonal sweep: 1-2 dominant lineages. Mfhas1::Tns3 fusion appears (strongest binder). NAD+ TME accumulation → T cell arrest via PRPS1 inhibition. | Platinum-resistant |
+| D122 | Advanced | IV — Consolidation | Terminal/resistant | Missense:silent=1.16 (selective sweep complete). Proliferative consolidation: insulin/IGF + PI3K-AKT + MKI67. Trp53::Sat2 driver fusion. Only 6 HC fusions remain = persistent targets. | Refractory disease |
+
+CRITICAL ANALYSIS RULES:
+- D0 is ALWAYS the reference/control — never classify D0 as "diseased"
+- Neoantigen emergence is TIME-DEPENDENT: trunk mutations (D20→D122) vs branch-specific (D52-only or D99-only)
+- The D88-D99 bifurcation window is the key therapeutic intervention point
+- Post-D99 clonal sweep means different biology — single-biomarker panels fail
+- Fusion diversity PEAKS at D88 then contracts — sample timing determines neoantigen yield
+- Report progression phase (I-IV) alongside Day number in all analyses
+`;
+
 const MODULE_PROMPTS: Record<string, string> = {
-  motf: "Generate realistic MOTF (Multi-Omic Tensor Factorization) analysis results for an HGSOC GEM longitudinal cohort. The tensor T ∈ ℝ^(8 × 12,451 × 4) decomposes via weighted Non-negative Tucker Decomposition. Include tensor decomposition metrics, latent factor annotations (LF1 correlates with stage at r=0.94, p<10⁻⁶), cross-modal variance (92.3%), and pathway correlations (PROGENy). Return as JSON with keys: metrics (array of {metric, value, trend}), narrative (string summary).",
-  gbsc: "Generate realistic GBSC (Gradient-Boosted Stage Classifier) results for HGSOC GEM model. XGBoost with 350 estimators, depth 5, η=0.04, L2 γ=1.2. LOTO cross-validation across 8 timepoints. Include: accuracy 94.7%, macro-F1 0.93, AUC-ROC per stage, SHAP feature importances showing LF1 and immune features as top contributors, Brier calibration scores. Reference the four disease states: early (D0/20/21), intermediate (D52), transitional (D88/99), advanced (D109/122). Return as JSON with keys: metrics (array of {metric, value, trend}), narrative (string summary).",
-  bctn: "Generate realistic BCTN (Bayesian Clonal Trajectory Network) results for HGSOC GEM model. PyClone v0.13.1 with Dirichlet Process Mixture (10K MCMC, 1K burn-in, Binomial emission). Include: 4-6 subclonal clusters at D52 consolidating to 1-2 dominant lineages by D122, missense:silent ratios declining from 2.65 (D88) to 1.16 (D122), Gelman-Rubin R̂<1.1, ARI>0.90. Reference clonal programs: Cluster 0 (immune modulation, Mr1, Cd24a), Cluster 2 (vasculogenesis, Smarca4, Amot). Return as JSON with keys: metrics (array of {metric, value, trend}), narrative (string summary).",
+  motf: TEMPORAL_FRAMEWORK + "\nGenerate realistic MOTF (Multi-Omic Tensor Factorization) analysis results for this HGSOC GEM longitudinal cohort. The tensor T ∈ ℝ^(8 × 12,451 × 4) spans 8 timepoints (D0–D122) × 12,451 features × 4 modalities. Use weighted Non-negative Tucker Decomposition. Include: per-timepoint factor loadings showing how latent factors evolve across disease phases, LF1 stage correlation (r=0.94, p<10⁻⁶), cross-modal variance (92.3%), and PROGENy pathway correlations. MAP latent factors to the temporal stages — which factors activate at which disease phase. Return as JSON with keys: metrics (array of {metric, value, trend}), narrative (string summary).",
+  gbsc: TEMPORAL_FRAMEWORK + "\nGenerate realistic GBSC (Gradient-Boosted Stage Classifier) results. XGBoost with 350 estimators, depth 5, η=0.04, L2 γ=1.2. LOTO cross-validation across the 8 timepoints. Include: per-phase classification accuracy, AUC-ROC per disease state (Phase I-IV), SHAP feature importances showing which features best discriminate EACH phase transition (I→II, II→III, III→IV), Brier calibration. Emphasise the D88-D99 boundary as the hardest classification challenge. Return as JSON with keys: metrics (array of {metric, value, trend}), narrative (string summary).",
+  bctn: TEMPORAL_FRAMEWORK + "\nGenerate realistic BCTN (Bayesian Clonal Trajectory Network) results. PyClone v0.13.1 with DPM (10K MCMC, 1K burn-in, Binomial emission). Track clonal architecture ACROSS TIMEPOINTS: show cluster count and dominant clone prevalence at EACH Day (D0→D20→D52→D88→D99→D109→D122). Include: missense:silent ratios per timepoint, clone emergence/extinction events mapped to Days, Cluster 0 (immune modulation) vs Cluster 2 (vasculogenesis) competition timeline. Show how D88 PEAK diversification leads to D122 consolidation. Return as JSON with keys: metrics (array of {metric, value, trend}), narrative (string summary).",
   cnis: `Generate comprehensive CNIS (Neoantigen Intelligence) results for HGSOC GEM model using the MASTER NEOANTIGEN CATALOG (March 2026, all frameshift sequences resolved).
 
 MASTER CATALOG: 17 UNIQUE CANDIDATES ranked by Therapeutic Priority Score (TPS).
