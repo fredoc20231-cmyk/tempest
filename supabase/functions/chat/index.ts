@@ -22,11 +22,27 @@ MANUSCRIPT KNOWLEDGE BASE (grounded in published research by Cholak et al.):
 
 DISEASE MODEL: GEM model with conditional Trp53/Rb1 deletion + LSL-KrasG12D in Pax8-expressing FT secretory epithelium. Tamoxifen at D0. Tissues collected at D0, D20, D21, D52, D88, D92, D99, D109, D122.
 
-FOUR DISEASE STATES (RNA-seq validated):
-- Early (D0/20/21): Tight PCA clustering, baseline-proximal. Early steroidogenic reprogramming (Hsd3b1, Cyp11a1). 588 up, 668 down DEGs.
-- Intermediate (D52): Distinct cluster, limited power (n=1). Chromatin remodeling + cell cycle genes.
-- Transitional (D88/99): Sharp transcriptional inflection. 62 up/61 down stage markers. Glycam1 + Marco (M2-like macrophage polarization). Microenvironmental immune remodeling.
-- Advanced (D109/122): Proliferative consolidation. Insulin/IGF pathway activation, MKI67+ proliferation.
+TEMPORAL STAGING FRAMEWORK (D = Day post-tamoxifen induction):
+CRITICAL: D0 is CONTROL/BASELINE — normal fallopian tube epithelium, pre-oncogenic activation. ALL comparisons reference D0.
+| Day | Stage | Phase | Biological State | Key Molecular Events | Neoantigen Landscape | Clinical Analog |
+| D0 | Control | 0 — Baseline | Normal FT epithelium | Pre-tamoxifen. No mutations. No fusions. Reference for all DEG analysis. | None — reference | Healthy tissue |
+| D20 | Early | I — Initiation | STIC precursor | Steroidogenic reprogramming (Hsd3b1, Cyp11a1). 588↑/668↓ DEGs. First trunk mutations appear: Meis1 F378X, Zkscan7 K404N, Kcnk7. | 11 fusions (1 HC). Trunk mutations emerge. | STIC/p53 signature |
+| D21 | Early | I — Initiation | STIC precursor | Tight PCA clustering with D20. Rbm26 S990FX first detected (persists through D109 = most recurrent). | Low diversity. | Early STIC |
+| D52 | Intermediate | II — Expansion | Active proliferation | 3,164 somatic variants. Missense:silent=2.18 (positive selection). 4-6 subclonal clusters. Chromatin remodeling + cell cycle genes. ECM remodeling (Col1a1, Pdpn). | 57 fusions (16 HC). Ubtd2, Tm2d2, Slfn8, Novel(N22D), Camk1d::Arid1a emerge. Peak subclonal diversity begins. | Stage I-II OC |
+| D88 | Transitional | III — Bifurcation | Critical window OPENS | 3,772 variants (PEAK mutational load). Missense:silent=2.65 (PEAK diversification). EWS: variance ↑2.4×, autocorrelation rising. | 104 fusions (52 HC) — PEAK diversity. Nsd3::Kat6a. Shannon entropy S(t) rising. | Chemo-naïve advanced |
+| D92 | Transitional | III — Bifurcation | Bifurcation in progress | Missense:silent declining to 1.27. Clonal sweep initiating. Spatial: D116 STIC cell = tumor transcriptomically (Igfl3, Phyhipl). | Diversity contracting. | Treatment window closing |
+| D99 | Transitional | III — Bifurcation | Critical window CLOSES | S(t) PEAKS (maximum entropy/disorder). Glycam1+Marco = M2-like macrophage polarization. Immune microenvironment remodeling. 62↑/61↓ stage markers. | 96→28 fusions. Fxr1::Zfp704, Stxbp3 emerge. Consolidation begins. | Platinum-sensitive relapse |
+| D109 | Advanced | IV — Consolidation | Post-bifurcation | 1-2 dominant clones. NAD+ accumulation → T cell PRPS1 inhibition → nucleotide starvation → immune arrest. | 27 fusions (10 HC). Mfhas1::Tns3 appears = strongest binder. Late-only targets. | Platinum-resistant |
+| D122 | Advanced | IV — Consolidation | Terminal/resistant | Missense:silent=1.16 (selective sweep complete). Proliferative: insulin/IGF + PI3K-AKT + MKI67. Trp53::Sat2 driver. | 32 fusions (6 HC) = persistent targets only. Meis1+Zkscan7 trunk mutations still detectable. | Refractory disease |
+
+TEMPORAL ANALYSIS RULES (ALWAYS FOLLOW):
+1. D0 is NEVER diseased — it is the control/reference for all fold-change calculations
+2. Report Day AND Phase together (e.g., "D52 (Phase II — Expansion)" not just "D52")
+3. Neoantigen timing matters: trunk mutations (D20→D122) are vaccine-targetable across all phases; branch-specific mutations (e.g., D52-only Ubtd2) require phase-matched sampling
+4. The D88-D99 window is the CRITICAL intervention point — after this, the system commits to the resistant attractor
+5. Fusion diversity is a proxy for genomic instability — it peaks at D88, NOT at the latest timepoint
+6. Post-D99 immune evasion (NAD+/PRPS1) means immunotherapy must be timed BEFORE or combined with metabolic rescue
+7. When classifying unknown samples, use the 4-phase framework (not arbitrary groupings)
 
 MUTATIONAL DYNAMICS:
 - D52: 3,164 somatic variants, missense:silent = 2.18 (positive selection active)
