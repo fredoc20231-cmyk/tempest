@@ -765,8 +765,249 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
         quantitative foundation for prospective clinical validation.
       </p>
 
-      {/* ── References ── */}
-      <SectionHeading id="references" number="9" title="References" />
+      {/* ── 9. Grant Framework: Specific Aims ── */}
+      <SectionHeading id="specific-aims" number="9" title="Grant Framework — Specific Aims" />
+      <div className="bg-card border border-border rounded-lg p-6 mb-6">
+        <p className="text-sm text-foreground leading-relaxed mb-4">
+          The following Specific Aims are structured for an NIH R01 or DOD CDMRP Ovarian Cancer Research Program
+          application. Each aim maps directly to validated TEMPEST modules with quantitative success criteria derived
+          from existing preliminary data.
+        </p>
+
+        <div className="space-y-6">
+          <div className="border-l-2 border-primary pl-4">
+            <h4 className="text-sm font-bold text-foreground mb-1">Aim 1: Develop and validate the TEMPEST multi-omic integration and survival prediction pipeline</h4>
+            <p className="text-xs text-muted-foreground mb-2 font-mono">Modules: MOTF → GBSC → BCTN | Timeline: Months 1–18</p>
+            <p className="text-sm text-foreground leading-relaxed mb-2">
+              <strong>Aim 1a.</strong> Optimise the weighted non-negative Tucker decomposition (wNTD) for joint factorisation
+              of RNA-seq, ATAC-seq, WES, and proteomic tensors across the D0–D122 longitudinal series. <strong>Success
+              criterion:</strong> ≥90% variance explained with ≤8 latent factors (current: 92.3% with 8 factors).
+            </p>
+            <p className="text-sm text-foreground leading-relaxed mb-2">
+              <strong>Aim 1b.</strong> Implement gradient-boosted survival classification (GBSC) with Leave-One-Timepoint-Out
+              (LOTO) cross-validation to predict progression-free survival from MOTF-derived latent factors.
+              <strong> Success criterion:</strong> C-index ≥ 0.78; time-dependent AUC ≥ 0.82 at 12-month prediction horizon.
+            </p>
+            <p className="text-sm text-foreground leading-relaxed">
+              <strong>Aim 1c.</strong> Deploy Bayesian Clonal Tracking (BCTN) via PyClone DPMM to map clonal architecture
+              dynamics across all timepoints, quantifying Shannon diversity (H), Simpson's dominance, and clonal turnover
+              rates. <strong>Success criterion:</strong> Identify the clonal sweep event (H drop ≥40%) and map it to the
+              bifurcation window with ±1 timepoint precision.
+            </p>
+          </div>
+
+          <div className="border-l-2 border-accent pl-4">
+            <h4 className="text-sm font-bold text-foreground mb-1">Aim 2: Build and experimentally validate the Cross-species Neoantigen Intelligence System (CNIS)</h4>
+            <p className="text-xs text-muted-foreground mb-2 font-mono">Module: CNIS | Timeline: Months 6–36</p>
+            <p className="text-sm text-foreground leading-relaxed mb-2">
+              <strong>Aim 2a.</strong> Complete the computational neoantigen discovery pipeline (GATK4 Mutect2 → limma-voom →
+              STAR-Fusion ∩ Arriba → NetMHCpan 4.1b) and validate the Therapeutic Priority Score (TPS) ranking against
+              experimental immunogenicity data. The current pipeline has identified 4,499 candidates (11 mutation-derived,
+              4,488 fusion-derived) reduced to 17 unique targets via multi-gate filtering.
+            </p>
+            <p className="text-sm text-foreground leading-relaxed mb-2">
+              <strong>Aim 2b.</strong> Experimentally validate the top 8 synthesis-ready peptides through a staged protocol:
+              (i) BAM VAF confirmation (≥0.05) for missense candidates (Ubtd2 GALTDCYDEL, Zkscan7 HTQENPYECC, Slfn8 EDMVNYVADK);
+              (ii) RT-PCR + Sanger sequencing for frameshift candidates (Meis1 TFFFSTMVLF, Rbm26 FFFFFSTVFP);
+              (iii) RT-PCR → Sanger → H-2-Db immunoprecipitation + LC-MS/MS for fusion junction peptides
+              (Mfhas1::Tns3 HAFPgDDPI, Camk1d::Arid1a AVLRnhpvqwi, Fxr1::Zfp704 AFYKNSMKV).
+              <strong> Success criterion:</strong> ≥5 of 8 candidates confirmed as surface-presented MHC-I ligands.
+            </p>
+            <p className="text-sm text-foreground leading-relaxed">
+              <strong>Aim 2c.</strong> Conduct ELISpot immunogenicity assays (IFN-γ, TNF-α) in immunised C57BL/6 mice
+              to quantify CD8⁺ T-cell responses against validated peptides. Test the dual MHC-I/II binding capacity of
+              Camk1d::Arid1a for combined CD4⁺/CD8⁺ vaccine design leveraging ARID1A's driver status (46–70% clear cell OC, COSMIC).
+              <strong> Success criterion:</strong> ≥3 peptides elicit IFN-γ responses ≥2× background in ≥60% of immunised animals.
+            </p>
+          </div>
+
+          <div className="border-l-2 border-destructive pl-4">
+            <h4 className="text-sm font-bold text-foreground mb-1">Aim 3: Establish TTI-based early warning detection for clinical translation</h4>
+            <p className="text-xs text-muted-foreground mb-2 font-mono">Modules: MSRS → Trajectory → TTI | Timeline: Months 12–48</p>
+            <p className="text-sm text-foreground leading-relaxed mb-2">
+              <strong>Aim 3a.</strong> Validate the Topological Transition Index (TTI = z(L) + z(B) + z(N)) as a generalised
+              phase-transition detector across ≥5 independent cisplatin-resistance models. Current cross-validation shows
+              convergent TTI &gt; 6.0 across OVCAR3-R (7.74), SKOV3-R (8.14), OVCAR8-R (7.42), GEM HGS1 (7.21), and GEM HGS3
+              (7.02), with graph conductance φ &lt; 0.02 in all cases.
+              <strong> Success criterion:</strong> TTI ≥ 6.0 in ≥80% of tested resistance models; false-positive rate &lt; 5%
+              on null-topology controls.
+            </p>
+            <p className="text-sm text-foreground leading-relaxed mb-2">
+              <strong>Aim 3b.</strong> Develop an Early Warning Signal (EWS) biomarker panel derived from the Trajectory
+              module's critical slowing down metrics (rising variance, lag-1 autocorrelation, Kendall's τ trend) that can
+              be measured from liquid biopsy ctDNA methylation profiles. <strong>Success criterion:</strong> EWS detection
+              ≥2 timepoints before clinical resistance diagnosis (p &lt; 0.05 for both variance and autocorrelation trends).
+            </p>
+            <p className="text-sm text-foreground leading-relaxed">
+              <strong>Aim 3c.</strong> Integrate TTI with MSRS composite risk scoring (R = w₁·S_surv + w₂·S_clonal + w₃·S_neo
+              + w₄·S_topo + w₅·S_traj) to generate a single clinician-facing decision metric with bootstrap-optimised
+              confidence intervals. Prospectively validate in a cohort of ≥30 HGSOC patients with longitudinal samples.
+              <strong> Success criterion:</strong> MSRS composite achieves concordance index ≥ 0.80 for 6-month progression prediction.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 10. Significance ── */}
+      <SectionHeading id="significance" number="10" title="Significance" />
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        High-grade serous ovarian carcinoma (HGSOC) is the most lethal gynaecologic malignancy, with an estimated
+        19,710 new cases and 13,270 deaths annually in the United States (ACS 2025). Despite initial platinum-taxane
+        response rates exceeding 75%, the median progression-free survival for advanced-stage disease is 12–18 months,
+        and five-year survival remains below 30%. The fundamental barrier to improved outcomes is acquired
+        chemoresistance, which develops inevitably and is currently unpredictable at the molecular level.
+      </p>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        Existing computational approaches to studying resistance rely on endpoint comparisons (pre-treatment vs.
+        post-relapse), missing the <em>temporal dynamics</em> of the transition. No existing platform integrates
+        longitudinal multi-omic data with topological data analysis and dynamical systems theory to detect the
+        <em> approach</em> to resistance — the critical window where intervention might alter the trajectory.
+        TEMPEST fills this gap by treating resistance as a phase transition with detectable early warning signals.
+      </p>
+      <p className="text-sm text-foreground leading-relaxed mb-4">
+        The clinical impact is direct: if the D88–D99 bifurcation window identified in our GEM model translates
+        to human disease, clinicians could introduce second-line therapies or immunotherapeutic interventions during
+        the plastic pre-commitment phase rather than after irreversible consolidation of the resistant phenotype.
+        The neoantigen intelligence system (CNIS) further enables personalised vaccine design targeting clonal trunk
+        mutations that persist through the bifurcation, maximising therapeutic coverage.
+      </p>
+
+      {/* ── 11. Innovation ── */}
+      <SectionHeading id="innovation" number="11" title="Innovation" />
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        TEMPEST introduces three methodological innovations that collectively distinguish it from existing
+        computational oncology platforms:
+      </p>
+      <div className="space-y-4 mb-4">
+        <div className="bg-secondary/30 border border-border rounded-md p-4">
+          <h4 className="text-sm font-bold text-foreground mb-1">Innovation 1: Weighted Non-Negative Tucker Decomposition (wNTD) for Heterogeneous Multi-Omic Tensors</h4>
+          <p className="text-sm text-foreground leading-relaxed">
+            Unlike matrix-based methods (PCA, NMF) that require modality-specific factorisation, wNTD constructs a
+            single fourth-order tensor 𝒳 ∈ ℝ<sup>S×G×M×T</sup> that jointly decomposes samples, features, modalities,
+            and timepoints. A binary weight tensor W handles missing modality–timepoint combinations without imputation,
+            and Tikhonov regularisation (λ = 10⁻⁴) prevents overfitting. This produces interpretable latent temporal
+            programs that encode the evolution of regulatory states across treatment, achieving 92.3% variance explained
+            with 8 latent factors in the GEM HGSOC model.
+          </p>
+        </div>
+        <div className="bg-secondary/30 border border-border rounded-md p-4">
+          <h4 className="text-sm font-bold text-foreground mb-1">Innovation 2: Topological Transition Index (TTI) — Persistent Homology for Phase-Transition Detection</h4>
+          <p className="text-sm text-foreground leading-relaxed">
+            The TTI decomposes regulatory phase transitions into three orthogonal topological components: H1 persistent
+            homology loop mass (compensatory feedback loops), H0 branching fragmentation + directional dispersion
+            (bifurcating programs), and graph conductance bottleneck (basin separation). Each component is standardised
+            against a local-jitter null model, yielding a composite z-score with a rigorous statistical threshold
+            (TTI ≥ 6.0, permutation p &lt; 0.001). No existing platform applies persistent homology to longitudinal
+            multi-omic cancer data for phase-transition detection.
+          </p>
+        </div>
+        <div className="bg-secondary/30 border border-border rounded-md p-4">
+          <h4 className="text-sm font-bold text-foreground mb-1">Innovation 3: Cross-Species Neoantigen Intelligence with Temporal Clonal Tracking</h4>
+          <p className="text-sm text-foreground leading-relaxed">
+            CNIS uniquely integrates neoantigen discovery (WES + RNA-seq + fusion detection + MHC binding prediction)
+            with PyClone clonal tracking and COSMIC/dbSNP cross-species validation in a single pipeline. The
+            Therapeutic Priority Score (TPS) ranks candidates by binding affinity, clonal prevalence, temporal persistence,
+            expression level, and cross-species conservation — enabling rational vaccine design that accounts for clonal
+            evolution dynamics. The four-tier validation framework (GEM-specific → ortholog-mapped → cross-validated →
+            clinically prioritised) provides a systematic path from computational prediction to experimental validation.
+          </p>
+        </div>
+      </div>
+
+      {/* ── 12. Proposed Timeline & Milestones ── */}
+      <SectionHeading id="timeline" number="12" title="Proposed Timeline & Milestones" />
+      <div className="overflow-x-auto mb-4">
+        <table className="w-full border-collapse text-sm font-mono">
+          <thead className="bg-secondary">
+            <tr>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Period</th>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Aim</th>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Milestone</th>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Deliverable</th>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Go/No-Go</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[
+              { period: "M1–6", aim: "1a", milestone: "wNTD pipeline validated on GEM D0–D122", deliverable: "Reproducible tensor decomposition with ≥90% VE", go: "VE ≥ 90%" },
+              { period: "M3–12", aim: "1b–c", milestone: "GBSC + BCTN cross-validated", deliverable: "C-index report; clonal architecture maps", go: "C-index ≥ 0.78" },
+              { period: "M6–12", aim: "2a", milestone: "CNIS computational pipeline complete", deliverable: "17-candidate master catalog with TPS rankings", go: "≥15 candidates pass filters" },
+              { period: "M12–24", aim: "2b", milestone: "Peptide synthesis + validation (Gates 1–3)", deliverable: "MS-confirmed MHC-I presentation for ≥5 peptides", go: "≥5/8 confirmed" },
+              { period: "M18–30", aim: "2c", milestone: "ELISpot immunogenicity assays", deliverable: "CD8⁺ IFN-γ response data for validated peptides", go: "≥3 immunogenic" },
+              { period: "M12–24", aim: "3a", milestone: "TTI cross-model validation (≥5 models)", deliverable: "TTI convergence report with CI", go: "≥80% models TTI ≥ 6.0" },
+              { period: "M24–36", aim: "3b", milestone: "EWS biomarker panel from ctDNA methylation", deliverable: "Validated EWS signature panel", go: "Detection ≥2 TP before Dx" },
+              { period: "M30–48", aim: "3c", milestone: "Prospective MSRS validation (n ≥ 30)", deliverable: "Concordance index report", go: "C-index ≥ 0.80" },
+            ].map((d, i) => (
+              <tr key={d.period + d.aim} className={i % 2 === 0 ? "bg-secondary/30" : ""}>
+                <td className="px-3 py-2 border border-border text-accent font-bold">{d.period}</td>
+                <td className="px-3 py-2 border border-border text-foreground font-semibold">{d.aim}</td>
+                <td className="px-3 py-2 border border-border text-foreground text-xs">{d.milestone}</td>
+                <td className="px-3 py-2 border border-border text-muted-foreground text-xs">{d.deliverable}</td>
+                <td className="px-3 py-2 border border-border text-xs font-mono">{d.go}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* ── 13. Rigor, Reproducibility & Falsifiability ── */}
+      <SectionHeading id="rigor" number="13" title="Rigor, Reproducibility & Falsifiability" />
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        TEMPEST is designed around explicit falsifiability criteria — each module generates predictions that can be
+        empirically refuted:
+      </p>
+      <div className="overflow-x-auto mb-4">
+        <table className="w-full border-collapse text-sm font-mono">
+          <thead className="bg-secondary">
+            <tr>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Module</th>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Prediction</th>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Falsification Test</th>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[
+              { mod: "TTI", pred: "TTI ≈ 0 for isogenic populations with no regulatory divergence", test: "In-silico: Null Gaussian topology class → TTI < 2.0", status: "VALIDATED" },
+              { mod: "TTI", pred: "TTI ≥ 6.0 for confirmed resistant transitions", test: "Cross-model: 5/5 cisplatin-resistance models exceed threshold", status: "VALIDATED" },
+              { mod: "Trajectory", pred: "EWS (rising variance, autocorrelation) absent in stable systems", test: "In-silico: stationary time series → no significant Kendall's τ", status: "VALIDATED" },
+              { mod: "Trajectory", pred: "Bifurcation window at D88–D99 is reproducible", test: "Prospective: biological replicates with longitudinal sampling", status: "PENDING" },
+              { mod: "MOTF", pred: "≥90% variance explained with ≤8 latent factors", test: "HOSVD reconstruction error on held-out timepoints", status: "VALIDATED (92.3%)" },
+              { mod: "CNIS", pred: "TPS-ranked peptides are surface-presented MHC-I ligands", test: "H-2-Db IP + LC-MS/MS for top 8 candidates", status: "PENDING" },
+              { mod: "CNIS", pred: "≥3 peptides elicit CD8⁺ IFN-γ responses", test: "ELISpot in immunised C57BL/6 mice", status: "PENDING" },
+              { mod: "BCTN", pred: "Clonal sweep (H drop ≥40%) maps to bifurcation window", test: "PyClone posterior on D88–D109 interval", status: "VALIDATED" },
+              { mod: "MSRS", pred: "Composite risk score predicts 6-month progression (C-index ≥ 0.80)", test: "Prospective cohort (n ≥ 30)", status: "PENDING" },
+            ].map((d, i) => (
+              <tr key={d.pred} className={i % 2 === 0 ? "bg-secondary/30" : ""}>
+                <td className="px-3 py-2 border border-border text-foreground font-semibold">{d.mod}</td>
+                <td className="px-3 py-2 border border-border text-foreground text-xs">{d.pred}</td>
+                <td className="px-3 py-2 border border-border text-muted-foreground text-xs">{d.test}</td>
+                <td className="px-3 py-2 border border-border">
+                  <span className={`text-xs px-1.5 py-0.5 rounded font-mono ${
+                    d.status.startsWith("VALIDATED") ? "bg-chart-emerald/10 text-chart-emerald" : "bg-chart-amber/10 text-chart-amber"
+                  }`}>{d.status}</span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        <strong>Reproducibility measures:</strong> All analyses use containerised environments (Docker) with pinned
+        dependency versions. Random seeds are fixed for MCMC sampling (PyClone), bootstrap resampling (MSRS), and
+        null-model permutations (TTI). Raw data, processed tensors, and configuration files are version-controlled.
+        The TEMPEST platform itself serves as the reproducibility vehicle — all modules can be re-executed with
+        identical parameters via the pipeline interface.
+      </p>
+      <p className="text-sm text-foreground leading-relaxed mb-4">
+        <strong>Biological sex as a variable:</strong> The GEM model uses female C57BL/6 mice exclusively (ovarian
+        cancer model). Cross-validation datasets (OVCAR3, SKOV3, OVCAR8) are derived from female patients. Sex-specific
+        molecular differences are not a confound in this study design, but prospective human validation (Aim 3c) will
+        record biological sex and assess it as a covariate in the MSRS composite model.
+      </p>
+
+      {/* ── 14. References ── */}
+      <SectionHeading id="references" number="14" title="References" />
       <ol className="text-xs text-muted-foreground leading-relaxed pl-5 list-decimal space-y-1.5 font-mono">
         <li>Scheffer, M., et al. "Early-warning signals for critical transitions." <em>Nature</em> 461, 53–59 (2009).</li>
         <li>Edelsbrunner, H., Harer, J. <em>Computational Topology: An Introduction</em>. AMS (2010).</li>
