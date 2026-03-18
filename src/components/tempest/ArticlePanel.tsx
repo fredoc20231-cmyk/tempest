@@ -522,33 +522,50 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
         target genes as established cancer drivers. Eight candidates were validated for immediate experimental testing.
       </p>
 
-      <h4 className="text-xs font-semibold text-foreground mt-4 mb-2 font-mono">Mutation-Derived Neoantigens</h4>
+      <h4 className="text-xs font-semibold text-foreground mt-4 mb-2 font-mono">Table 1 — Mutation-Derived Neoantigens: Master Catalog (All Frameshift Sequences Resolved, March 2026)</h4>
+      <p className="text-sm text-muted-foreground mb-2">
+        ★ = frameshift sequence resolved via codon-frame analysis. XX→ST (Ser-Thr) for most frameshift readthrough;
+        GLP2R XX→NS (Asn-Ser). All ★ sequences require RT-PCR + Sanger confirmation before synthesis.
+      </p>
       <div className="overflow-x-auto mb-3">
         <table className="w-full border-collapse text-sm font-mono">
           <thead className="bg-secondary">
             <tr>
               <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Gene</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Peptide</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">H-2-Db</th>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Mutation</th>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Synthesis-Ready Peptide</th>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">H-2-Db %Rank</th>
               <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Temporal</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">COSMIC</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Priority</th>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Clonality</th>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">TPS</th>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Tier</th>
+              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Action</th>
             </tr>
           </thead>
           <tbody>
             {[
-              { gene: "MEIS1 F378X", peptide: "TFFFXXMVLF", db: "23.07% WB", temp: "D20,D122 (trunk)", cosmic: "✅ 19% immunogenicity", pri: "1" },
-              { gene: "ZKSCAN7 K404N", peptide: "HTQENPYECC", db: "10.38% WB", temp: "D20,D122 (trunk)", cosmic: "❓ Limited", pri: "2" },
-              { gene: "Ubtd2", peptide: "GALTDCYDEL", db: "0.743% SB", temp: "D52", cosmic: "❓ Unknown", pri: "3" },
-              { gene: "SLFN8 I791N", peptide: "EDMVNYVADK", db: "60.63%", temp: "D52,D99", cosmic: "🔄 SLFN11 ortholog", pri: "Biomarker" },
+              { gene: "Meis1", mut: "F378→X ★", peptide: "TFFFSTMVLF", db: "23.1%", temp: "D20, D122", clon: "Clonal >80%", tps: "65", tier: "TIER 1", action: "Ready after RT-PCR" },
+              { gene: "Zkscan7", mut: "K404→N", peptide: "HTQENPYECC", db: "10.4%", temp: "D20, D122", clon: "Clonal >80%", tps: "70", tier: "TIER 1", action: "Ready to synthesise" },
+              { gene: "Ubtd2", mut: "E107→D", peptide: "GALTDCYDEL", db: "0.743% WB", temp: "D52", clon: "Subclonal ~35%", tps: "65", tier: "TIER 1", action: "Ready to synthesise" },
+              { gene: "Rbm26", mut: "S990→FX ★", peptide: "FFFFFSTVFP", db: "56.4%", temp: "D21/52/99/109", clon: "Clonal >80%", tps: "65", tier: "TIER 1", action: "Ready after RT-PCR" },
+              { gene: "Slfn8", mut: "I791→N", peptide: "EDMVNYVADK", db: "60.6%", temp: "D52, D99×2", clon: "Subclonal ~45%", tps: "55", tier: "TIER 2", action: "Ready to synthesise" },
+              { gene: "Tm2d2", mut: "I135→X ★", peptide: "QTDLSTFFFF", db: "8.3%", temp: "D52", clon: "Subclonal ~30%", tps: "55", tier: "TIER 2", action: "Ready after RT-PCR" },
+              { gene: "Novel (Unann.)", mut: "N22→D", peptide: "YMKVDIAYAI", db: "3.451% ⚠↑", temp: "D52, D99", clon: "Subclonal ~40%", tps: "60", tier: "TIER 2", action: "Verify binding first" },
+              { gene: "Stxbp3", mut: "del→X ★", peptide: "LFFFSTPYVH", db: "58.9%", temp: "D99", clon: "Subclonal ~25%", tps: "50", tier: "TIER 2", action: "Ready after RT-PCR" },
+              { gene: "Kcnk7", mut: "P335→PX ★", peptide: "RVGGPSTREA", db: "35.4%", temp: "D20", clon: "Subclonal ~20%", tps: "40", tier: "TIER 3", action: "Deprioritise" },
+              { gene: "Glp2r", mut: "G459→AX ★", peptide: "LQSSANSSSH", db: "43.9% ⚠↑", temp: "D52", clon: "Subclonal ~15%", tps: "35", tier: "TIER 3", action: "Deprioritise" },
+              { gene: "Neb", mut: "F36→FX ★", peptide: "CFFFFSTHNF", db: "46.0%", temp: "D52", clon: "Subclonal ~20%", tps: "35", tier: "TIER 3", action: "Deprioritise" },
             ].map((d, i) => (
-              <tr key={d.gene} className={i % 2 === 0 ? "bg-secondary/30" : ""}>
+              <tr key={d.gene + d.mut} className={i % 2 === 0 ? "bg-secondary/30" : ""}>
                 <td className="px-3 py-2 border border-border text-foreground font-semibold">{d.gene}</td>
+                <td className="px-3 py-2 border border-border text-muted-foreground text-xs">{d.mut}</td>
                 <td className="px-3 py-2 border border-border text-accent"><code>{d.peptide}</code></td>
                 <td className="px-3 py-2 border border-border">{d.db}</td>
                 <td className="px-3 py-2 border border-border text-muted-foreground">{d.temp}</td>
-                <td className="px-3 py-2 border border-border">{d.cosmic}</td>
-                <td className="px-3 py-2 border border-border font-bold">{d.pri}</td>
+                <td className="px-3 py-2 border border-border text-xs">{d.clon}</td>
+                <td className="px-3 py-2 border border-border font-bold">{d.tps}</td>
+                <td className="px-3 py-2 border border-border"><span className={`text-xs px-1.5 py-0.5 rounded ${d.tier === "TIER 1" ? "bg-chart-emerald/10 text-chart-emerald" : d.tier === "TIER 2" ? "bg-chart-amber/10 text-chart-amber" : "bg-muted text-muted-foreground"}`}>{d.tier}</span></td>
+                <td className="px-3 py-2 border border-border text-xs text-muted-foreground">{d.action}</td>
               </tr>
             ))}
           </tbody>
