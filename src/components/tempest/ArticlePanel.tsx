@@ -1287,7 +1287,8 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
         even though it represents a biologically meaningful phase transition.
       </p>
 
-      <h4 className="text-xs font-semibold text-foreground mt-4 mb-2 font-mono">Table 10 — fTTI Component Ablation on Synthetic Benchmark (n = 200)</h4>
+      <h4 className="text-xs font-semibold text-foreground mt-6 mb-2 font-mono">5.8.6 — Component Ablation Study</h4>
+      <h4 className="text-xs font-semibold text-foreground mt-2 mb-2 font-mono">Table 14 — fTTI Component Ablation on Synthetic Benchmark (n = 200)</h4>
       <div className="overflow-x-auto mb-3">
         <table className="w-full border-collapse text-sm font-mono">
           <thead className="bg-secondary">
