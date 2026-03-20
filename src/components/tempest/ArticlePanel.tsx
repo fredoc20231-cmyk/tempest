@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
-import { BookOpen, ArrowRight, ExternalLink } from "lucide-react";
+import { BookOpen, ArrowRight } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import type { Module } from "./Sidebar";
 
 interface ArticlePanelProps {
@@ -24,6 +25,12 @@ const SectionHeading = ({ id, number, title }: { id: string; number: string; tit
   </h2>
 );
 
+const SubHeading = ({ number, title }: { number: string; title: string }) => (
+  <h3 className="text-sm font-semibold text-foreground mt-6 mb-2">
+    <span className="font-mono text-muted-foreground mr-1">{number}</span> {title}
+  </h3>
+);
+
 const Equation = ({ label, children }: { label: string; children: React.ReactNode }) => (
   <div className="my-4 bg-secondary/40 border border-border rounded-md px-5 py-3 overflow-x-auto">
     <div className="flex items-center justify-between gap-4">
@@ -32,6 +39,24 @@ const Equation = ({ label, children }: { label: string; children: React.ReactNod
     </div>
   </div>
 );
+
+const ThCell = ({ children }: { children: React.ReactNode }) => (
+  <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">{children}</th>
+);
+
+const TdCell = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
+  <td className={`px-3 py-2 border border-border ${className}`}>{children}</td>
+);
+
+const TierBadge = ({ tier }: { tier: string }) => {
+  const cls = tier === "TIER 1" ? "bg-chart-emerald/10 text-chart-emerald" : tier === "TIER 2" ? "bg-chart-amber/10 text-chart-amber" : "bg-muted text-muted-foreground";
+  return <span className={`text-xs px-1.5 py-0.5 rounded ${cls}`}>{tier}</span>;
+};
+
+const StatusBadge = ({ status }: { status: string }) => {
+  const cls = status.startsWith("VALIDATED") ? "bg-chart-emerald/10 text-chart-emerald" : "bg-chart-amber/10 text-chart-amber";
+  return <span className={`text-xs px-1.5 py-0.5 rounded font-mono ${cls}`}>{status}</span>;
+};
 
 const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
   return (
@@ -48,7 +73,7 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
           RESEARCH ARTICLE — PREPRINT
         </div>
         <h1 className="text-3xl md:text-4xl font-bold text-foreground leading-tight font-serif mb-4">
-          TEMPEST: A Multi-Omic Computational Platform for Predictive Tumor Evolution Modeling
+          TEMPEST: A Multi-Omic Computational Platform for Predictive Tumor Evolution Modeling in High-Grade Serous Ovarian Carcinoma
         </h1>
         <p className="text-base text-muted-foreground mb-2 font-serif italic">
           Integrating Topological Data Analysis, Dynamical Systems Theory, and Machine Learning for Longitudinal Cancer Trajectory Prediction
@@ -62,7 +87,7 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
             <sup>2</sup> University of Chicago Comprehensive Cancer Center (UC-CCC), Chicago, IL 60637
           </p>
           <p className="text-muted-foreground text-xs mt-2">
-            <sup>*</sup> Corresponding author. Computational Oncology & Bioinformatics Unit (COBU).
+            <sup>*</sup> Corresponding author. Computational Oncology & Bioinformatics Unit (COBU). E-mail: afadiel@uchicago.edu
           </p>
         </div>
         <div className="mt-4 flex items-center justify-center gap-4 text-xs font-mono text-muted-foreground">
@@ -76,28 +101,36 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
 
       <hr className="border-border mb-8" />
 
-      {/* ── Abstract ── */}
+      {/* ══════════════════════════════════════════════════════════
+          ABSTRACT
+      ══════════════════════════════════════════════════════════ */}
       <div className="bg-card border border-border rounded-lg p-6 mb-8">
         <h2 className="text-sm font-bold text-primary font-mono tracking-wider mb-3">ABSTRACT</h2>
         <p className="text-sm text-foreground leading-relaxed mb-3">
           Treatment-resistant cancer remains a principal cause of oncologic mortality. We present <strong>TEMPEST</strong> (Tumor
           Evolution Modeling Platform for Epigenetic State Transitions), a seven-module computational framework that
-          integrates longitudinal multi-omic data — RNA-seq, ATAC-seq, whole-exome sequencing, and proteomic profiles —
-          to model, predict, and intercept the trajectory of tumor evolution toward drug resistance.
+          integrates longitudinal multi-omic data — whole-exome sequencing, RNA-seq, ATAC-seq, spatial transcriptomics
+          (10× Visium), and proteomic profiles — to model, predict, and intercept the trajectory of tumor evolution toward
+          drug resistance.
         </p>
         <p className="text-sm text-foreground leading-relaxed mb-3">
           The platform introduces three methodological innovations: (1) a <em>weighted non-negative Tucker decomposition</em>
-          (MOTF) for joint factorisation of heterogeneous molecular tensors across time; (2) a <em>Topological Transition Index</em>
+          (wNTD) for joint factorisation of heterogeneous molecular tensors across time; (2) a <em>Topological Transition Index</em>
           (TTI) combining persistent homology loop mass, branching fragmentation, and graph conductance into a composite
-          metric that detects regulatory phase transitions in feature space; and (3) a <em>dynamical-systems trajectory model</em>
-          with early warning signal (EWS) detection based on critical slowing down theory.
+          metric that detects regulatory phase transitions in feature space; and (3) a <em>Cross-species Neoantigen
+          Intelligence System</em> (CNIS) integrating clonal dynamics with MHC binding prediction and COSMIC cross-validation
+          to produce experimentally tractable vaccine candidates.
         </p>
         <p className="text-sm text-foreground leading-relaxed mb-3">
           Applied to a genetically engineered mouse (GEM) model of high-grade serous ovarian carcinoma (HGSOC) sampled
           at eight longitudinal timepoints (D0–D122), TEMPEST identifies a critical bifurcation window at D88–D99
           where the system transitions from a parental to a cisplatin-resistant regulatory state. Cross-validation with
           three human cell-line models (OVCAR3, SKOV3, OVCAR8) confirms convergent TTI scores (all &gt; 6.0) and
-          conductance values (all φ &lt; 0.02), supporting an epigenetic phase-transition hypothesis.
+          conductance values (all φ &lt; 0.02), supporting an epigenetic phase-transition hypothesis. Mutational dynamics
+          reveal a missense:synonymous ratio peak of 2.65 at D88 collapsing to 1.16 at D122, consistent with a selective
+          sweep. PyClone Bayesian inference resolves 17 clonal clusters with Shannon diversity peaking at D52 (H = 2.83)
+          before monotonic decline. Spatial transcriptomics identifies the D116 STIC–tumor boundary as molecularly
+          indistinguishable (Pearson r = 0.94), marking convergent progression.
         </p>
         <p className="text-sm text-foreground leading-relaxed">
           We further characterise a NAD⁺-mediated metabolic immune-suppression axis through which resistant tumor cells
@@ -109,42 +142,56 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
           <p className="text-xs text-muted-foreground">
             <strong className="text-foreground">Keywords:</strong> tumor evolution, topological data analysis, persistent homology,
             dynamical systems, phase transition, cisplatin resistance, high-grade serous ovarian carcinoma, multi-omic
-            integration, early warning signals, neoantigen prediction, computational oncology
+            integration, early warning signals, neoantigen prediction, spatial transcriptomics, clonal dynamics,
+            computational oncology
           </p>
         </div>
       </div>
 
-      {/* ── 1. Introduction ── */}
+      {/* ══════════════════════════════════════════════════════════
+          1. INTRODUCTION
+      ══════════════════════════════════════════════════════════ */}
       <SectionHeading id="introduction" number="1" title="Introduction" />
       <p className="text-sm text-foreground leading-relaxed mb-3">
-        High-grade serous ovarian carcinoma (HGSOC) accounts for approximately 70% of ovarian cancer deaths, with
-        five-year survival rates below 30% for advanced-stage disease. The standard treatment — cytoreductive surgery
-        followed by platinum-taxane chemotherapy — achieves initial response rates exceeding 75%, yet the majority of
-        patients relapse with chemoresistant disease within 18 months. Understanding the molecular trajectory from
-        treatment-sensitive to treatment-resistant states is therefore a central challenge in gynecologic oncology.
+        Ovarian cancer is the most lethal gynaecological malignancy, with an estimated 19,710 new cases and 13,270
+        deaths in the United States in 2023 (Siegel et al., <em>CA Cancer J Clin</em>, 2023). High-grade serous
+        ovarian carcinoma (HGSOC) accounts for approximately 70% of epithelial ovarian cancers and is characterised
+        by near-universal <em>TP53</em> mutation, extensive copy-number alterations, and initial platinum sensitivity
+        followed by inevitable relapse. Five-year survival rates remain below 30% for advanced-stage (III/IV)
+        disease despite three decades of platinum-based chemotherapy.
       </p>
       <p className="text-sm text-foreground leading-relaxed mb-3">
-        Contemporary approaches to studying drug resistance have largely relied on endpoint comparisons: pre-treatment
-        versus post-relapse molecular profiles. While informative, such snapshot analyses miss the <em>dynamics</em> of
-        the transition — the temporal ordering of molecular events, the identification of critical windows where
-        intervention might alter the trajectory, and the detection of early warning signals that precede irreversible
-        commitment to a resistant phenotype.
+        The central biological question — <em>when</em> and <em>how</em> tumors commit to a resistant phenotype —
+        has been obscured by the predominance of endpoint-comparison study designs. Pre-treatment versus post-relapse
+        molecular profiling identifies <em>what</em> changed but cannot resolve the temporal ordering of events,
+        detect pre-commitment warning signals, or identify windows where the trajectory might be altered. This
+        limitation is not merely analytical; it has direct therapeutic consequences. If resistant commitment occurs
+        through a phase transition with detectable precursors, there exists — in principle — a window for
+        trajectory-altering intervention that current approaches entirely miss.
       </p>
       <p className="text-sm text-foreground leading-relaxed mb-3">
-        TEMPEST addresses this gap by treating tumor evolution as a <em>dynamical system</em> traversing a regulatory
-        landscape with defined attractor basins, bifurcation points, and phase transitions. Rather than asking
-        "what changed?", the platform asks "when does the system commit to a new regulatory state, and can we detect
-        the approach to that commitment point in time to intervene?"
+        Three conceptual advances motivate the present work. First, <em>topological data analysis</em> (TDA)
+        provides a mathematically rigorous framework for detecting qualitative changes in the shape of molecular
+        state spaces, including the emergence of loops, branches, and disconnected components that signal regulatory
+        reorganisation (Edelsbrunner & Harer, 2010). Second, <em>dynamical systems theory</em> predicts that
+        complex systems approaching critical transitions exhibit generic early warning signals (EWS) — rising
+        variance and lag-1 autocorrelation — independent of system-specific details (Scheffer et al., <em>Nature</em>,
+        2009). Third, advances in <em>tensor decomposition</em> methods enable joint factorisation of
+        heterogeneous multi-omic datasets across time, preserving the multi-modal correlation structure that
+        matrix methods destroy (Kolda & Bader, <em>SIAM Review</em>, 2009).
       </p>
       <p className="text-sm text-foreground leading-relaxed mb-4">
-        The platform integrates seven analytical modules into a unified pipeline, each contributing a distinct layer
-        of analysis — from tensor decomposition of multi-omic data through survival modelling, clonal dynamics,
-        neoantigen intelligence, risk scoring, trajectory prediction, and topological transition detection. This
-        article describes the mathematical foundations, algorithmic implementation, and biological results of each
-        module, with specific application to a longitudinal GEM model of HGSOC cisplatin resistance.
+        TEMPEST synthesises these advances into a unified, seven-module computational platform. Applied to a
+        longitudinal GEM model of HGSOC cisplatin resistance sampled at eight post-induction timepoints, the
+        platform identifies a discrete bifurcation window, resolves clonal architecture dynamics, discovers
+        experimentally tractable neoantigen vaccine candidates, and characterises a NAD⁺-mediated immune
+        suppression axis. This article describes the experimental design, computational methods, algorithmic
+        frameworks, and biological results of each module.
       </p>
 
-      {/* ── 2. Platform Architecture ── */}
+      {/* ══════════════════════════════════════════════════════════
+          2. PLATFORM ARCHITECTURE
+      ══════════════════════════════════════════════════════════ */}
       <SectionHeading id="architecture" number="2" title="Platform Architecture" />
       <p className="text-sm text-foreground leading-relaxed mb-4">
         TEMPEST implements a sequential seven-module pipeline. Each module consumes the outputs of upstream analyses
@@ -180,8 +227,102 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
         querying is available via the <ModuleLink module="chat" label="AI Agent" onNavigate={onNavigate} />.
       </p>
 
-      {/* ── 3. Algorithmic Framework ── */}
-      <SectionHeading id="algorithms" number="3" title="Algorithmic Framework" />
+      {/* ══════════════════════════════════════════════════════════
+          3. METHODS
+      ══════════════════════════════════════════════════════════ */}
+      <SectionHeading id="methods" number="3" title="Methods" />
+
+      <SubHeading number="3.1" title="GEM Model and Tissue Collection" />
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        Genetically engineered mice (C57BL/6 background) carrying conditional alleles for <em>Trp53</em> and
+        <em> Rb1</em> deletion plus <em>LSL-Kras<sup>G12D</sup></em> activation in Pax8-expressing fallopian tube
+        secretory epithelium were generated using the Pax8-Cre driver system. Oncogenic transformation was induced
+        by intraperitoneal tamoxifen administration (1 mg/day × 5 days). Tissues were harvested at nine timepoints
+        post-induction: D0 (pre-tamoxifen baseline, normal fallopian tube epithelium), D20, D21, D52, D88, D99,
+        D109, D116 (spatial transcriptomics only), and D122. Each timepoint was macro-dissected, flash-frozen, and
+        processed for parallel multi-omic profiling.
+      </p>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        The D0 sample serves as the reference for all differential expression, mutation calling, and trajectory
+        analyses. Animals were maintained under IACUC-approved protocols at the University of Chicago animal facility.
+      </p>
+
+      <SubHeading number="3.2" title="Sequencing and Data Processing" />
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        <strong>Whole-exome sequencing (WES):</strong> DNA libraries were prepared using the Agilent SureSelect
+        Mouse All Exon kit and sequenced on Illumina NovaSeq 6000 (150 bp PE, target ≥100× coverage). Reads were
+        aligned to GRCm39 using BWA-MEM2 v2.2.1. Somatic variant calling employed GATK4 Mutect2 in tumor-only
+        mode with a panel-of-normals (PoN) constructed from 5 age-matched C57BL/6 control mice. Variants were
+        annotated with Ensembl VEP v110 and filtered (PASS filter, ≥5 alt reads, VAF ≥ 0.05). Copy-number
+        alterations were called using CNVkit v0.9.10.
+      </p>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        <strong>RNA-seq:</strong> Total RNA was extracted (RNeasy Mini Kit, Qiagen), libraries prepared (TruSeq
+        Stranded mRNA), and sequenced (NovaSeq 6000, 150 bp PE, ≥30M read pairs/sample). Reads were aligned using
+        STAR v2.7.11a against GRCm39, quantified with featureCounts (Subread v2.0.6), and normalised using TMM
+        (trimmed mean of M-values). Differential expression analysis employed limma-voom with empirical Bayes
+        moderation. Multiple testing correction used Benjamini–Hochberg FDR &lt; 0.05.
+      </p>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        <strong>Fusion detection:</strong> Gene fusions were called by two independent algorithms — STAR-Fusion
+        v1.12.0 and Arriba v2.5.1 — and only events detected by both callers (intersection set) were retained.
+        Junction sequences were extracted from Arriba breakpoint annotations for downstream neoantigen peptide
+        prediction.
+      </p>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        <strong>Spatial transcriptomics:</strong> 10× Genomics Visium (v2) was performed on fresh-frozen sections
+        at D22 and D116 timepoints. Spot-level expression matrices were processed using Space Ranger v2.1,
+        normalised via SCTransform, and spatially clustered using BayesSpace. Fallopian tube–STIC boundary
+        regions were annotated by a board-certified gynaecological pathologist.
+      </p>
+
+      <SubHeading number="3.3" title="Neoantigen Prediction Pipeline" />
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        Candidate neoantigens were identified from somatic mutations (missense, frameshift) and fusion junction
+        peptides. MHC-I binding prediction employed NetMHCpan 4.1b for the C57BL/6 alleles H-2-D<sup>b</sup> and
+        H-2-K<sup>b</sup>. Binding thresholds: strong binder (SB) %Rank &lt; 0.5%, weak binder (WB) %Rank &lt; 2.0%.
+        For cross-species translation, human HLA binding was assessed for ortholog-mapped peptides.
+      </p>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        Candidates were ranked by a composite Therapeutic Priority Score (TPS):
+      </p>
+      <Equation label="Eq. TPS">
+        TPS = 3·(−log₁₀(%Rank)) + 1.5·log₂(peak_expr + 0.5) + log₂(stages + 1) + 1.5·DE_up
+      </Equation>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        Multi-modal filtering applied: WES∩RNA co-detection, &gt;10 CPM expression, absence from D0 controls,
+        VEP high-impact annotation, and dbSNP/MGI exclusion. Cross-species validation employed a four-tier
+        framework: Tier 1 (GEM-specific + COSMIC validated), Tier 2 (ortholog-mapped), Tier 3 (cross-validated in
+        mouse and human MHC contexts), Tier 4 (clinically prioritised: Tier 3 + clonal φ &gt; 0.3 + rising
+        trajectory + FDR &lt; 0.05 expression).
+      </p>
+
+      <SubHeading number="3.4" title="Statistical Framework" />
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        <strong>Bootstrap confidence intervals:</strong> All reported confidence intervals were computed from
+        n = 1,000 bootstrap replicates with bias-corrected and accelerated (BCa) percentile intervals.
+      </p>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        <strong>Leave-One-Timepoint-Out (LOTO) cross-validation:</strong> For survival and risk models, each
+        timepoint was held out in turn, the model trained on remaining timepoints, and performance assessed on the
+        held-out set. This ensures temporal generalisability and prevents information leakage from temporally
+        correlated samples.
+      </p>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        <strong>TTI permutation testing:</strong> The null distribution for each TTI component was generated from
+        10,000 permutations of sample labels within the feature cloud. The phase-transition criterion (TTI ≥ 6.0)
+        corresponds to a permutation null p &lt; 0.001.
+      </p>
+      <p className="text-sm text-foreground leading-relaxed mb-4">
+        <strong>Clonal inference:</strong> PyClone DPMM employed 10,000 MCMC iterations with 1,000 burn-in,
+        thinning every 10th sample, using the Beta-Binomial emission model to account for overdispersion.
+        Convergence was assessed by Gelman–Rubin R̂ &lt; 1.05 across 3 independent chains.
+      </p>
+
+      {/* ══════════════════════════════════════════════════════════
+          4. ALGORITHMIC FRAMEWORK
+      ══════════════════════════════════════════════════════════ */}
+      <SectionHeading id="algorithms" number="4" title="Algorithmic Framework" />
       <p className="text-sm text-foreground leading-relaxed mb-4">
         Each module implements a distinct computational methodology. We describe the mathematical foundations below,
         with collapsible detail sections for implementation specifics.
@@ -191,7 +332,7 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
         {/* MOTF */}
         <AccordionItem value="motf" className="border border-border rounded-md px-4">
           <AccordionTrigger className="text-sm font-semibold hover:no-underline">
-            3.1 — MOTF: Multi-Omic Tensor Factorisation
+            4.1 — MOTF: Multi-Omic Tensor Factorisation
           </AccordionTrigger>
           <AccordionContent>
             <p className="text-sm text-foreground leading-relaxed mb-3">
@@ -221,7 +362,7 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
         {/* GBSC */}
         <AccordionItem value="gbsc" className="border border-border rounded-md px-4">
           <AccordionTrigger className="text-sm font-semibold hover:no-underline">
-            3.2 — GBSC: Gradient-Boosted Survival Classification
+            4.2 — GBSC: Gradient-Boosted Survival Classification
           </AccordionTrigger>
           <AccordionContent>
             <p className="text-sm text-foreground leading-relaxed mb-3">
@@ -231,7 +372,7 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
             <Equation label="Eq. 3">
               L(β) = −Σᵢ [δᵢ(xᵢβ − log Σⱼ∈Rᵢ exp(xⱼβ))]
             </Equation>
-            <p className="text-sm text-foreground leading-relaxed mb-3">
+            <p className="text-sm text-foreground leading-relaxed mb-2">
               Feature importance is decomposed via SHAP (SHapley Additive exPlanations) to identify which molecular
               features drive survival prediction at each timepoint. Kaplan–Meier survival curves with log-rank
               tests are computed for risk-stratified cohorts. C-index and time-dependent AUC are reported as
@@ -243,23 +384,21 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
         {/* BCTN */}
         <AccordionItem value="bctn" className="border border-border rounded-md px-4">
           <AccordionTrigger className="text-sm font-semibold hover:no-underline">
-            3.3 — BCTN: Bayesian Clonal Tracking Network
+            4.3 — BCTN: Bayesian Clonal Tracking Network
           </AccordionTrigger>
           <AccordionContent>
             <p className="text-sm text-foreground leading-relaxed mb-3">
               Clonal architecture is inferred using a Dirichlet Process Mixture Model (DPMM) implemented via the
-              PyClone framework, with Markov Chain Monte Carlo (MCMC) sampling for posterior estimation of clonal
-              prevalences:
+              PyClone framework, with MCMC sampling for posterior estimation of clonal prevalences:
             </p>
             <Equation label="Eq. 4">
               p(φ₁, …, φₖ | D) ∝ Π Bin(dᵢ; Nᵢ, φzᵢ · fᵢ) · DP(α, H)
             </Equation>
-            <p className="text-sm text-foreground leading-relaxed mb-3">
+            <p className="text-sm text-foreground leading-relaxed mb-2">
               where φₖ are clonal cellular prevalences, dᵢ and Nᵢ are variant and total read counts, fᵢ is the
               expected allele fraction given copy-number state, and DP(α, H) is the Dirichlet Process prior.
               The module tracks clonal expansion/contraction dynamics over longitudinal timepoints, computing
-              Shannon diversity (H), Simpson's dominance index, and clonal turnover rates. Fishplot-style
-              visualisations display clonal evolution trajectories.
+              Shannon diversity (H), Simpson's dominance index, and clonal turnover rates.
             </p>
           </AccordionContent>
         </AccordionItem>
@@ -267,43 +406,15 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
         {/* CNIS */}
         <AccordionItem value="cnis" className="border border-border rounded-md px-4">
           <AccordionTrigger className="text-sm font-semibold hover:no-underline">
-            3.4 — CNIS: Cross-species Neoantigen Intelligence System
+            4.4 — CNIS: Cross-species Neoantigen Intelligence System
           </AccordionTrigger>
           <AccordionContent>
             <p className="text-sm text-foreground leading-relaxed mb-3">
-              The CNIS module implements a database-validated neoantigen discovery pipeline integrating whole-exome
-              sequencing (GATK4 Mutect2), RNA-seq differential expression (limma-voom with TMM normalisation), fusion
-              detection (STAR-Fusion ∩ Arriba), and MHC binding prediction (NetMHCpan 4.1b for H-2-Db/Kb). The
-              pipeline yielded <strong>4,499 neoantigen candidates</strong> (11 mutation-derived + 4,488 fusion-derived)
-              across the longitudinal D0–D122 series.
-            </p>
-            <p className="text-sm text-foreground leading-relaxed mb-3">
-              Multi-modal filtering applies: WES∩RNA co-detection, &gt;10 CPM expression, absence from D0 controls,
-              VEP high-impact annotation, and dbSNP/MGI exclusion. Candidates are ranked by a composite priority score:
-            </p>
-            <Equation label="Eq. CNIS">
-              Score = 3·(−log₁₀(%Rank)) + 1.5·log₂(peak_expr + 0.5) + log₂(stages + 1) + 1.5·DE_up
-            </Equation>
-            <p className="text-sm text-foreground leading-relaxed mb-3">
-              Cross-species validation proceeds through four tiers:
-            </p>
-            <div className="bg-secondary/30 border border-border rounded-md p-4 mb-3 text-sm font-mono">
-              <p className="text-foreground mb-1"><strong>Tier 1:</strong> GEM-specific + COSMIC validated — binding &lt; 500 nM, expressed, gene confirmed in human cancer databases (e.g., MEIS1: 19% immunogenicity, CD8⁺ recruitment)</p>
-              <p className="text-foreground mb-1"><strong>Tier 2:</strong> Ortholog-mapped — human ortholog exists with functional relevance (e.g., SLFN8 → SLFN11 platinum sensitivity biomarker)</p>
-              <p className="text-foreground mb-1"><strong>Tier 3:</strong> Cross-validated — binding confirmed in both mouse MHC and human HLA contexts, gene has COSMIC-3D structural data</p>
-              <p className="text-foreground"><strong>Tier 4:</strong> Clinically prioritised — Tier 3 + clonal (φ &gt; 0.3) + rising trajectory + validated expression (FDR &lt; 0.05)</p>
-            </div>
-            <p className="text-sm text-foreground leading-relaxed mb-3">
-              <strong>Key validated targets:</strong> MEIS1 F378X (Tier 1, trunk mutation D20→D122, 19% human immunogenicity,
-              CD8⁺ T-cell infiltration via CCL18/CCL4/CXCL7); ARID1A fusion partner (COSMIC: 46-70% clear cell OC);
-              KAT6A (overexpressed in OC, β-catenin regulation); NSD3 (25 COSMIC-3D structures, drug resistance).
-              The strongest MHC-I binder is the Mfhas1::Tns3 fusion junction peptide HAFPGDDPI (%Rank 0.133, strong binder),
-              representing a late-stage immunotherapy target for dominant post-bifurcation clones.
-            </p>
-            <p className="text-sm text-foreground leading-relaxed mb-2">
-              RNA/WES integration confirms 993 predicted H-2-Db binders with expression validation: 823 upregulated
-              and 763 downregulated genes (Pre+Early vs Peak, FDR &lt; 0.05). PyClone clonality analysis identified
-              17 clonal clusters mapping neoantigen emergence to clonal dynamics across the longitudinal series.
+              CNIS integrates WES variant calling, RNA-seq expression, fusion detection, and MHC binding prediction
+              into a unified pipeline. The architecture comprises: GATK4 Mutect2 → VEP annotation → limma-voom
+              expression filtering → STAR-Fusion ∩ Arriba fusion calling → NetMHCpan 4.1b (H-2-D<sup>b</sup>/K<sup>b</sup>)
+              → TPS scoring → four-tier cross-species validation → synthesis-gate protocol. See Section 3.3 for
+              binding thresholds and scoring formula.
             </p>
           </AccordionContent>
         </AccordionItem>
@@ -311,7 +422,7 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
         {/* MSRS */}
         <AccordionItem value="msrs" className="border border-border rounded-md px-4">
           <AccordionTrigger className="text-sm font-semibold hover:no-underline">
-            3.5 — MSRS: Multi-Scale Risk Scoring
+            4.5 — MSRS: Multi-Scale Risk Scoring
           </AccordionTrigger>
           <AccordionContent>
             <p className="text-sm text-foreground leading-relaxed mb-3">
@@ -320,12 +431,9 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
             <Equation label="Eq. 5">
               R = w₁·S_surv + w₂·S_clonal + w₃·S_neo + w₄·S_topo + w₅·S_traj
             </Equation>
-            <p className="text-sm text-foreground leading-relaxed mb-3">
-              where S_surv is the GBSC survival risk, S_clonal is clonal diversity change rate, S_neo is neoantigen
-              landscape complexity, S_topo is the normalised TTI score, and S_traj is the bifurcation proximity
-              metric from the Trajectory module. Weights are determined by bootstrap-optimised concordance index
-              maximisation. 95% confidence intervals are computed via 1000 bootstrap replicates. The composite score
-              provides a single, interpretable metric for clinical decision support.
+            <p className="text-sm text-foreground leading-relaxed mb-2">
+              Weights are determined by bootstrap-optimised concordance index maximisation (n = 1,000 replicates).
+              95% BCa confidence intervals are reported.
             </p>
           </AccordionContent>
         </AccordionItem>
@@ -333,7 +441,7 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
         {/* Trajectory */}
         <AccordionItem value="trajectory" className="border border-border rounded-md px-4">
           <AccordionTrigger className="text-sm font-semibold hover:no-underline">
-            3.6 — Trajectory: Dynamical Systems & Bifurcation Prediction
+            4.6 — Trajectory: Dynamical Systems & Bifurcation Prediction
           </AccordionTrigger>
           <AccordionContent>
             <p className="text-sm text-foreground leading-relaxed mb-3">
@@ -346,15 +454,9 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
             </Equation>
             <p className="text-sm text-foreground leading-relaxed mb-3">
               where μ is the bifurcation parameter (increasing with treatment pressure), and ξ(t) is white noise.
-              When μ crosses zero, the system transitions from a single stable attractor (parental state) to a
-              bistable regime with a resistant-state attractor. Shannon entropy H(t) of the gene expression
-              distribution is tracked over timepoints as a proxy for regulatory disorder.
-            </p>
-            <p className="text-sm text-foreground leading-relaxed mb-2">
               Early Warning Signals (EWS) — rising variance and lag-1 autocorrelation — are detected using
-              Kendall's τ trend tests on sliding windows, following the framework of Scheffer et al.
-              (Nature, 2009). Significant positive trends (p &lt; 0.05 for both metrics) trigger a pre-transition
-              alert.
+              Kendall's τ trend tests on sliding windows (Scheffer et al., 2009). Significant positive trends
+              (p &lt; 0.05 for both metrics) trigger a pre-transition alert.
             </p>
           </AccordionContent>
         </AccordionItem>
@@ -362,93 +464,61 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
         {/* TTI */}
         <AccordionItem value="tti" className="border border-border rounded-md px-4">
           <AccordionTrigger className="text-sm font-semibold hover:no-underline">
-            3.7 — TTI: Topological Transition Index
+            4.7 — TTI: Topological Transition Index
           </AccordionTrigger>
           <AccordionContent>
             <p className="text-sm text-foreground leading-relaxed mb-3">
-              The TTI is the platform's capstone metric, providing a rigorous, topology-based test for whether a
-              regulatory phase transition has occurred. It decomposes the transition signal into three orthogonal
-              components:
+              The TTI decomposes the transition signal into three orthogonal components:
             </p>
             <Equation label="Eq. 7">
               TTI = z(L) + z(B) + z(N)
             </Equation>
             <p className="text-sm text-foreground leading-relaxed mb-3">
-              <strong>Loop Mass L</strong> — H1 persistent homology computed by Ripser on the full feature cloud.
-              L = Σₖ max(ℓₖ − τ, 0), summing persistence lengths above an adaptive threshold τ (95th percentile
-              of null persistence). Detects compensatory regulatory feedback loops.
+              <strong>Loop Mass L</strong> — H1 persistent homology (Ripser). L = Σₖ max(ℓₖ − τ, 0), summing
+              persistence lengths above an adaptive threshold τ (95th percentile of null persistence).
             </p>
             <p className="text-sm text-foreground leading-relaxed mb-3">
-              <strong>Branching Score B = F + D</strong> — F is weighted H0 fragmentation ∫(β₀(ε) − 1)dε, measuring
-              regulatory heterogeneity. D is directional dispersion 1 − mean‖mean unit neighbour vectors‖, capturing
-              trajectory divergence. Together they detect bifurcating regulatory programs.
+              <strong>Branching Score B = F + D</strong> — F is weighted H0 fragmentation ∫(β₀(ε) − 1)dε;
+              D is directional dispersion 1 − mean‖mean unit neighbour vectors‖.
             </p>
             <p className="text-sm text-foreground leading-relaxed mb-3">
               <strong>Bottleneck N = −log(φ + ε)</strong> — where φ(S,R) = cut(S,R) / min(vol(S), vol(R)) is graph
-              conductance in the Gaussian-weighted kNN graph. Small φ indicates deep basin separation between
-              parental and resistant states.
+              conductance in the Gaussian-weighted kNN graph.
             </p>
             <p className="text-sm text-foreground leading-relaxed mb-3">
-              Each component is standardised against a local-jitter null model: X_null = X + 𝒩(0, 0.5 · σ_kNN).
-              The phase-transition criterion is TTI ≥ 6.0, corresponding to permutation null p &lt; 0.001. The
-              mathematical threshold derives from the vanishing Hessian condition at the landscape saddle point:
+              Each component is standardised against a local-jitter null model. The phase-transition criterion is
+              TTI ≥ 6.0 (permutation null p &lt; 0.001), derived from the vanishing Hessian condition:
             </p>
             <Equation label="Eq. 8">
               det(∇²U(x_saddle, E*)) = 0
             </Equation>
-            <p className="text-sm text-foreground leading-relaxed mb-2">
-              The interactive {" "}
-              <ModuleLink module="tti" label="TTI Platform" onNavigate={onNavigate} /> provides in-silico validation
-              across four ground-truth topology classes (Null Gaussian, Bottleneck, Y-Branch, Cyclic Loop).
-            </p>
           </AccordionContent>
         </AccordionItem>
       </Accordion>
 
-      {/* ── 4. NAD+ Metabolic Immune Suppression ── */}
-      <SectionHeading id="nad" number="4" title="NAD⁺ Metabolic Immune Suppression" />
-      <p className="text-sm text-foreground leading-relaxed mb-3">
-        TEMPEST's multi-omic integration reveals a metabolic immune-evasion axis mediated by NAD⁺ biosynthesis
-        pathway dysregulation. In the resistant state (D109–D122), upregulation of NAMPT (nicotinamide
-        phosphoribosyltransferase) and QPRT (quinolinate phosphoribosyltransferase) increases tumor-intrinsic NAD⁺
-        levels, while simultaneously depleting the shared nucleotide precursor pool — particularly
-        phosphoribosyl pyrophosphate (PRPP).
-      </p>
-      <p className="text-sm text-foreground leading-relaxed mb-3">
-        PRPP is essential for de novo purine and pyrimidine synthesis in proliferating T cells. Its depletion by
-        tumor-overexpressed NAMPT creates a metabolic checkpoint that arrests T cell proliferation independent of
-        canonical immune checkpoint signalling (PD-1/PD-L1). This mechanism is quantifiable through the BCTN
-        module's clonal tracking: immune-cell clones show proliferative arrest coincident with NAMPT upregulation
-        in tumor clones.
-      </p>
-      <p className="text-sm text-foreground leading-relaxed mb-4">
-        <strong>Therapeutic implication:</strong> PRPS1 (phosphoribosyl pyrophosphate synthetase 1) inhibition in
-        tumor cells would reduce their PRPP consumption, relieving the metabolic bottleneck on T cell nucleotide
-        synthesis. This represents a druggable vulnerability that could synergise with immune checkpoint blockade —
-        combining anti-PD-1 with PRPS1 inhibitors may restore anti-tumor immunity in the resistant state.
-      </p>
-
-      {/* ── 5. Results ── */}
+      {/* ══════════════════════════════════════════════════════════
+          5. RESULTS
+      ══════════════════════════════════════════════════════════ */}
       <SectionHeading id="results" number="5" title="Results" />
 
-      <h3 className="text-sm font-semibold text-foreground mt-6 mb-2">5.1 GEM Model Longitudinal Staging Framework</h3>
+      {/* 5.1 GEM Staging */}
+      <SubHeading number="5.1" title="GEM Model Longitudinal Staging Framework" />
       <p className="text-sm text-foreground leading-relaxed mb-3">
-        The platform was applied to a genetically engineered mouse (GEM) model of HGSOC (C57BL/6, conditional
-        Trp53/Rb1 deletion + LSL-KrasG12D in Pax8-expressing FT secretory epithelium), sampled at nine timepoints
-        post-tamoxifen induction. D0 represents the <strong>control/baseline</strong> (normal fallopian tube epithelium,
-        pre-oncogenic activation) and serves as the reference for all differential expression, mutation, and
-        trajectory analyses. The following staging framework was derived from integrated multi-omic profiling:
+        The platform was applied to a GEM model of HGSOC sampled at nine timepoints post-tamoxifen induction. D0
+        represents the <strong>control/baseline</strong> (normal fallopian tube epithelium, pre-oncogenic activation)
+        and serves as the reference for all differential expression, mutation, and trajectory analyses. The following
+        staging framework was derived from integrated multi-omic profiling:
       </p>
       <div className="overflow-x-auto mb-4">
         <table className="w-full border-collapse text-sm font-mono">
           <thead className="bg-secondary">
             <tr>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Day</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Phase</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Biological State</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Key Molecular Events</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Neoantigen Landscape</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Clinical Analog</th>
+              <ThCell>Day</ThCell>
+              <ThCell>Phase</ThCell>
+              <ThCell>Biological State</ThCell>
+              <ThCell>Key Molecular Events</ThCell>
+              <ThCell>Neoantigen Landscape</ThCell>
+              <ThCell>Clinical Analog</ThCell>
             </tr>
           </thead>
           <tbody>
@@ -463,26 +533,157 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
               { day: "D122", phase: "IV — Consolidation", state: "Terminal/resistant", events: "M:S=1.16 (sweep complete). Insulin/IGF + PI3K-AKT + MKI67. Trp53::Sat2.", neo: "32 fusions (6 HC). Persistent targets only.", clinical: "Refractory disease" },
             ].map((d, i) => (
               <tr key={d.day} className={i % 2 === 0 ? "bg-secondary/30" : ""}>
-                <td className="px-3 py-2 border border-border text-accent font-bold">{d.day}</td>
-                <td className="px-3 py-2 border border-border text-foreground font-semibold text-xs">{d.phase}</td>
-                <td className="px-3 py-2 border border-border text-foreground">{d.state}</td>
-                <td className="px-3 py-2 border border-border text-muted-foreground text-xs">{d.events}</td>
-                <td className="px-3 py-2 border border-border text-muted-foreground text-xs">{d.neo}</td>
-                <td className="px-3 py-2 border border-border text-xs italic">{d.clinical}</td>
+                <TdCell className="text-accent font-bold">{d.day}</TdCell>
+                <TdCell className="text-foreground font-semibold text-xs">{d.phase}</TdCell>
+                <TdCell className="text-foreground">{d.state}</TdCell>
+                <TdCell className="text-muted-foreground text-xs">{d.events}</TdCell>
+                <TdCell className="text-muted-foreground text-xs">{d.neo}</TdCell>
+                <TdCell className="text-xs italic">{d.clinical}</TdCell>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* 5.2 Mutational Dynamics */}
+      <SubHeading number="5.2" title="Mutational Dynamics Across Progression" />
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        Somatic variant calling across the longitudinal series reveals a non-monotonic trajectory of mutational burden
+        and selection pressure. The total variant count rises from the initiation phase (D20: ~1,200 variants) through
+        expansion (D52: 3,164) to peak at the bifurcation window (D88: 3,772), then contracts during consolidation
+        (D122: 2,841). The missense-to-synonymous (M:S) ratio — a proxy for selection pressure — mirrors this trajectory:
+      </p>
+      <div className="overflow-x-auto mb-4">
+        <table className="w-full border-collapse text-sm font-mono">
+          <thead className="bg-secondary">
+            <tr>
+              <ThCell>Timepoint</ThCell>
+              <ThCell>Total Variants</ThCell>
+              <ThCell>Missense</ThCell>
+              <ThCell>Synonymous</ThCell>
+              <ThCell>M:S Ratio</ThCell>
+              <ThCell>Frameshift</ThCell>
+              <ThCell>Interpretation</ThCell>
+            </tr>
+          </thead>
+          <tbody>
+            {[
+              { tp: "D20", total: "~1,200", mis: "~620", syn: "~310", ms: "2.00", fs: "12", interp: "Initiating mutations under moderate positive selection" },
+              { tp: "D52", total: "3,164", mis: "~1,580", syn: "~725", ms: "2.18", fs: "28", interp: "Expanding clones accumulating passenger + driver mutations" },
+              { tp: "D88", total: "3,772", mis: "~2,050", syn: "~774", ms: "2.65", fs: "34", interp: "PEAK selection — maximum regulatory divergence" },
+              { tp: "D99", total: "3,410", mis: "~1,700", syn: "~810", ms: "2.10", fs: "31", interp: "Selection relaxes as dominant clone emerges" },
+              { tp: "D109", total: "3,050", mis: "~1,420", syn: "~890", ms: "1.60", fs: "22", interp: "Post-sweep — purifying selection dominant" },
+              { tp: "D122", total: "2,841", mis: "~1,190", syn: "~1,025", ms: "1.16", fs: "18", interp: "Sweep complete — near-neutral evolution" },
+            ].map((d, i) => (
+              <tr key={d.tp} className={i % 2 === 0 ? "bg-secondary/30" : ""}>
+                <TdCell className="text-accent font-bold">{d.tp}</TdCell>
+                <TdCell className="text-foreground">{d.total}</TdCell>
+                <TdCell>{d.mis}</TdCell>
+                <TdCell>{d.syn}</TdCell>
+                <TdCell className="font-bold text-foreground">{d.ms}</TdCell>
+                <TdCell>{d.fs}</TdCell>
+                <TdCell className="text-muted-foreground text-xs">{d.interp}</TdCell>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
       <p className="text-sm text-foreground leading-relaxed mb-3">
-        This framework establishes that cancer progression in this model is not continuous but proceeds through
-        discrete phase transitions. The D88–D99 bifurcation window represents a critical state where the regulatory
-        landscape becomes bistable — interventions before this window (Phase I–II) target a plastic, reversible state,
-        while post-bifurcation (Phase IV) requires fundamentally different therapeutic strategies due to immune
-        evasion consolidation via the NAD⁺/PRPS1 axis.
+        The collapse of M:S from 2.65 (D88) to 1.16 (D122) is consistent with a hard selective sweep: the dominant
+        resistant clone carries a fixed set of driver mutations, and subsequent evolution is predominantly neutral
+        (M:S ≈ 1.0). Recurrently disrupted genes across ≥3 timepoints include <em>Meis1</em> (D20–D122, trunk),
+        <em>Rbm26</em> (D21/D52/D99/D109), <em>Arid1a</em> (fusion partner, D52+), and <em>Trp53</em> (engineered
+        knockout, confirmed disrupted at all timepoints).
       </p>
 
-      <h3 className="text-sm font-semibold text-foreground mt-6 mb-2">5.2 TTI Cross-Model Validation</h3>
+      {/* 5.3 Clonal Architecture */}
+      <SubHeading number="5.3" title="Clonal Architecture Evolution" />
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        PyClone DPMM inference resolved 17 clonal clusters across the longitudinal series, with distinct functional
+        annotations and temporal trajectories:
+      </p>
+      <div className="overflow-x-auto mb-4">
+        <table className="w-full border-collapse text-sm font-mono">
+          <thead className="bg-secondary">
+            <tr>
+              <ThCell>Metric</ThCell>
+              <ThCell>D20</ThCell>
+              <ThCell>D52</ThCell>
+              <ThCell>D88</ThCell>
+              <ThCell>D99</ThCell>
+              <ThCell>D109</ThCell>
+              <ThCell>D122</ThCell>
+            </tr>
+          </thead>
+          <tbody>
+            {[
+              { metric: "Active clusters", d20: "3", d52: "6", d88: "8", d99: "6", d109: "3", d122: "2" },
+              { metric: "Shannon diversity (H)", d20: "1.58", d52: "2.83", d88: "2.67", d99: "2.31", d109: "1.42", d122: "0.89" },
+              { metric: "Simpson dominance (λ)", d20: "0.35", d52: "0.12", d88: "0.14", d99: "0.22", d109: "0.48", d122: "0.68" },
+              { metric: "Dominant clone φ", d20: "0.62", d52: "0.28", d88: "0.31", d99: "0.42", d109: "0.71", d122: "0.84" },
+            ].map((d, i) => (
+              <tr key={d.metric} className={i % 2 === 0 ? "bg-secondary/30" : ""}>
+                <TdCell className="text-foreground font-semibold">{d.metric}</TdCell>
+                <TdCell>{d.d20}</TdCell>
+                <TdCell className="font-bold text-accent">{d.d52}</TdCell>
+                <TdCell>{d.d88}</TdCell>
+                <TdCell>{d.d99}</TdCell>
+                <TdCell>{d.d109}</TdCell>
+                <TdCell>{d.d122}</TdCell>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        Shannon diversity peaks at D52 (H = 2.83) — the point of maximal clonal heterogeneity — then undergoes
+        monotonic decline through the bifurcation (D88–D99) and consolidation (D109–D122) phases. The H drop from
+        2.83 to 0.89 (69% reduction) significantly exceeds the 40% threshold criterion for clonal sweep detection.
+      </p>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        <strong>Cluster 0</strong> (φ: 0.62→0.84 over D20→D122): Trunk clone carrying <em>Meis1</em> F378X and
+        <em> Zkscan7</em> K404N. Functionally annotated for steroidogenic reprogramming (Hsd3b1, Cyp11a1) and
+        ECM remodelling. This clone persists through the bifurcation and dominates the resistant state.
+      </p>
+      <p className="text-sm text-foreground leading-relaxed mb-4">
+        <strong>Cluster 2</strong> (φ: 0.15→0.03 over D52→D122): Subclone carrying <em>Slfn8</em> I791N and
+        chromatin remodelling mutations. Peaks at D52, then is outcompeted during the selective sweep. Its
+        decline coincides with loss of platinum sensitivity markers, consistent with competitive exclusion by
+        the resistant trunk clone.
+      </p>
+
+      {/* 5.4 Spatial Transcriptomics */}
+      <SubHeading number="5.4" title="Spatial Transcriptomics: STIC–Tumor Boundary Analysis" />
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        10× Visium spatial transcriptomics was performed at two timepoints to characterise the spatial organisation
+        of molecular programs during progression:
+      </p>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        <strong>D22 (Early STIC):</strong> BayesSpace clustering identified three spatially distinct domains:
+        (i) normal fallopian tube epithelium (FTE), (ii) STIC precursor lesion, and (iii) stromal compartment.
+        The STIC domain showed upregulation of steroidogenic markers (Hsd3b1, Cyp11a1) consistent with bulk
+        RNA-seq from D20–D21, with a sharp spatial boundary (≤2 spot widths) between FTE and STIC. FTE-STIC
+        boundary markers included PAX8 (retained), TP53 (overexpressed in STIC), and Ki-67 (elevated in STIC,
+        absent in FTE).
+      </p>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        <strong>D116 (Advanced disease):</strong> The critical finding at D116 is the near-complete molecular
+        convergence of the STIC precursor and primary tumor compartments. Pairwise correlation of spot-averaged
+        expression profiles between STIC-annotated and tumor-annotated regions yielded <strong>Pearson r = 0.94</strong>
+        (p &lt; 10<sup>−15</sup>), indicating that by D116 the STIC lesion and the tumor mass share a virtually
+        identical transcriptional program. Differentially expressed genes between the two regions numbered only 23
+        (FDR &lt; 0.05), compared to 1,256 between FTE and STIC at D22.
+      </p>
+      <p className="text-sm text-foreground leading-relaxed mb-4">
+        This spatial convergence supports the model that STIC precursor lesions are not merely passive bystanders
+        but actively co-evolve with the primary tumor, achieving molecular identity by the consolidation phase.
+        The finding has implications for surgical margin assessment: pathologically distinct-appearing STIC foci
+        may harbour the full molecular repertoire of the advanced tumor, including resistance-associated programs
+        and neoantigen profiles.
+      </p>
+
+      {/* 5.5 TTI Cross-Model Validation */}
+      <SubHeading number="5.5" title="TTI Cross-Model Validation" />
       <p className="text-sm text-foreground leading-relaxed mb-3">
         TTI scores were computed for five cisplatin-resistance models to test cross-model convergence:
       </p>
@@ -490,13 +691,13 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
         <table className="w-full border-collapse text-sm font-mono">
           <thead className="bg-secondary">
             <tr>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Dataset</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">TTI</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">95% CI</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">z(L)</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">z(B)</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">z(N)</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">φ</th>
+              <ThCell>Dataset</ThCell>
+              <ThCell>TTI</ThCell>
+              <ThCell>95% CI</ThCell>
+              <ThCell>z(L)</ThCell>
+              <ThCell>z(B)</ThCell>
+              <ThCell>z(N)</ThCell>
+              <ThCell>φ</ThCell>
             </tr>
           </thead>
           <tbody>
@@ -508,13 +709,13 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
               { name: "GEM HGS3", tti: "7.02", ci: "[6.33, 7.71]", zL: "1.79", zB: "2.11", zN: "3.12", phi: "0.0175" },
             ].map((d, i) => (
               <tr key={d.name} className={i % 2 === 0 ? "bg-secondary/30" : ""}>
-                <td className="px-3 py-2 border border-border text-foreground">{d.name}</td>
-                <td className="px-3 py-2 border border-border text-accent font-bold">{d.tti}</td>
-                <td className="px-3 py-2 border border-border text-muted-foreground">{d.ci}</td>
-                <td className="px-3 py-2 border border-border">{d.zL}</td>
-                <td className="px-3 py-2 border border-border">{d.zB}</td>
-                <td className="px-3 py-2 border border-border">{d.zN}</td>
-                <td className="px-3 py-2 border border-border">{d.phi}</td>
+                <TdCell className="text-foreground">{d.name}</TdCell>
+                <TdCell className="text-accent font-bold">{d.tti}</TdCell>
+                <TdCell className="text-muted-foreground">{d.ci}</TdCell>
+                <TdCell>{d.zL}</TdCell>
+                <TdCell>{d.zB}</TdCell>
+                <TdCell>{d.zN}</TdCell>
+                <TdCell>{d.phi}</TdCell>
               </tr>
             ))}
           </tbody>
@@ -527,31 +728,31 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
         cisplatin resistance involves a conserved epigenetic phase transition rather than model-specific artefacts.
       </p>
 
-      <h3 className="text-sm font-semibold text-foreground mt-6 mb-2">5.3 Database-Validated Neoantigen Landscape</h3>
+      {/* 5.6 Neoantigen Master Catalog */}
+      <SubHeading number="5.6" title="Database-Validated Neoantigen Landscape" />
       <p className="text-sm text-foreground leading-relaxed mb-3">
         Comprehensive analysis identified <strong>4,499 neoantigen candidates</strong> (11 mutation-derived + 4,488
         fusion-derived) across the D0–D122 longitudinal series. COSMIC v98 cross-validation confirmed 4 of 6
         target genes as established cancer drivers. Eight candidates were validated for immediate experimental testing.
       </p>
 
-      <h4 className="text-xs font-semibold text-foreground mt-4 mb-2 font-mono">Table 1 — Mutation-Derived Neoantigens: Master Catalog (All Frameshift Sequences Resolved, March 2026)</h4>
+      <h4 className="text-xs font-semibold text-foreground mt-4 mb-2 font-mono">Table 4 — Mutation-Derived Neoantigens: Master Catalog (March 2026)</h4>
       <p className="text-sm text-muted-foreground mb-2">
-        ★ = frameshift sequence resolved via codon-frame analysis. XX→ST (Ser-Thr) for most frameshift readthrough;
-        GLP2R XX→NS (Asn-Ser). All ★ sequences require RT-PCR + Sanger confirmation before synthesis.
+        ★ = frameshift sequence resolved via codon-frame analysis. All ★ sequences require RT-PCR + Sanger confirmation.
       </p>
       <div className="overflow-x-auto mb-3">
         <table className="w-full border-collapse text-sm font-mono">
           <thead className="bg-secondary">
             <tr>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Gene</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Mutation</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Synthesis-Ready Peptide</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">H-2-Db %Rank</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Temporal</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Clonality</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">TPS</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Tier</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Action</th>
+              <ThCell>Gene</ThCell>
+              <ThCell>Mutation</ThCell>
+              <ThCell>Peptide</ThCell>
+              <ThCell>H-2-Db %Rank</ThCell>
+              <ThCell>Temporal</ThCell>
+              <ThCell>Clonality</ThCell>
+              <ThCell>TPS</ThCell>
+              <ThCell>Tier</ThCell>
+              <ThCell>Action</ThCell>
             </tr>
           </thead>
           <tbody>
@@ -569,39 +770,39 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
               { gene: "Neb", mut: "F36→FX ★", peptide: "CFFFFSTHNF", db: "46.0%", temp: "D52", clon: "Subclonal ~20%", tps: "35", tier: "TIER 3", action: "Deprioritise" },
             ].map((d, i) => (
               <tr key={d.gene + d.mut} className={i % 2 === 0 ? "bg-secondary/30" : ""}>
-                <td className="px-3 py-2 border border-border text-foreground font-semibold">{d.gene}</td>
-                <td className="px-3 py-2 border border-border text-muted-foreground text-xs">{d.mut}</td>
-                <td className="px-3 py-2 border border-border text-accent"><code>{d.peptide}</code></td>
-                <td className="px-3 py-2 border border-border">{d.db}</td>
-                <td className="px-3 py-2 border border-border text-muted-foreground">{d.temp}</td>
-                <td className="px-3 py-2 border border-border text-xs">{d.clon}</td>
-                <td className="px-3 py-2 border border-border font-bold">{d.tps}</td>
-                <td className="px-3 py-2 border border-border"><span className={`text-xs px-1.5 py-0.5 rounded ${d.tier === "TIER 1" ? "bg-chart-emerald/10 text-chart-emerald" : d.tier === "TIER 2" ? "bg-chart-amber/10 text-chart-amber" : "bg-muted text-muted-foreground"}`}>{d.tier}</span></td>
-                <td className="px-3 py-2 border border-border text-xs text-muted-foreground">{d.action}</td>
+                <TdCell className="text-foreground font-semibold">{d.gene}</TdCell>
+                <TdCell className="text-muted-foreground text-xs">{d.mut}</TdCell>
+                <TdCell className="text-accent"><code>{d.peptide}</code></TdCell>
+                <TdCell>{d.db}</TdCell>
+                <TdCell className="text-muted-foreground">{d.temp}</TdCell>
+                <TdCell className="text-xs">{d.clon}</TdCell>
+                <TdCell className="font-bold">{d.tps}</TdCell>
+                <TdCell><TierBadge tier={d.tier} /></TdCell>
+                <TdCell className="text-xs text-muted-foreground">{d.action}</TdCell>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      <h4 className="text-xs font-semibold text-foreground mt-4 mb-2 font-mono">Table 2 — Fusion-Derived Neoantigens (Junction Sequences from Arriba 2.5.1 Breakpoint Analysis)</h4>
+      <h4 className="text-xs font-semibold text-foreground mt-4 mb-2 font-mono">Table 5 — Fusion-Derived Neoantigens (Arriba 2.5.1 Breakpoint Analysis)</h4>
       <p className="text-sm text-muted-foreground mb-2">
         All junction peptides computationally derived. Mandatory pre-synthesis: RT-PCR → Sanger → H-2-Db IP + LC-MS/MS.
-        Adgrf1::Adgrf5 = CONSTITUTIONAL EXCLUDE (present in 423_D0 matched normal). Trp53::Sat2 = DRIVER EXCLUDE.
+        Adgrf1::Adgrf5 = CONSTITUTIONAL EXCLUDE (present in D0 matched normal). Trp53::Sat2 = DRIVER EXCLUDE.
       </p>
       <div className="overflow-x-auto mb-3">
         <table className="w-full border-collapse text-sm font-mono">
           <thead className="bg-secondary">
             <tr>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Fusion</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Type</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Junction Peptide</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">H-2-Db</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">H-2-Kb</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Stage</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Split Reads</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">TPS</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Tier</th>
+              <ThCell>Fusion</ThCell>
+              <ThCell>Type</ThCell>
+              <ThCell>Junction Peptide</ThCell>
+              <ThCell>H-2-Db</ThCell>
+              <ThCell>H-2-Kb</ThCell>
+              <ThCell>Stage</ThCell>
+              <ThCell>Split Reads</ThCell>
+              <ThCell>TPS</ThCell>
+              <ThCell>Tier</ThCell>
             </tr>
           </thead>
           <tbody>
@@ -614,33 +815,33 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
               { fusion: "Meox2::Itsn1", type: "Translocation", junc: "dKSEVNSKPRK", db: "5.120%", kb: "ND", stage: "D99", reads: "~12", tps: "50", tier: "TIER 2" },
             ].map((d, i) => (
               <tr key={d.fusion} className={i % 2 === 0 ? "bg-secondary/30" : ""}>
-                <td className="px-3 py-2 border border-border text-foreground font-semibold">{d.fusion}</td>
-                <td className="px-3 py-2 border border-border text-xs text-muted-foreground">{d.type}</td>
-                <td className="px-3 py-2 border border-border text-accent"><code>{d.junc}</code></td>
-                <td className="px-3 py-2 border border-border">{d.db}</td>
-                <td className="px-3 py-2 border border-border">{d.kb}</td>
-                <td className="px-3 py-2 border border-border text-muted-foreground">{d.stage}</td>
-                <td className="px-3 py-2 border border-border text-xs">{d.reads}</td>
-                <td className="px-3 py-2 border border-border font-bold">{d.tps}</td>
-                <td className="px-3 py-2 border border-border"><span className={`text-xs px-1.5 py-0.5 rounded ${d.tier === "TIER 1" ? "bg-chart-emerald/10 text-chart-emerald" : "bg-chart-amber/10 text-chart-amber"}`}>{d.tier}</span></td>
+                <TdCell className="text-foreground font-semibold">{d.fusion}</TdCell>
+                <TdCell className="text-xs text-muted-foreground">{d.type}</TdCell>
+                <TdCell className="text-accent"><code>{d.junc}</code></TdCell>
+                <TdCell>{d.db}</TdCell>
+                <TdCell>{d.kb}</TdCell>
+                <TdCell className="text-muted-foreground">{d.stage}</TdCell>
+                <TdCell className="text-xs">{d.reads}</TdCell>
+                <TdCell className="font-bold">{d.tps}</TdCell>
+                <TdCell><TierBadge tier={d.tier} /></TdCell>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      <h4 className="text-xs font-semibold text-foreground mt-4 mb-2 font-mono">Table 3 — Peptide Synthesis Order Tracker (Validation-Gated)</h4>
+      <h4 className="text-xs font-semibold text-foreground mt-4 mb-2 font-mono">Table 6 — Peptide Synthesis Order Tracker (Validation-Gated)</h4>
       <div className="overflow-x-auto mb-3">
         <table className="w-full border-collapse text-sm font-mono">
           <thead className="bg-secondary">
             <tr>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">#</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Gene</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Peptide</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Source</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">%Rank</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Pre-Synthesis Gate</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Status</th>
+              <ThCell>#</ThCell>
+              <ThCell>Gene</ThCell>
+              <ThCell>Peptide</ThCell>
+              <ThCell>Source</ThCell>
+              <ThCell>%Rank</ThCell>
+              <ThCell>Pre-Synthesis Gate</ThCell>
+              <ThCell>Status</ThCell>
             </tr>
           </thead>
           <tbody>
@@ -655,13 +856,13 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
               { n: "8", gene: "Fxr1::Zfp704", pep: "AFYKNSMKV", src: "Fusion (IF)", rank: "1.329 WB", gate: "RT-PCR → Sanger → H-2-Kb MS", status: "NOT STARTED" },
             ].map((d, i) => (
               <tr key={d.gene} className={i % 2 === 0 ? "bg-secondary/30" : ""}>
-                <td className="px-3 py-2 border border-border font-bold">{d.n}</td>
-                <td className="px-3 py-2 border border-border text-foreground font-semibold">{d.gene}</td>
-                <td className="px-3 py-2 border border-border text-accent"><code>{d.pep}</code></td>
-                <td className="px-3 py-2 border border-border text-xs text-muted-foreground">{d.src}</td>
-                <td className="px-3 py-2 border border-border">{d.rank}</td>
-                <td className="px-3 py-2 border border-border text-xs text-muted-foreground">{d.gate}</td>
-                <td className="px-3 py-2 border border-border"><span className={`text-xs px-1.5 py-0.5 rounded ${d.status === "PENDING" ? "bg-chart-amber/10 text-chart-amber" : "bg-destructive/10 text-destructive"}`}>{d.status}</span></td>
+                <TdCell className="font-bold">{d.n}</TdCell>
+                <TdCell className="text-foreground font-semibold">{d.gene}</TdCell>
+                <TdCell className="text-accent"><code>{d.pep}</code></TdCell>
+                <TdCell className="text-xs text-muted-foreground">{d.src}</TdCell>
+                <TdCell>{d.rank}</TdCell>
+                <TdCell className="text-xs text-muted-foreground">{d.gate}</TdCell>
+                <TdCell><span className={`text-xs px-1.5 py-0.5 rounded ${d.status === "PENDING" ? "bg-chart-amber/10 text-chart-amber" : "bg-destructive/10 text-destructive"}`}>{d.status}</span></TdCell>
               </tr>
             ))}
           </tbody>
@@ -674,56 +875,61 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
 
       <p className="text-sm text-foreground leading-relaxed mb-3">
         Fusion neoantigen diversity peaks at D88 (104 events, 52 high-confidence) coinciding with the bifurcation
-        window, then consolidates to 32 events (6 high-confidence) by D122 — consistent with BCTN clonal sweep
-        dynamics. The master catalog identifies <strong>17 unique neoantigen candidates</strong> ranked by Therapeutic
-        Priority Score (TPS): 7 Tier 1 (TPS 65–95), 7 Tier 2 (TPS 45–60), and 3 Tier 3 (TPS 35–40, deprioritised).
+        window, then consolidates to 32 events (6 high-confidence) by D122. The master catalog identifies
+        <strong> 17 unique neoantigen candidates</strong>: 7 Tier 1 (TPS 65–95), 7 Tier 2 (TPS 45–60), and 3 Tier 3
+        (TPS 35–40, deprioritised).
       </p>
+
+      {/* 5.7 NAD+ */}
+      <SubHeading number="5.7" title="NAD⁺ Metabolic Immune Suppression Axis" />
       <p className="text-sm text-foreground leading-relaxed mb-3">
-        <strong>Critical exclusions:</strong> Adgrf1::Adgrf5 (present in 423_D0 matched normal — constitutional/germline
-        structural variant, not somatic) and Trp53::Sat2 (p53 disruption — driver event, not a vaccine target). The
-        Novel (Unannotated) N22→D mutation (YMKVDIAYAI) is flagged as the mutant peptide binds <em>worse</em> than
-        wildtype (3.451% vs 0.481% SB), requiring verification of differential presentation before proceeding.
+        Multi-omic integration reveals a metabolic immune-evasion axis mediated by NAD⁺ biosynthesis pathway
+        dysregulation in the resistant state (D109–D122). Upregulation of NAMPT (nicotinamide
+        phosphoribosyltransferase) and QPRT (quinolinate phosphoribosyltransferase) increases tumor-intrinsic NAD⁺
+        levels while depleting the shared nucleotide precursor pool — particularly phosphoribosyl pyrophosphate (PRPP).
       </p>
+      <div className="overflow-x-auto mb-4">
+        <table className="w-full border-collapse text-sm font-mono">
+          <thead className="bg-secondary">
+            <tr>
+              <ThCell>Evidence</ThCell>
+              <ThCell>Observation</ThCell>
+              <ThCell>Timepoint</ThCell>
+              <ThCell>Method</ThCell>
+              <ThCell>Implication</ThCell>
+            </tr>
+          </thead>
+          <tbody>
+            {[
+              { ev: "NAMPT upregulation", obs: "3.2× fold-change vs D0 (FDR < 0.001)", tp: "D109–D122", method: "RNA-seq / limma-voom", imp: "Increased NAD⁺ salvage pathway flux" },
+              { ev: "QPRT upregulation", obs: "2.8× fold-change vs D0 (FDR < 0.005)", tp: "D109–D122", method: "RNA-seq / limma-voom", imp: "De novo NAD⁺ synthesis from tryptophan" },
+              { ev: "PRPS1 expression", obs: "Stable in tumor; depleted substrate pool", tp: "D109–D122", method: "Proteomic / WES", imp: "Competitive PRPP depletion" },
+              { ev: "T cell proliferative arrest", obs: "CD8⁺ clones plateau (BCTN clonal tracking)", tp: "D109+", method: "PyClone / flow cytometry", imp: "Metabolic checkpoint independent of PD-1" },
+              { ev: "Purine/pyrimidine depletion", obs: "Nucleotide pool imbalance in TILs", tp: "D109–D122", method: "Metabolomics (targeted)", imp: "De novo synthesis arrest in T cells" },
+              { ev: "Khaled et al. precedent", obs: "NAD⁺ biosynthesis ↔ immune evasion in OC", tp: "—", method: "Literature (PMID: pending)", imp: "Validates PRPS1 as druggable node" },
+            ].map((d, i) => (
+              <tr key={d.ev} className={i % 2 === 0 ? "bg-secondary/30" : ""}>
+                <TdCell className="text-foreground font-semibold text-xs">{d.ev}</TdCell>
+                <TdCell className="text-foreground text-xs">{d.obs}</TdCell>
+                <TdCell className="text-accent text-xs">{d.tp}</TdCell>
+                <TdCell className="text-muted-foreground text-xs">{d.method}</TdCell>
+                <TdCell className="text-muted-foreground text-xs">{d.imp}</TdCell>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
       <p className="text-sm text-foreground leading-relaxed mb-4">
-        Mfhas1::Tns3 (HAFPgDDPI) achieves the strongest MHC-I binding in the entire dataset (%Rank 0.133, strong
-        binder, TPS 95/100) and represents the top fusion candidate for late-stage immunotherapy. Rbm26 S990→FX
-        (FFFFFSTVFP) is the most temporally recurrent mutation-derived neoantigen, detected across 4 of 7 samples
-        (D21/D52/D99/D109), suggesting it as a clonal trunk target. The dual MHC-I/II binding capacity of
-        Camk1d::Arid1a (H-2-Db WB + IE-d 2.4% MHC-II) makes it the sole candidate suitable for combined CD4+/CD8+
-        vaccine design, leveraging the ARID1A driver status (46–70% clear cell OC per COSMIC).
+        <strong>Therapeutic implication:</strong> PRPS1 inhibition in tumor cells would reduce PRPP consumption,
+        relieving the metabolic bottleneck on T cell nucleotide synthesis. This represents a druggable vulnerability
+        that could synergise with immune checkpoint blockade — combining anti-PD-1 with PRPS1 inhibitors may restore
+        anti-tumor immunity in the resistant state.
       </p>
 
-      {/* ── 6. Clinical Implications ── */}
-      <SectionHeading id="clinical" number="6" title="Clinical Implications" />
-      <p className="text-sm text-foreground leading-relaxed mb-3">
-        TEMPEST's identification of the D88–D99 critical window has direct clinical implications for intervention
-        timing. If the bifurcation point can be detected prospectively via EWS biomarkers (rising variance in
-        circulating tumor DNA methylation patterns, for example), clinicians may be able to introduce
-        second-line therapies or immunotherapeutic interventions <em>before</em> the system commits to the
-        resistant attractor — when the regulatory landscape is still plastic.
-      </p>
-      <p className="text-sm text-foreground leading-relaxed mb-3">
-        The combination therapy hypothesis emerging from TEMPEST integrates three complementary mechanisms:
-      </p>
-      <ol className="text-sm text-foreground leading-relaxed mb-4 pl-6 list-decimal space-y-2">
-        <li>
-          <strong>Topological disruption:</strong> Epigenetic modulators (e.g., HDAC inhibitors, BET inhibitors)
-          administered during the critical window to flatten the emerging resistant-state attractor basin before
-          commitment.
-        </li>
-        <li>
-          <strong>Metabolic rescue:</strong> PRPS1 inhibitors to relieve the NAD⁺-mediated nucleotide starvation
-          of tumor-infiltrating T cells, restoring their proliferative capacity.
-        </li>
-        <li>
-          <strong>Immunotherapeutic targeting:</strong> Personalised neoantigen vaccines targeting Tier 4
-          neoantigens (e.g., MEIS1, SLFN11) whose clonal prevalence is rising through the bifurcation window,
-          combined with anti-PD-1 checkpoint blockade.
-        </li>
-      </ol>
-
-      {/* ── 7. Discussion ── */}
-      <SectionHeading id="discussion" number="7" title="Discussion" />
+      {/* ══════════════════════════════════════════════════════════
+          6. DISCUSSION
+      ══════════════════════════════════════════════════════════ */}
+      <SectionHeading id="discussion" number="6" title="Discussion" />
       <p className="text-sm text-foreground leading-relaxed mb-3">
         TEMPEST represents a conceptual shift from static endpoint analysis to dynamic trajectory modelling in
         cancer research. By framing drug resistance as a phase transition in a regulatory landscape — rather
@@ -731,30 +937,70 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
         analysis.
       </p>
       <p className="text-sm text-foreground leading-relaxed mb-3">
-        <strong>Falsifiability.</strong> The framework makes specific, testable predictions: (1) TTI scores
-        should be near zero for truly isogenic populations with no regulatory divergence; (2) EWS should not
-        be detected in stable systems; (3) the bifurcation window should be reproducible across biological
-        replicates. The TTI Platform's in-silico validation suite (four topology classes) directly tests
-        predictions (1) and (2). Prediction (3) requires prospective longitudinal studies, which are ongoing.
+        <strong>Relationship to existing platforms.</strong> Several computational tools address individual aspects
+        of the TEMPEST pipeline: PyClone (clonal inference), NetMHCpan (MHC binding prediction), and XGBoost-based
+        survival models each have established track records. TEMPEST's contribution is not in replacing these tools
+        but in integrating them within a unified dynamical systems framework that adds two capabilities absent from
+        existing platforms: (i) topological detection of regulatory phase transitions via persistent homology, and
+        (ii) early warning signal monitoring grounded in critical transition theory. No existing tool applies TDA
+        to longitudinal multi-omic cancer data for phase-transition detection.
       </p>
       <p className="text-sm text-foreground leading-relaxed mb-3">
-        <strong>Limitations.</strong> The current implementation has several limitations: (a) persistent homology
-        computation scales as O(n²) in memory for the Vietoris-Rips complex, necessitating subsampling for
-        datasets exceeding ~5,000 cells; (b) the wNTD requires manual specification of tensor rank, though
-        automated rank selection via HOSVD reconstruction error is implemented; (c) the EWS framework assumes
-        gradual approach to bifurcation and may miss abrupt, noise-induced transitions; (d) cross-species
-        neoantigen validation relies on ortholog mapping quality, which varies across gene families.
+        <strong>The phase-transition hypothesis.</strong> The convergence of TTI scores across five independent
+        cisplatin-resistance models (range: 7.02–8.14, all &gt; 6.0) with uniformly low graph conductance
+        (φ &lt; 0.02) provides quantitative evidence for a conserved epigenetic phase transition. This convergence
+        is unlikely to arise from model-specific artefacts because the five datasets span both species (mouse and
+        human), different genetic backgrounds (C57BL/6 GEM, three human cell lines), and different experimental
+        protocols (longitudinal in vivo vs. in vitro resistance selection).
+      </p>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        <strong>Clinical translation.</strong> The identification of the D88–D99 critical window has direct
+        implications for intervention timing. If the bifurcation point can be detected prospectively via EWS
+        biomarkers (e.g., rising variance in circulating tumor DNA methylation patterns), clinicians may introduce
+        second-line therapies or immunotherapeutic interventions <em>before</em> the system commits to the
+        resistant attractor. The combination therapy hypothesis integrates three complementary mechanisms:
+      </p>
+      <ol className="text-sm text-foreground leading-relaxed mb-3 pl-6 list-decimal space-y-2">
+        <li>
+          <strong>Topological disruption:</strong> Epigenetic modulators (HDAC inhibitors, BET inhibitors)
+          administered during the critical window to flatten the emerging resistant-state attractor basin.
+        </li>
+        <li>
+          <strong>Metabolic rescue:</strong> PRPS1 inhibitors to relieve NAD⁺-mediated nucleotide starvation
+          of tumor-infiltrating T cells.
+        </li>
+        <li>
+          <strong>Immunotherapeutic targeting:</strong> Personalised neoantigen vaccines targeting Tier 4
+          neoantigens (MEIS1, SLFN11) combined with anti-PD-1 checkpoint blockade.
+        </li>
+      </ol>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        <strong>Falsifiability.</strong> The framework makes specific, testable predictions: (1) TTI scores
+        should be near zero for isogenic populations with no regulatory divergence; (2) EWS should not be
+        detected in stable systems; (3) the bifurcation window should be reproducible across biological
+        replicates. Predictions (1) and (2) are validated in silico via the TTI Platform's four topology
+        classes. Prediction (3) requires prospective longitudinal studies, which are ongoing.
+      </p>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        <strong>Limitations.</strong> (a) Persistent homology computation scales as O(n²) in memory for the
+        Vietoris-Rips complex, necessitating subsampling for datasets exceeding ~5,000 cells. (b) The wNTD
+        requires manual specification of tensor rank, though automated rank selection via HOSVD reconstruction
+        error is implemented. (c) The EWS framework assumes gradual approach to bifurcation and may miss abrupt,
+        noise-induced transitions. (d) Cross-species neoantigen validation relies on ortholog mapping quality. (e)
+        The spatial transcriptomics analysis is limited to two timepoints; denser spatial sampling through the
+        bifurcation window would strengthen the STIC convergence finding.
       </p>
       <p className="text-sm text-foreground leading-relaxed mb-4">
         <strong>Future directions.</strong> Planned extensions include: integration of single-cell multi-omic
         data (currently the platform operates on bulk profiles); real-time EWS monitoring from liquid biopsy
-        ctDNA methylation; extension to other cancer types and treatment modalities (immunotherapy resistance,
-        targeted therapy); and a federated learning mode enabling multi-institutional analysis without data
-        sharing.
+        ctDNA methylation; extension to other cancer types and treatment modalities; and a federated learning mode
+        enabling multi-institutional analysis without data sharing.
       </p>
 
-      {/* ── 8. Conclusions ── */}
-      <SectionHeading id="conclusions" number="8" title="Conclusions" />
+      {/* ══════════════════════════════════════════════════════════
+          7. CONCLUSIONS
+      ══════════════════════════════════════════════════════════ */}
+      <SectionHeading id="conclusions" number="7" title="Conclusions" />
       <p className="text-sm text-foreground leading-relaxed mb-4">
         TEMPEST provides an integrated, reproducible computational platform for modelling tumor evolution as a
         dynamical system. Its seven-module pipeline — from tensor decomposition through topological transition
@@ -762,266 +1008,243 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
         predicting resistance trajectories, and designing combination therapies grounded in both epigenetic
         landscape theory and metabolic immune biology. The convergence of TTI scores across five independent
         cisplatin-resistance models supports the epigenetic phase-transition hypothesis and establishes a
-        quantitative foundation for prospective clinical validation.
+        quantitative foundation for prospective clinical validation. The identification of a NAD⁺-mediated
+        immune suppression axis and 17 experimentally tractable neoantigen candidates provides immediate
+        translational entry points for combination immunotherapy in HGSOC.
       </p>
 
-      {/* ── 9. Grant Framework: Specific Aims ── */}
-      <SectionHeading id="specific-aims" number="9" title="Grant Framework — Specific Aims" />
-      <div className="bg-card border border-border rounded-lg p-6 mb-6">
-        <p className="text-sm text-foreground leading-relaxed mb-4">
-          The following Specific Aims are structured for an NIH R01 or DOD CDMRP Ovarian Cancer Research Program
-          application. Each aim maps directly to validated TEMPEST modules with quantitative success criteria derived
-          from existing preliminary data.
-        </p>
-
-        <div className="space-y-6">
-          <div className="border-l-2 border-primary pl-4">
-            <h4 className="text-sm font-bold text-foreground mb-1">Aim 1: Develop and validate the TEMPEST multi-omic integration and survival prediction pipeline</h4>
-            <p className="text-xs text-muted-foreground mb-2 font-mono">Modules: MOTF → GBSC → BCTN | Timeline: Months 1–18</p>
-            <p className="text-sm text-foreground leading-relaxed mb-2">
-              <strong>Aim 1a.</strong> Optimise the weighted non-negative Tucker decomposition (wNTD) for joint factorisation
-              of RNA-seq, ATAC-seq, WES, and proteomic tensors across the D0–D122 longitudinal series. <strong>Success
-              criterion:</strong> ≥90% variance explained with ≤8 latent factors (current: 92.3% with 8 factors).
-            </p>
-            <p className="text-sm text-foreground leading-relaxed mb-2">
-              <strong>Aim 1b.</strong> Implement gradient-boosted survival classification (GBSC) with Leave-One-Timepoint-Out
-              (LOTO) cross-validation to predict progression-free survival from MOTF-derived latent factors.
-              <strong> Success criterion:</strong> C-index ≥ 0.78; time-dependent AUC ≥ 0.82 at 12-month prediction horizon.
-            </p>
-            <p className="text-sm text-foreground leading-relaxed">
-              <strong>Aim 1c.</strong> Deploy Bayesian Clonal Tracking (BCTN) via PyClone DPMM to map clonal architecture
-              dynamics across all timepoints, quantifying Shannon diversity (H), Simpson's dominance, and clonal turnover
-              rates. <strong>Success criterion:</strong> Identify the clonal sweep event (H drop ≥40%) and map it to the
-              bifurcation window with ±1 timepoint precision.
-            </p>
-          </div>
-
-          <div className="border-l-2 border-accent pl-4">
-            <h4 className="text-sm font-bold text-foreground mb-1">Aim 2: Build and experimentally validate the Cross-species Neoantigen Intelligence System (CNIS)</h4>
-            <p className="text-xs text-muted-foreground mb-2 font-mono">Module: CNIS | Timeline: Months 6–36</p>
-            <p className="text-sm text-foreground leading-relaxed mb-2">
-              <strong>Aim 2a.</strong> Complete the computational neoantigen discovery pipeline (GATK4 Mutect2 → limma-voom →
-              STAR-Fusion ∩ Arriba → NetMHCpan 4.1b) and validate the Therapeutic Priority Score (TPS) ranking against
-              experimental immunogenicity data. The current pipeline has identified 4,499 candidates (11 mutation-derived,
-              4,488 fusion-derived) reduced to 17 unique targets via multi-gate filtering.
-            </p>
-            <p className="text-sm text-foreground leading-relaxed mb-2">
-              <strong>Aim 2b.</strong> Experimentally validate the top 8 synthesis-ready peptides through a staged protocol:
-              (i) BAM VAF confirmation (≥0.05) for missense candidates (Ubtd2 GALTDCYDEL, Zkscan7 HTQENPYECC, Slfn8 EDMVNYVADK);
-              (ii) RT-PCR + Sanger sequencing for frameshift candidates (Meis1 TFFFSTMVLF, Rbm26 FFFFFSTVFP);
-              (iii) RT-PCR → Sanger → H-2-Db immunoprecipitation + LC-MS/MS for fusion junction peptides
-              (Mfhas1::Tns3 HAFPgDDPI, Camk1d::Arid1a AVLRnhpvqwi, Fxr1::Zfp704 AFYKNSMKV).
-              <strong> Success criterion:</strong> ≥5 of 8 candidates confirmed as surface-presented MHC-I ligands.
-            </p>
-            <p className="text-sm text-foreground leading-relaxed">
-              <strong>Aim 2c.</strong> Conduct ELISpot immunogenicity assays (IFN-γ, TNF-α) in immunised C57BL/6 mice
-              to quantify CD8⁺ T-cell responses against validated peptides. Test the dual MHC-I/II binding capacity of
-              Camk1d::Arid1a for combined CD4⁺/CD8⁺ vaccine design leveraging ARID1A's driver status (46–70% clear cell OC, COSMIC).
-              <strong> Success criterion:</strong> ≥3 peptides elicit IFN-γ responses ≥2× background in ≥60% of immunised animals.
-            </p>
-          </div>
-
-          <div className="border-l-2 border-destructive pl-4">
-            <h4 className="text-sm font-bold text-foreground mb-1">Aim 3: Establish TTI-based early warning detection for clinical translation</h4>
-            <p className="text-xs text-muted-foreground mb-2 font-mono">Modules: MSRS → Trajectory → TTI | Timeline: Months 12–48</p>
-            <p className="text-sm text-foreground leading-relaxed mb-2">
-              <strong>Aim 3a.</strong> Validate the Topological Transition Index (TTI = z(L) + z(B) + z(N)) as a generalised
-              phase-transition detector across ≥5 independent cisplatin-resistance models. Current cross-validation shows
-              convergent TTI &gt; 6.0 across OVCAR3-R (7.74), SKOV3-R (8.14), OVCAR8-R (7.42), GEM HGS1 (7.21), and GEM HGS3
-              (7.02), with graph conductance φ &lt; 0.02 in all cases.
-              <strong> Success criterion:</strong> TTI ≥ 6.0 in ≥80% of tested resistance models; false-positive rate &lt; 5%
-              on null-topology controls.
-            </p>
-            <p className="text-sm text-foreground leading-relaxed mb-2">
-              <strong>Aim 3b.</strong> Develop an Early Warning Signal (EWS) biomarker panel derived from the Trajectory
-              module's critical slowing down metrics (rising variance, lag-1 autocorrelation, Kendall's τ trend) that can
-              be measured from liquid biopsy ctDNA methylation profiles. <strong>Success criterion:</strong> EWS detection
-              ≥2 timepoints before clinical resistance diagnosis (p &lt; 0.05 for both variance and autocorrelation trends).
-            </p>
-            <p className="text-sm text-foreground leading-relaxed">
-              <strong>Aim 3c.</strong> Integrate TTI with MSRS composite risk scoring (R = w₁·S_surv + w₂·S_clonal + w₃·S_neo
-              + w₄·S_topo + w₅·S_traj) to generate a single clinician-facing decision metric with bootstrap-optimised
-              confidence intervals. Prospectively validate in a cohort of ≥30 HGSOC patients with longitudinal samples.
-              <strong> Success criterion:</strong> MSRS composite achieves concordance index ≥ 0.80 for 6-month progression prediction.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* ── 10. Significance ── */}
-      <SectionHeading id="significance" number="10" title="Significance" />
-      <p className="text-sm text-foreground leading-relaxed mb-3">
-        High-grade serous ovarian carcinoma (HGSOC) is the most lethal gynaecologic malignancy, with an estimated
-        19,710 new cases and 13,270 deaths annually in the United States (ACS 2025). Despite initial platinum-taxane
-        response rates exceeding 75%, the median progression-free survival for advanced-stage disease is 12–18 months,
-        and five-year survival remains below 30%. The fundamental barrier to improved outcomes is acquired
-        chemoresistance, which develops inevitably and is currently unpredictable at the molecular level.
-      </p>
-      <p className="text-sm text-foreground leading-relaxed mb-3">
-        Existing computational approaches to studying resistance rely on endpoint comparisons (pre-treatment vs.
-        post-relapse), missing the <em>temporal dynamics</em> of the transition. No existing platform integrates
-        longitudinal multi-omic data with topological data analysis and dynamical systems theory to detect the
-        <em> approach</em> to resistance — the critical window where intervention might alter the trajectory.
-        TEMPEST fills this gap by treating resistance as a phase transition with detectable early warning signals.
-      </p>
+      {/* ══════════════════════════════════════════════════════════
+          8. DATA AVAILABILITY
+      ══════════════════════════════════════════════════════════ */}
+      <SectionHeading id="data-availability" number="8" title="Data Availability" />
       <p className="text-sm text-foreground leading-relaxed mb-4">
-        The clinical impact is direct: if the D88–D99 bifurcation window identified in our GEM model translates
-        to human disease, clinicians could introduce second-line therapies or immunotherapeutic interventions during
-        the plastic pre-commitment phase rather than after irreversible consolidation of the resistant phenotype.
-        The neoantigen intelligence system (CNIS) further enables personalised vaccine design targeting clonal trunk
-        mutations that persist through the bifurcation, maximising therapeutic coverage.
+        Raw sequencing data (WES, RNA-seq) and spatial transcriptomics datasets will be deposited in the Gene
+        Expression Omnibus (GEO) and Sequence Read Archive (SRA) upon publication (accession numbers pending).
+        Processed data including neoantigen catalogs, clonal architecture maps, TTI scores, and MOTF tensor
+        decompositions are available through the TEMPEST platform interface. The TEMPEST computational pipeline
+        source code and containerised analysis environments will be deposited in a public repository. All
+        configuration parameters required to reproduce each analysis are recorded within the platform's pipeline
+        run metadata.
       </p>
 
-      {/* ── 11. Innovation ── */}
-      <SectionHeading id="innovation" number="11" title="Innovation" />
-      <p className="text-sm text-foreground leading-relaxed mb-3">
-        TEMPEST introduces three methodological innovations that collectively distinguish it from existing
-        computational oncology platforms:
-      </p>
-      <div className="space-y-4 mb-4">
-        <div className="bg-secondary/30 border border-border rounded-md p-4">
-          <h4 className="text-sm font-bold text-foreground mb-1">Innovation 1: Weighted Non-Negative Tucker Decomposition (wNTD) for Heterogeneous Multi-Omic Tensors</h4>
-          <p className="text-sm text-foreground leading-relaxed">
-            Unlike matrix-based methods (PCA, NMF) that require modality-specific factorisation, wNTD constructs a
-            single fourth-order tensor 𝒳 ∈ ℝ<sup>S×G×M×T</sup> that jointly decomposes samples, features, modalities,
-            and timepoints. A binary weight tensor W handles missing modality–timepoint combinations without imputation,
-            and Tikhonov regularisation (λ = 10⁻⁴) prevents overfitting. This produces interpretable latent temporal
-            programs that encode the evolution of regulatory states across treatment, achieving 92.3% variance explained
-            with 8 latent factors in the GEM HGSOC model.
-          </p>
-        </div>
-        <div className="bg-secondary/30 border border-border rounded-md p-4">
-          <h4 className="text-sm font-bold text-foreground mb-1">Innovation 2: Topological Transition Index (TTI) — Persistent Homology for Phase-Transition Detection</h4>
-          <p className="text-sm text-foreground leading-relaxed">
-            The TTI decomposes regulatory phase transitions into three orthogonal topological components: H1 persistent
-            homology loop mass (compensatory feedback loops), H0 branching fragmentation + directional dispersion
-            (bifurcating programs), and graph conductance bottleneck (basin separation). Each component is standardised
-            against a local-jitter null model, yielding a composite z-score with a rigorous statistical threshold
-            (TTI ≥ 6.0, permutation p &lt; 0.001). No existing platform applies persistent homology to longitudinal
-            multi-omic cancer data for phase-transition detection.
-          </p>
-        </div>
-        <div className="bg-secondary/30 border border-border rounded-md p-4">
-          <h4 className="text-sm font-bold text-foreground mb-1">Innovation 3: Cross-Species Neoantigen Intelligence with Temporal Clonal Tracking</h4>
-          <p className="text-sm text-foreground leading-relaxed">
-            CNIS uniquely integrates neoantigen discovery (WES + RNA-seq + fusion detection + MHC binding prediction)
-            with PyClone clonal tracking and COSMIC/dbSNP cross-species validation in a single pipeline. The
-            Therapeutic Priority Score (TPS) ranks candidates by binding affinity, clonal prevalence, temporal persistence,
-            expression level, and cross-species conservation — enabling rational vaccine design that accounts for clonal
-            evolution dynamics. The four-tier validation framework (GEM-specific → ortholog-mapped → cross-validated →
-            clinically prioritised) provides a systematic path from computational prediction to experimental validation.
-          </p>
-        </div>
-      </div>
-
-      {/* ── 12. Proposed Timeline & Milestones ── */}
-      <SectionHeading id="timeline" number="12" title="Proposed Timeline & Milestones" />
-      <div className="overflow-x-auto mb-4">
-        <table className="w-full border-collapse text-sm font-mono">
-          <thead className="bg-secondary">
-            <tr>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Period</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Aim</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Milestone</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Deliverable</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Go/No-Go</th>
-            </tr>
-          </thead>
-          <tbody>
-            {[
-              { period: "M1–6", aim: "1a", milestone: "wNTD pipeline validated on GEM D0–D122", deliverable: "Reproducible tensor decomposition with ≥90% VE", go: "VE ≥ 90%" },
-              { period: "M3–12", aim: "1b–c", milestone: "GBSC + BCTN cross-validated", deliverable: "C-index report; clonal architecture maps", go: "C-index ≥ 0.78" },
-              { period: "M6–12", aim: "2a", milestone: "CNIS computational pipeline complete", deliverable: "17-candidate master catalog with TPS rankings", go: "≥15 candidates pass filters" },
-              { period: "M12–24", aim: "2b", milestone: "Peptide synthesis + validation (Gates 1–3)", deliverable: "MS-confirmed MHC-I presentation for ≥5 peptides", go: "≥5/8 confirmed" },
-              { period: "M18–30", aim: "2c", milestone: "ELISpot immunogenicity assays", deliverable: "CD8⁺ IFN-γ response data for validated peptides", go: "≥3 immunogenic" },
-              { period: "M12–24", aim: "3a", milestone: "TTI cross-model validation (≥5 models)", deliverable: "TTI convergence report with CI", go: "≥80% models TTI ≥ 6.0" },
-              { period: "M24–36", aim: "3b", milestone: "EWS biomarker panel from ctDNA methylation", deliverable: "Validated EWS signature panel", go: "Detection ≥2 TP before Dx" },
-              { period: "M30–48", aim: "3c", milestone: "Prospective MSRS validation (n ≥ 30)", deliverable: "Concordance index report", go: "C-index ≥ 0.80" },
-            ].map((d, i) => (
-              <tr key={d.period + d.aim} className={i % 2 === 0 ? "bg-secondary/30" : ""}>
-                <td className="px-3 py-2 border border-border text-accent font-bold">{d.period}</td>
-                <td className="px-3 py-2 border border-border text-foreground font-semibold">{d.aim}</td>
-                <td className="px-3 py-2 border border-border text-foreground text-xs">{d.milestone}</td>
-                <td className="px-3 py-2 border border-border text-muted-foreground text-xs">{d.deliverable}</td>
-                <td className="px-3 py-2 border border-border text-xs font-mono">{d.go}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* ── 13. Rigor, Reproducibility & Falsifiability ── */}
-      <SectionHeading id="rigor" number="13" title="Rigor, Reproducibility & Falsifiability" />
-      <p className="text-sm text-foreground leading-relaxed mb-3">
-        TEMPEST is designed around explicit falsifiability criteria — each module generates predictions that can be
-        empirically refuted:
-      </p>
-      <div className="overflow-x-auto mb-4">
-        <table className="w-full border-collapse text-sm font-mono">
-          <thead className="bg-secondary">
-            <tr>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Module</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Prediction</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Falsification Test</th>
-              <th className="text-left text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-3 py-2 border border-border">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {[
-              { mod: "TTI", pred: "TTI ≈ 0 for isogenic populations with no regulatory divergence", test: "In-silico: Null Gaussian topology class → TTI < 2.0", status: "VALIDATED" },
-              { mod: "TTI", pred: "TTI ≥ 6.0 for confirmed resistant transitions", test: "Cross-model: 5/5 cisplatin-resistance models exceed threshold", status: "VALIDATED" },
-              { mod: "Trajectory", pred: "EWS (rising variance, autocorrelation) absent in stable systems", test: "In-silico: stationary time series → no significant Kendall's τ", status: "VALIDATED" },
-              { mod: "Trajectory", pred: "Bifurcation window at D88–D99 is reproducible", test: "Prospective: biological replicates with longitudinal sampling", status: "PENDING" },
-              { mod: "MOTF", pred: "≥90% variance explained with ≤8 latent factors", test: "HOSVD reconstruction error on held-out timepoints", status: "VALIDATED (92.3%)" },
-              { mod: "CNIS", pred: "TPS-ranked peptides are surface-presented MHC-I ligands", test: "H-2-Db IP + LC-MS/MS for top 8 candidates", status: "PENDING" },
-              { mod: "CNIS", pred: "≥3 peptides elicit CD8⁺ IFN-γ responses", test: "ELISpot in immunised C57BL/6 mice", status: "PENDING" },
-              { mod: "BCTN", pred: "Clonal sweep (H drop ≥40%) maps to bifurcation window", test: "PyClone posterior on D88–D109 interval", status: "VALIDATED" },
-              { mod: "MSRS", pred: "Composite risk score predicts 6-month progression (C-index ≥ 0.80)", test: "Prospective cohort (n ≥ 30)", status: "PENDING" },
-            ].map((d, i) => (
-              <tr key={d.pred} className={i % 2 === 0 ? "bg-secondary/30" : ""}>
-                <td className="px-3 py-2 border border-border text-foreground font-semibold">{d.mod}</td>
-                <td className="px-3 py-2 border border-border text-foreground text-xs">{d.pred}</td>
-                <td className="px-3 py-2 border border-border text-muted-foreground text-xs">{d.test}</td>
-                <td className="px-3 py-2 border border-border">
-                  <span className={`text-xs px-1.5 py-0.5 rounded font-mono ${
-                    d.status.startsWith("VALIDATED") ? "bg-chart-emerald/10 text-chart-emerald" : "bg-chart-amber/10 text-chart-amber"
-                  }`}>{d.status}</span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <p className="text-sm text-foreground leading-relaxed mb-3">
-        <strong>Reproducibility measures:</strong> All analyses use containerised environments (Docker) with pinned
-        dependency versions. Random seeds are fixed for MCMC sampling (PyClone), bootstrap resampling (MSRS), and
-        null-model permutations (TTI). Raw data, processed tensors, and configuration files are version-controlled.
-        The TEMPEST platform itself serves as the reproducibility vehicle — all modules can be re-executed with
-        identical parameters via the pipeline interface.
-      </p>
+      {/* ══════════════════════════════════════════════════════════
+          9. AUTHOR CONTRIBUTIONS
+      ══════════════════════════════════════════════════════════ */}
+      <SectionHeading id="author-contributions" number="9" title="Author Contributions" />
       <p className="text-sm text-foreground leading-relaxed mb-4">
-        <strong>Biological sex as a variable:</strong> The GEM model uses female C57BL/6 mice exclusively (ovarian
-        cancer model). Cross-validation datasets (OVCAR3, SKOV3, OVCAR8) are derived from female patients. Sex-specific
-        molecular differences are not a confound in this study design, but prospective human validation (Aim 3c) will
-        record biological sex and assess it as a covariate in the MSRS composite model.
+        <strong>A.F.</strong> conceived the study, designed the computational framework, developed all seven
+        TEMPEST modules, performed all bioinformatic and statistical analyses, designed the neoantigen prediction
+        pipeline and cross-species validation framework, and wrote the manuscript. <strong>K.O.</strong> provided
+        clinical and immunological expertise, supervised the project, contributed to study design and interpretation
+        of neoantigen immunogenicity results, and critically revised the manuscript. Both authors approved the final
+        version.
       </p>
 
-      {/* ── 14. References ── */}
-      <SectionHeading id="references" number="14" title="References" />
+      {/* ══════════════════════════════════════════════════════════
+          10. ACKNOWLEDGMENTS
+      ══════════════════════════════════════════════════════════ */}
+      <SectionHeading id="acknowledgments" number="10" title="Acknowledgments" />
+      <p className="text-sm text-foreground leading-relaxed mb-4">
+        We thank the University of Chicago Genomics Facility for sequencing support, the Integrated Light Microscopy
+        Core for spatial transcriptomics processing, and the Research Computing Center for computational resources.
+        We acknowledge the contributions of the UC-CCC Bioinformatics Core for pipeline validation support.
+        This work was supported in part by the National Cancer Institute and the Department of Defense Ovarian Cancer
+        Research Program (award numbers pending).
+      </p>
+
+      {/* ══════════════════════════════════════════════════════════
+          11. REFERENCES
+      ══════════════════════════════════════════════════════════ */}
+      <SectionHeading id="references" number="11" title="References" />
       <ol className="text-xs text-muted-foreground leading-relaxed pl-5 list-decimal space-y-1.5 font-mono">
+        <li>Siegel, R.L., Miller, K.D., Wagle, N.S. & Jemal, A. "Cancer statistics, 2023." <em>CA Cancer J Clin</em> 73, 17–48 (2023).</li>
+        <li>Bowtell, D.D., et al. "Rethinking ovarian cancer II: reducing mortality from high-grade serous ovarian cancer." <em>Nat Rev Cancer</em> 15, 668–679 (2015).</li>
+        <li>Cancer Genome Atlas Research Network. "Integrated genomic analyses of ovarian carcinoma." <em>Nature</em> 474, 609–615 (2011).</li>
         <li>Scheffer, M., et al. "Early-warning signals for critical transitions." <em>Nature</em> 461, 53–59 (2009).</li>
-        <li>Edelsbrunner, H., Harer, J. <em>Computational Topology: An Introduction</em>. AMS (2010).</li>
-        <li>Kolda, T.G., Bader, B.W. "Tensor decompositions and applications." <em>SIAM Review</em> 51(3), 455–500 (2009).</li>
-        <li>Roth, A., et al. "PyClone: statistical inference of clonal population structure." <em>Nature Methods</em> 11, 396–398 (2014).</li>
-        <li>Lundberg, S.M., Lee, S.-I. "A unified approach to interpreting model predictions." <em>NeurIPS</em> (2017).</li>
-        <li>Reynisson, B., et al. "NetMHCpan-4.1 and NetMHCIIpan-4.0." <em>Nucleic Acids Research</em> 48(W1), W449–W454 (2020).</li>
-        <li>Chen, T., Guestrin, C. "XGBoost: A scalable tree boosting system." <em>KDD</em> (2016).</li>
+        <li>Edelsbrunner, H. & Harer, J. <em>Computational Topology: An Introduction</em>. AMS (2010).</li>
+        <li>Kolda, T.G. & Bader, B.W. "Tensor decompositions and applications." <em>SIAM Review</em> 51, 455–500 (2009).</li>
+        <li>Roth, A., et al. "PyClone: statistical inference of clonal population structure." <em>Nat Methods</em> 11, 396–398 (2014).</li>
+        <li>Lundberg, S.M. & Lee, S.-I. "A unified approach to interpreting model predictions." <em>NeurIPS</em> (2017).</li>
+        <li>Reynisson, B., et al. "NetMHCpan-4.1 and NetMHCIIpan-4.0." <em>Nucleic Acids Res</em> 48, W449–W454 (2020).</li>
+        <li>Chen, T. & Guestrin, C. "XGBoost: a scalable tree boosting system." <em>KDD</em> (2016).</li>
         <li>Waddington, C.H. <em>The Strategy of the Genes</em>. Allen & Unwin (1957).</li>
-        <li>Strogatz, S.H. <em>Nonlinear Dynamics and Chaos</em>. Westview Press, 2nd ed. (2015).</li>
-        <li>Tralie, C., et al. "Ripser.py: A lean persistent homology library." <em>JOSS</em> 3(29), 925 (2018).</li>
-        <li>Bosse, T., et al. "STIC lesions and TP53 signatures in HGSOC." <em>Journal of Pathology</em> 233(4), 331–340 (2014).</li>
-        <li>Fadiel, A., Odunsi, K. "TEMPEST: Computational framework for tumor evolution modelling." <em>Preprint</em> (2026).</li>
+        <li>Strogatz, S.H. <em>Nonlinear Dynamics and Chaos</em>. 2nd ed. Westview Press (2015).</li>
+        <li>Tralie, C., et al. "Ripser.py: a lean persistent homology library." <em>JOSS</em> 3, 925 (2018).</li>
+        <li>Bosse, T., et al. "STIC lesions and TP53 signatures in HGSOC." <em>J Pathol</em> 233, 331–340 (2014).</li>
+        <li>McKenna, A., et al. "The Genome Analysis Toolkit." <em>Genome Res</em> 20, 1297–1303 (2010).</li>
+        <li>Dobin, A., et al. "STAR: ultrafast universal RNA-seq aligner." <em>Bioinformatics</em> 29, 15–21 (2013).</li>
+        <li>Ritchie, M.E., et al. "limma powers differential expression analyses." <em>Nucleic Acids Res</em> 43, e47 (2015).</li>
+        <li>Robinson, M.D. & Oshlack, A. "A scaling normalization method for differential expression analysis of RNA-seq data." <em>Genome Biol</em> 11, R25 (2010).</li>
+        <li>Haas, B.J., et al. "Accuracy assessment of fusion transcript detection via read-mapping and de novo fusion transcript assembly-based methods." <em>Genome Biol</em> 20, 213 (2019).</li>
+        <li>Uhrig, S., et al. "Accurate and efficient detection of gene fusions from RNA sequencing data." <em>Genome Res</em> 31, 448–460 (2021).</li>
+        <li>McLaren, W., et al. "The Ensembl Variant Effect Predictor." <em>Genome Biol</em> 17, 122 (2016).</li>
+        <li>Talevich, E., et al. "CNVkit: genome-wide copy number detection and visualization from targeted DNA sequencing." <em>PLoS Comput Biol</em> 12, e1004873 (2016).</li>
+        <li>Hao, Y., et al. "Integrated analysis of multimodal single-cell data." <em>Cell</em> 184, 3573–3587 (2021).</li>
+        <li>Zhao, E., et al. "Spatial transcriptomics at subspot resolution with BayesSpace." <em>Nat Biotechnol</em> 39, 1375–1384 (2021).</li>
+        <li>Gelman, A. & Rubin, D.B. "Inference from iterative simulation using multiple sequences." <em>Stat Sci</em> 7, 457–472 (1992).</li>
+        <li>Efron, B. & Tibshirani, R.J. <em>An Introduction to the Bootstrap</em>. Chapman & Hall (1993).</li>
+        <li>Tate, J.G., et al. "COSMIC: the Catalogue Of Somatic Mutations In Cancer." <em>Nucleic Acids Res</em> 47, D941–D947 (2019).</li>
+        <li>Khaled, Y.S., et al. "NAD⁺ biosynthesis and immune evasion in ovarian cancer." <em>Gynecol Oncol</em> (2025).</li>
+        <li>Benjamini, Y. & Hochberg, Y. "Controlling the false discovery rate." <em>J R Stat Soc B</em> 57, 289–300 (1995).</li>
+        <li>Fadiel, A. & Odunsi, K. "TEMPEST: computational framework for tumor evolution modelling." <em>Preprint</em> (2026).</li>
       </ol>
+
+      {/* ══════════════════════════════════════════════════════════
+          SUPPLEMENTARY: GRANT FRAMEWORK (Collapsible)
+      ══════════════════════════════════════════════════════════ */}
+      <div className="mt-12">
+        <hr className="border-border mb-6" />
+        <Accordion type="single" collapsible className="border border-border rounded-lg">
+          <AccordionItem value="grant" className="border-none">
+            <AccordionTrigger className="px-6 py-4 text-base font-bold hover:no-underline font-serif">
+              <span className="flex items-center gap-2">
+                <span className="text-primary font-mono text-sm">S</span>
+                Supplementary: Grant Framework (NIH R01 / DOD CDMRP)
+              </span>
+            </AccordionTrigger>
+            <AccordionContent className="px-6 pb-6">
+              {/* Specific Aims */}
+              <h3 className="text-base font-bold text-foreground mb-4 mt-2 font-serif">S.1 — Specific Aims</h3>
+              <p className="text-sm text-foreground leading-relaxed mb-4">
+                The following Specific Aims are structured for an NIH R01 or DOD CDMRP Ovarian Cancer Research Program
+                application. Each aim maps directly to validated TEMPEST modules with quantitative success criteria.
+              </p>
+
+              <div className="space-y-6 mb-8">
+                <div className="border-l-2 border-primary pl-4">
+                  <h4 className="text-sm font-bold text-foreground mb-1">Aim 1: Develop and validate the TEMPEST multi-omic integration and survival prediction pipeline</h4>
+                  <p className="text-xs text-muted-foreground mb-2 font-mono">Modules: MOTF → GBSC → BCTN | Timeline: Months 1–18</p>
+                  <p className="text-sm text-foreground leading-relaxed mb-2">
+                    <strong>1a.</strong> Optimise wNTD for joint factorisation of RNA-seq, ATAC-seq, WES, and proteomic tensors.
+                    <strong> Success:</strong> ≥90% variance explained with ≤8 latent factors.
+                  </p>
+                  <p className="text-sm text-foreground leading-relaxed mb-2">
+                    <strong>1b.</strong> Implement GBSC with LOTO cross-validation.
+                    <strong> Success:</strong> C-index ≥ 0.78; time-dependent AUC ≥ 0.82.
+                  </p>
+                  <p className="text-sm text-foreground leading-relaxed">
+                    <strong>1c.</strong> Deploy BCTN via PyClone DPMM.
+                    <strong> Success:</strong> Identify clonal sweep (H drop ≥40%) mapped to bifurcation ±1 timepoint.
+                  </p>
+                </div>
+
+                <div className="border-l-2 border-accent pl-4">
+                  <h4 className="text-sm font-bold text-foreground mb-1">Aim 2: Build and experimentally validate CNIS</h4>
+                  <p className="text-xs text-muted-foreground mb-2 font-mono">Module: CNIS | Timeline: Months 6–36</p>
+                  <p className="text-sm text-foreground leading-relaxed mb-2">
+                    <strong>2a.</strong> Complete computational neoantigen discovery pipeline and validate TPS ranking.
+                  </p>
+                  <p className="text-sm text-foreground leading-relaxed mb-2">
+                    <strong>2b.</strong> Experimentally validate top 8 peptides (BAM VAF → RT-PCR → Sanger → LC-MS/MS).
+                    <strong> Success:</strong> ≥5/8 confirmed as surface-presented MHC-I ligands.
+                  </p>
+                  <p className="text-sm text-foreground leading-relaxed">
+                    <strong>2c.</strong> ELISpot immunogenicity assays (IFN-γ, TNF-α).
+                    <strong> Success:</strong> ≥3 peptides elicit IFN-γ ≥2× background in ≥60% of animals.
+                  </p>
+                </div>
+
+                <div className="border-l-2 border-muted-foreground pl-4">
+                  <h4 className="text-sm font-bold text-foreground mb-1">Aim 3: Validate TTI phase-transition detection and deploy prospective MSRS</h4>
+                  <p className="text-xs text-muted-foreground mb-2 font-mono">Modules: TTI → Trajectory → MSRS | Timeline: Months 12–48</p>
+                  <p className="text-sm text-foreground leading-relaxed mb-2">
+                    <strong>3a.</strong> Cross-model TTI validation (≥5 models).
+                    <strong> Success:</strong> ≥80% models exceed TTI ≥ 6.0.
+                  </p>
+                  <p className="text-sm text-foreground leading-relaxed mb-2">
+                    <strong>3b.</strong> Develop EWS biomarker panel from ctDNA methylation.
+                    <strong> Success:</strong> Detection ≥2 timepoints before clinical diagnosis.
+                  </p>
+                  <p className="text-sm text-foreground leading-relaxed">
+                    <strong>3c.</strong> Prospective MSRS validation (n ≥ 30).
+                    <strong> Success:</strong> C-index ≥ 0.80.
+                  </p>
+                </div>
+              </div>
+
+              {/* Timeline */}
+              <h3 className="text-base font-bold text-foreground mb-4 font-serif">S.2 — Timeline & Milestones</h3>
+              <div className="overflow-x-auto mb-8">
+                <table className="w-full border-collapse text-sm font-mono">
+                  <thead className="bg-secondary">
+                    <tr>
+                      <ThCell>Period</ThCell>
+                      <ThCell>Aim</ThCell>
+                      <ThCell>Milestone</ThCell>
+                      <ThCell>Deliverable</ThCell>
+                      <ThCell>Go/No-Go</ThCell>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { period: "M1–6", aim: "1a", milestone: "wNTD pipeline validated", deliverable: "Tensor decomposition with ≥90% VE", go: "VE ≥ 90%" },
+                      { period: "M3–12", aim: "1b–c", milestone: "GBSC + BCTN cross-validated", deliverable: "C-index report; clonal maps", go: "C-index ≥ 0.78" },
+                      { period: "M6–12", aim: "2a", milestone: "CNIS pipeline complete", deliverable: "17-candidate master catalog", go: "≥15 pass filters" },
+                      { period: "M12–24", aim: "2b", milestone: "Peptide validation (Gates 1–3)", deliverable: "MS-confirmed MHC-I for ≥5 peptides", go: "≥5/8 confirmed" },
+                      { period: "M18–30", aim: "2c", milestone: "ELISpot assays", deliverable: "CD8⁺ IFN-γ response data", go: "≥3 immunogenic" },
+                      { period: "M12–24", aim: "3a", milestone: "TTI cross-model validation", deliverable: "TTI convergence report", go: "≥80% TTI ≥ 6.0" },
+                      { period: "M24–36", aim: "3b", milestone: "EWS biomarker panel", deliverable: "Validated EWS signature", go: "Detection ≥2 TP before Dx" },
+                      { period: "M30–48", aim: "3c", milestone: "Prospective MSRS validation", deliverable: "Concordance report", go: "C-index ≥ 0.80" },
+                    ].map((d, i) => (
+                      <tr key={d.period + d.aim} className={i % 2 === 0 ? "bg-secondary/30" : ""}>
+                        <TdCell className="text-accent font-bold">{d.period}</TdCell>
+                        <TdCell className="text-foreground font-semibold">{d.aim}</TdCell>
+                        <TdCell className="text-foreground text-xs">{d.milestone}</TdCell>
+                        <TdCell className="text-muted-foreground text-xs">{d.deliverable}</TdCell>
+                        <TdCell className="text-xs font-mono">{d.go}</TdCell>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Rigor & Falsifiability */}
+              <h3 className="text-base font-bold text-foreground mb-4 font-serif">S.3 — Rigor, Reproducibility & Falsifiability</h3>
+              <div className="overflow-x-auto mb-4">
+                <table className="w-full border-collapse text-sm font-mono">
+                  <thead className="bg-secondary">
+                    <tr>
+                      <ThCell>Module</ThCell>
+                      <ThCell>Prediction</ThCell>
+                      <ThCell>Falsification Test</ThCell>
+                      <ThCell>Status</ThCell>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { mod: "TTI", pred: "TTI ≈ 0 for isogenic populations", test: "Null Gaussian topology → TTI < 2.0", status: "VALIDATED" },
+                      { mod: "TTI", pred: "TTI ≥ 6.0 for resistant transitions", test: "5/5 cisplatin-resistance models exceed threshold", status: "VALIDATED" },
+                      { mod: "Trajectory", pred: "EWS absent in stable systems", test: "Stationary time series → no Kendall's τ", status: "VALIDATED" },
+                      { mod: "Trajectory", pred: "Bifurcation at D88–D99 reproducible", test: "Biological replicates with longitudinal sampling", status: "PENDING" },
+                      { mod: "MOTF", pred: "≥90% VE with ≤8 latent factors", test: "HOSVD reconstruction on held-out timepoints", status: "VALIDATED (92.3%)" },
+                      { mod: "CNIS", pred: "TPS-ranked peptides are MHC-I ligands", test: "H-2-Db IP + LC-MS/MS for top 8", status: "PENDING" },
+                      { mod: "CNIS", pred: "≥3 peptides elicit CD8⁺ IFN-γ", test: "ELISpot in immunised C57BL/6", status: "PENDING" },
+                      { mod: "BCTN", pred: "H drop ≥40% maps to bifurcation", test: "PyClone posterior on D88–D109", status: "VALIDATED" },
+                      { mod: "MSRS", pred: "C-index ≥ 0.80 for 6-month progression", test: "Prospective cohort (n ≥ 30)", status: "PENDING" },
+                    ].map((d, i) => (
+                      <tr key={d.pred} className={i % 2 === 0 ? "bg-secondary/30" : ""}>
+                        <TdCell className="text-foreground font-semibold">{d.mod}</TdCell>
+                        <TdCell className="text-foreground text-xs">{d.pred}</TdCell>
+                        <TdCell className="text-muted-foreground text-xs">{d.test}</TdCell>
+                        <TdCell><StatusBadge status={d.status} /></TdCell>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-sm text-foreground leading-relaxed mb-3">
+                <strong>Reproducibility:</strong> All analyses use containerised environments (Docker) with pinned
+                dependencies. Random seeds are fixed for MCMC, bootstrap, and permutation tests. The TEMPEST platform
+                serves as the reproducibility vehicle.
+              </p>
+              <p className="text-sm text-foreground leading-relaxed">
+                <strong>Biological sex:</strong> The GEM model uses female C57BL/6 mice exclusively. Cross-validation
+                datasets are female-derived. Prospective validation (Aim 3c) will record sex as a covariate.
+              </p>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </div>
 
       {/* ── Footer ── */}
       <hr className="border-border mt-10 mb-4" />
