@@ -1,14 +1,752 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Hexagon, Play, Loader2, AlertTriangle, CheckCircle2, Info, TrendingUp } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Hexagon, Play, Loader2, AlertTriangle, CheckCircle2, Upload, Database, FlaskConical,
+  BarChart3, Search, ExternalLink, TrendingUp, Info,
+} from "lucide-react";
+import {
+  computeTTI, computePCA, standardize, subsampleData, parseUpload,
+  GENERATORS, searchGEO, fetchTCGAOV, OV_SYMBOLS, OV_GENES,
+  type TTIResult, type GEOResult, type TCGAData,
+} from "@/lib/ttiEngine";
 
-/* ── Seeded RNG ── */
+/* ════════════════════════════════════════════════
+   SVG Visualizations — all driven by real computed data
+   ════════════════════════════════════════════════ */
+
+function PCAScatter({
+  pca, S_mask, R_mask, W = 380, H = 260,
+}: { pca: { scores: number[][]; varExp: number[] }; S_mask: boolean[]; R_mask: boolean[]; W?: number; H?: number }) {
+  if (!pca?.scores?.length) return null;
+  const { scores, varExp } = pca;
+  const xs = scores.map(r => r[0]), ys = scores.map(r => r[1]);
+  const xMn = Math.min(...xs), xMx = Math.max(...xs), yMn = Math.min(...ys), yMx = Math.max(...ys);
+  const mg = 24;
+  const tx = (x: number) => mg + ((x - xMn) / (xMx - xMn + 1e-9)) * (W - 2 * mg);
+  const ty = (y: number) => H - mg - ((y - yMn) / (yMx - yMn + 1e-9)) * (H - 2 * mg);
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto bg-card rounded-md border border-border">
+      {[0.25, 0.5, 0.75].map(f => (
+        <g key={f}>
+          <line x1={W * f} y1={0} x2={W * f} y2={H} stroke="hsl(var(--border))" strokeWidth={0.4} strokeDasharray="2,8" />
+          <line x1={0} y1={H * f} x2={W} y2={H * f} stroke="hsl(var(--border))" strokeWidth={0.4} strokeDasharray="2,8" />
+        </g>
+      ))}
+      {scores.map(([x, y], i) => (
+        <circle key={i} cx={tx(x)} cy={ty(y)}
+          r={S_mask[i] || R_mask[i] ? 3.5 : 2}
+          fill={S_mask[i] ? "hsl(var(--chart-emerald))" : R_mask[i] ? "hsl(var(--chart-amber))" : "hsl(var(--muted-foreground))"}
+          opacity={S_mask[i] || R_mask[i] ? 0.78 : 0.35} />
+      ))}
+      <rect x={6} y={6} width={92} height={40} rx={3} fill="hsl(var(--card))" opacity={0.92} />
+      <circle cx={18} cy={18} r={4} fill="hsl(var(--chart-emerald))" />
+      <text x={26} y={22} fill="hsl(var(--foreground))" fontSize={10} fontFamily="IBM Plex Mono">Parental</text>
+      <circle cx={18} cy={34} r={4} fill="hsl(var(--chart-amber))" />
+      <text x={26} y={38} fill="hsl(var(--foreground))" fontSize={10} fontFamily="IBM Plex Mono">Resistant</text>
+      {varExp && (
+        <text x={W - 4} y={H - 4} fill="hsl(var(--muted-foreground))" fontSize={8} textAnchor="end" fontFamily="IBM Plex Mono">
+          PC1:{varExp[0]?.toFixed(1)}% PC2:{varExp[1]?.toFixed(1)}%
+        </text>
+      )}
+    </svg>
+  );
+}
+
+function H0Plot({ h0, W = 380, H = 200 }: { h0: TTIResult["h0"]; W?: number; H?: number }) {
+  if (!h0?.eps) return null;
+  const { eps, beta0, F } = h0;
+  const T = eps.length;
+  const mg = { l: 36, r: 12, t: 14, b: 28 };
+  const pw = W - mg.l - mg.r, ph = H - mg.t - mg.b;
+  const xMn = eps[0], xMx = eps[T - 1];
+  const yMx = Math.max(...beta0, 1);
+  const tx = (x: number) => mg.l + ((x - xMn) / (xMx - xMn + 1e-9)) * pw;
+  const ty = (y: number) => H - mg.b - (y / yMx) * ph;
+  const ld = eps.map((x, i) => `${i === 0 ? "M" : "L"}${tx(x).toFixed(1)},${ty(beta0[i]).toFixed(1)}`).join(" ");
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto bg-card rounded-md border border-border">
+      <defs>
+        <linearGradient id="h0-grad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="hsl(var(--chart-emerald))" stopOpacity={0.35} />
+          <stop offset="100%" stopColor="hsl(var(--chart-emerald))" stopOpacity={0} />
+        </linearGradient>
+      </defs>
+      <path d={`${ld} L${tx(xMx)},${H - mg.b} L${tx(xMn)},${H - mg.b} Z`} fill="url(#h0-grad)" />
+      <path d={ld} fill="none" stroke="hsl(var(--chart-emerald))" strokeWidth={2} />
+      {[1, Math.round(yMx / 2), yMx].filter((v, i, a) => a.indexOf(v) === i && v > 0).map(v => (
+        <g key={v}>
+          <line x1={mg.l - 3} y1={ty(v)} x2={mg.l} y2={ty(v)} stroke="hsl(var(--muted-foreground))" strokeWidth={1} />
+          <text x={mg.l - 5} y={ty(v) + 4} fill="hsl(var(--muted-foreground))" fontSize={9} textAnchor="end">{v}</text>
+        </g>
+      ))}
+      <text x={W / 2} y={H - 4} fill="hsl(var(--muted-foreground))" fontSize={9} textAnchor="middle" fontFamily="IBM Plex Mono">ε (filtration scale)</text>
+      <text x={mg.l + 3} y={mg.t + 12} fill="hsl(var(--chart-emerald))" fontSize={9} fontFamily="IBM Plex Mono">β₀(ε)</text>
+      <text x={W - mg.r} y={mg.t + 12} fill="hsl(var(--chart-amber))" fontSize={10} textAnchor="end" fontFamily="IBM Plex Mono">F={F.toFixed(4)}</text>
+    </svg>
+  );
+}
+
+function NullHistogram({
+  arr, obs, label, W = 220, H = 120,
+}: { arr: number[]; obs: number; label: string; W?: number; H?: number }) {
+  if (!arr?.length) return null;
+  const mn = Math.min(...arr, obs), mx = Math.max(...arr, obs);
+  const bins = 20, bw = (mx - mn) / bins || 1;
+  const counts = Array(bins).fill(0);
+  arr.forEach(v => { const b = Math.min(bins - 1, Math.floor((v - mn) / bw)); counts[b]++; });
+  const maxC = Math.max(...counts, 1);
+  const mg = { l: 6, r: 6, t: 8, b: 18 };
+  const pw = W - mg.l - mg.r, ph = H - mg.t - mg.b;
+  const obX = mg.l + ((obs - mn) / (mx - mn + 1e-9)) * pw;
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto bg-card rounded-md border border-border">
+      {counts.map((c, i) => {
+        const x = mg.l + (i * pw) / bins, h = (c / maxC) * ph;
+        return <rect key={i} x={x} y={H - mg.b - h} width={Math.max(1, pw / bins - 1)} height={h} fill="hsl(var(--muted-foreground))" opacity={0.5} />;
+      })}
+      <line x1={obX} y1={mg.t} x2={obX} y2={H - mg.b} stroke="hsl(var(--chart-rose))" strokeWidth={2} />
+      <text x={Math.min(obX + 2, W - 32)} y={mg.t + 10} fill="hsl(var(--chart-rose))" fontSize={8} fontFamily="IBM Plex Mono">{obs.toFixed(2)}</text>
+      <text x={W / 2} y={H - 3} fill="hsl(var(--muted-foreground))" fontSize={8} textAnchor="middle" fontFamily="IBM Plex Mono">{label}</text>
+    </svg>
+  );
+}
+
+/* ════════════════════════════════════════════════
+   TTI Result Summary
+   ════════════════════════════════════════════════ */
+
+function TTISummary({ result }: { result: TTIResult }) {
+  const { tti, tti_ci, z, p, raw, phaseTransition, n } = result;
+
+  const comps = [
+    { key: "zL" as const, label: "L — Loop Mass (H1)", zv: z.zL, pv: p.pL, rv: raw.L, desc: `β₁ = ${raw.beta1}`, cssVar: "--chart-rose" },
+    { key: "zB" as const, label: "B — Branching (H0+D)", zv: z.zB, pv: p.pB, rv: raw.B, desc: `F=${raw.F.toFixed(4)} D=${raw.D.toFixed(4)}`, cssVar: "--chart-amber" },
+    { key: "zN" as const, label: "N — Bottleneck (φ)", zv: z.zN, pv: p.pN, rv: raw.N, desc: `φ=${raw.phi.toFixed(5)}`, cssVar: "--chart-emerald" },
+  ];
+  const maxZ = Math.max(6, ...comps.map(c => Math.abs(c.zv)));
+
+  return (
+    <div className="space-y-4">
+      {/* Score + metadata */}
+      <div className="grid grid-cols-3 gap-4">
+        <div className="module-card text-center col-span-1">
+          <p className="text-[10px] font-mono text-muted-foreground uppercase">Composite TTI</p>
+          <p className={`text-4xl font-mono font-bold mt-1 ${phaseTransition ? "text-chart-rose" : "text-chart-emerald"}`}>
+            {tti.toFixed(3)}
+          </p>
+          <p className="text-[10px] font-mono text-muted-foreground mt-1">
+            95% CI [{tti_ci[0]?.toFixed(2) ?? "—"}, {tti_ci[1]?.toFixed(2) ?? "—"}]
+          </p>
+          <Badge variant={phaseTransition ? "destructive" : "secondary"} className="font-mono text-[10px] mt-3">
+            {phaseTransition ? "⚡ PHASE TRANSITION" : "○ No Transition"}
+          </Badge>
+        </div>
+        <div className="col-span-2 grid grid-cols-3 gap-2">
+          {[
+            { l: "Threshold", v: "TTI ≥ 6.0" }, { l: "φ conductance", v: raw.phi.toFixed(5) }, { l: "n samples", v: n },
+            { l: "β₁ (H1 cycles)", v: raw.beta1 }, { l: "Graph edges", v: raw.edges }, { l: "Components", v: raw.comps },
+          ].map(({ l, v }) => (
+            <div key={l} className="bg-secondary/50 rounded-md p-2.5 text-center">
+              <p className="text-[10px] font-mono text-muted-foreground uppercase">{l}</p>
+              <p className="text-sm font-mono font-bold text-foreground mt-0.5">{v}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Component bars */}
+      <div className="grid grid-cols-3 gap-3">
+        {comps.map(({ label, zv, pv, desc, cssVar }) => (
+          <div key={label} className="module-card">
+            <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wide">{label}</p>
+            <p className="text-2xl font-mono font-bold mt-1" style={{ color: `hsl(var(${cssVar}))` }}>z={zv.toFixed(2)}</p>
+            <p className="text-[10px] text-muted-foreground mt-1">{desc}</p>
+            <p className={`text-[10px] font-mono mt-0.5 ${pv < 0.05 ? "text-chart-rose" : "text-muted-foreground"}`}>
+              p={pv.toFixed(3)}{pv < 0.05 ? " *" : ""}
+            </p>
+            <div className="h-1.5 bg-secondary rounded-full overflow-hidden mt-2">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${Math.min(100, (Math.abs(zv) / maxZ) * 100)}%` }}
+                transition={{ duration: 0.6 }}
+                className="h-full rounded-full"
+                style={{ background: `hsl(var(${cssVar}))` }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════
+   Progress Display
+   ════════════════════════════════════════════════ */
+
+function ComputeProgress({ pct, msg }: { pct: number; msg: string }) {
+  return (
+    <div className="space-y-2 mb-4">
+      <Progress value={pct} className="h-1.5" />
+      <p className="text-[10px] font-mono text-muted-foreground">{msg}</p>
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════
+   UPLOAD TAB — Real CSV parsing + TTI
+   ════════════════════════════════════════════════ */
+
+function UploadTab({ onResult }: { onResult: (r: TTIResult) => void }) {
+  const [status, setStatus] = useState("");
+  const [pct, setPct] = useState(0);
+  const [parsed, setParsed] = useState<ReturnType<typeof parseUpload> | null>(null);
+  const [computing, setComputing] = useState(false);
+  const [error, setError] = useState("");
+  const [k, setK] = useState(12);
+  const [nullReps, setNullReps] = useState(50);
+  const [sLabel, setSLabel] = useState("");
+  const [rLabel, setRLabel] = useState("");
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setError(""); setParsed(null); setStatus("");
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const p = parseUpload(ev.target?.result as string);
+        setParsed(p); setSLabel(p.sLabel); setRLabel(p.rLabel);
+        setStatus(`✓ ${p.nSamples} samples × ${p.nFeatures} features  |  Groups: ${p.uniqueLabels.join(", ")}`);
+      } catch (err: any) { setError(err.message); }
+    };
+    reader.readAsText(file);
+  };
+
+  const run = async () => {
+    if (!parsed) return;
+    setComputing(true); setError(""); setPct(0);
+    try {
+      const S = parsed.labels.map(l => l === sLabel), R = parsed.labels.map(l => l === rLabel);
+      if (!S.some(Boolean)) throw new Error(`No samples labelled "${sLabel}"`);
+      if (!R.some(Boolean)) throw new Error(`No samples labelled "${rLabel}"`);
+      let X = parsed.X;
+      if (X.length > 800) {
+        const sub = subsampleData(X, S, R, 800);
+        X = sub.X;
+        setStatus(s => s + " [subsampled to 800]");
+      }
+      const Xs = standardize(X);
+      const res = await computeTTI(Xs, S.slice(0, X.length), R.slice(0, X.length),
+        { k, nullReps, bsReps: 50, seed: 42 }, (msg, p) => { setStatus(msg); setPct(p); });
+      res.sourceName = `${fileRef.current?.files?.[0]?.name || "upload"} · ${sLabel} vs ${rLabel} · n=${X.length}`;
+      onResult(res);
+    } catch (err: any) { setError(err.message); }
+    finally { setComputing(false); }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="module-card">
+        <div className="flex items-center gap-2 mb-3">
+          <Upload className="w-4 h-4 text-accent" />
+          <h3 className="text-xs font-mono text-accent uppercase tracking-wide font-semibold">Upload Your Data</h3>
+        </div>
+        <p className="text-xs text-muted-foreground leading-relaxed mb-4">
+          <strong className="text-foreground">Format:</strong> CSV or TSV. Rows = samples, columns = features (genes / ATAC peaks / PCs).
+          Include a column named <code className="text-accent">label</code>, <code className="text-accent">condition</code>, or <code className="text-accent">group</code> for group assignment.
+          Without it, rows split 50/50. Data auto-scaled. Capped at 800 samples (O(n²) kNN).
+        </p>
+        <input ref={fileRef} type="file" accept=".csv,.tsv,.txt" onChange={handleFile}
+          className="w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 cursor-pointer" />
+        {error && <p className="text-xs text-destructive mt-2 flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5" /> {error}</p>}
+        {status && !computing && <p className="text-xs font-mono text-chart-emerald mt-2">{status}</p>}
+      </div>
+
+      {parsed && (
+        <div className="module-card">
+          <div className="grid grid-cols-4 gap-4 mb-4">
+            <div>
+              <p className="text-[10px] font-mono text-muted-foreground uppercase mb-1">Parental group</p>
+              <select value={sLabel} onChange={e => setSLabel(e.target.value)}
+                className="w-full bg-secondary border border-border rounded-md px-2 py-1.5 text-xs font-mono text-foreground">
+                {parsed.uniqueLabels.map(l => <option key={l}>{l}</option>)}
+              </select>
+            </div>
+            <div>
+              <p className="text-[10px] font-mono text-muted-foreground uppercase mb-1">Resistant group</p>
+              <select value={rLabel} onChange={e => setRLabel(e.target.value)}
+                className="w-full bg-secondary border border-border rounded-md px-2 py-1.5 text-xs font-mono text-foreground">
+                {parsed.uniqueLabels.map(l => <option key={l}>{l}</option>)}
+              </select>
+            </div>
+            <div>
+              <div className="flex justify-between text-[10px] font-mono text-muted-foreground mb-1">
+                <span>k neighbours</span><span className="text-foreground">{k}</span>
+              </div>
+              <Slider min={5} max={40} step={5} value={[k]} onValueChange={([v]) => setK(v)} />
+            </div>
+            <div>
+              <div className="flex justify-between text-[10px] font-mono text-muted-foreground mb-1">
+                <span>Null reps</span><span className="text-foreground">{nullReps}</span>
+              </div>
+              <Slider min={20} max={150} step={10} value={[nullReps]} onValueChange={([v]) => setNullReps(v)} />
+            </div>
+          </div>
+          {computing && <ComputeProgress pct={pct} msg={status} />}
+          <Button onClick={run} disabled={computing} className="font-mono text-xs">
+            {computing ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Computing…</> : <><Play className="w-3.5 h-3.5" /> Compute TTI</>}
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════
+   DATABASE TAB — Real NCBI GEO + cBioPortal APIs
+   ════════════════════════════════════════════════ */
+
+function DatabaseTab({ onResult }: { onResult: (r: TTIResult) => void }) {
+  const [db, setDb] = useState<"tcga" | "geo">("tcga");
+  const [geoQ, setGeoQ] = useState("ovarian cancer cisplatin resistance");
+  const [geoRes, setGeoRes] = useState<GEOResult[]>([]);
+  const [geoLoading, setGeoLoading] = useState(false);
+  const [geoErr, setGeoErr] = useState("");
+  const [selGEO, setSelGEO] = useState<GEOResult | null>(null);
+
+  const [tcgaStatus, setTcgaStatus] = useState("");
+  const [tcgaData, setTcgaData] = useState<TCGAData | null>(null);
+  const [tcgaErr, setTcgaErr] = useState("");
+  const [tcgaLoading, setTcgaLoading] = useState(false);
+
+  const [computing, setComputing] = useState(false);
+  const [pct, setPct] = useState(0);
+  const [progMsg, setProgMsg] = useState("");
+  const [k, setK] = useState(10);
+  const [nullReps, setNullReps] = useState(50);
+
+  const doGEO = async () => {
+    setGeoLoading(true); setGeoErr(""); setGeoRes([]);
+    try { setGeoRes(await searchGEO(geoQ)); }
+    catch (e: any) { setGeoErr(e.message); }
+    finally { setGeoLoading(false); }
+  };
+
+  const doFetchTCGA = async () => {
+    setTcgaLoading(true); setTcgaErr(""); setTcgaData(null);
+    try { const d = await fetchTCGAOV(setTcgaStatus); setTcgaData(d); }
+    catch (e: any) { setTcgaErr(e.message); }
+    finally { setTcgaLoading(false); }
+  };
+
+  const runTCGATTI = async () => {
+    if (!tcgaData) return;
+    setComputing(true); setPct(0);
+    try {
+      let { X, S_mask: S, R_mask: R } = tcgaData;
+      const keep = X.map((_, i) => S[i] || R[i]);
+      X = X.filter((_, i) => keep[i]);
+      const Sf = S.filter((_, i) => keep[i]), Rf = R.filter((_, i) => keep[i]);
+      const sub = subsampleData(X, Sf, Rf, 700);
+      const Xs = standardize(sub.X);
+      const res = await computeTTI(Xs, sub.S_mask, sub.R_mask,
+        { k, nullReps, bsReps: 50, seed: 42 }, (msg, p) => { setProgMsg(msg); setPct(p); });
+      res.sourceName = `TCGA-OV · cBioPortal · ${tcgaData.geneSymbols.join(", ")} · Stage I–II vs III–IV · n=${sub.X.length}`;
+      res.genePanel = tcgaData.geneSymbols;
+      onResult(res);
+    } catch (e: any) { setTcgaErr(e.message); }
+    finally { setComputing(false); }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-2">
+        {([["tcga", "TCGA-OV (cBioPortal)"], ["geo", "NCBI GEO Search"]] as const).map(([id, lbl]) => (
+          <Button key={id} variant={db === id ? "default" : "outline"} size="sm"
+            className="font-mono text-xs" onClick={() => setDb(id)}>
+            {id === "tcga" ? <Database className="w-3.5 h-3.5" /> : <Search className="w-3.5 h-3.5" />} {lbl}
+          </Button>
+        ))}
+      </div>
+
+      {db === "tcga" && (
+        <div className="space-y-4">
+          <div className="module-card">
+            <h3 className="text-xs font-mono text-accent uppercase tracking-wide font-semibold mb-3">TCGA Ovarian Cancer — Live cBioPortal API</h3>
+            <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+              Real-time fetch of mRNA expression for <strong className="text-foreground">{OV_GENES.length} HGSOC driver genes</strong> via the cBioPortal public REST API.
+              Staging: FIGO Stage I/II → <span className="text-chart-emerald">parental</span> · Stage III/IV → <span className="text-chart-amber">resistant/advanced</span>
+            </p>
+            <p className="text-[10px] font-mono text-muted-foreground mb-4">Gene panel: {OV_SYMBOLS.join(" · ")}</p>
+            <Button onClick={doFetchTCGA} disabled={tcgaLoading} className="font-mono text-xs">
+              {tcgaLoading ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Fetching from cBioPortal…</> : "⬇ Fetch TCGA-OV Data"}
+            </Button>
+            {tcgaErr && <p className="text-xs text-destructive mt-2">{tcgaErr}</p>}
+            {tcgaStatus && <p className="text-xs font-mono text-chart-emerald mt-2">{tcgaStatus}</p>}
+          </div>
+
+          {tcgaData && (
+            <div className="module-card">
+              <div className="grid grid-cols-4 gap-3 mb-4">
+                {[
+                  { l: "Total samples", v: tcgaData.nSamples },
+                  { l: "Parental I/II", v: tcgaData.S_mask.filter(Boolean).length },
+                  { l: "Advanced III/IV", v: tcgaData.R_mask.filter(Boolean).length },
+                  { l: "Driver genes", v: tcgaData.geneSymbols.length },
+                ].map(({ l, v }) => (
+                  <div key={l} className="bg-secondary/50 rounded-md p-3 text-center">
+                    <p className="text-[10px] font-mono text-muted-foreground uppercase">{l}</p>
+                    <p className="text-xl font-mono font-bold text-accent mt-1">{v}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                  <div className="flex justify-between text-[10px] font-mono text-muted-foreground mb-1">
+                    <span>k neighbours</span><span className="text-foreground">{k}</span>
+                  </div>
+                  <Slider min={5} max={25} step={1} value={[k]} onValueChange={([v]) => setK(v)} />
+                </div>
+                <div>
+                  <div className="flex justify-between text-[10px] font-mono text-muted-foreground mb-1">
+                    <span>Null reps</span><span className="text-foreground">{nullReps}</span>
+                  </div>
+                  <Slider min={20} max={120} step={10} value={[nullReps]} onValueChange={([v]) => setNullReps(v)} />
+                </div>
+              </div>
+              {computing && <ComputeProgress pct={pct} msg={progMsg} />}
+              <Button onClick={runTCGATTI} disabled={computing} className="font-mono text-xs">
+                {computing ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Computing TTI…</> : <><Play className="w-3.5 h-3.5" /> Run TTI on TCGA-OV</>}
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {db === "geo" && (
+        <div className="space-y-3">
+          <div className="module-card">
+            <h3 className="text-xs font-mono text-accent uppercase tracking-wide font-semibold mb-3">NCBI GEO — Live E-utilities Search</h3>
+            <div className="flex gap-2 mb-2">
+              <Input value={geoQ} onChange={e => setGeoQ(e.target.value)} onKeyDown={e => e.key === "Enter" && doGEO()}
+                placeholder="GSE26712  or  ovarian cancer ATAC-seq platinum resistance"
+                className="flex-1 font-mono text-xs" />
+              <Button onClick={doGEO} disabled={geoLoading} size="sm" className="font-mono text-xs">
+                {geoLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Search className="w-3.5 h-3.5" />} Search
+              </Button>
+            </div>
+            {geoErr && <p className="text-xs text-destructive">{geoErr}</p>}
+          </div>
+
+          {geoRes.map(r => (
+            <div key={r.id} className={`module-card cursor-pointer ${selGEO?.id === r.id ? "border-primary" : ""}`}
+              onClick={() => setSelGEO(selGEO?.id === r.id ? null : r)}>
+              <div className="flex justify-between mb-1">
+                <span className="font-mono text-xs font-bold text-accent">{r.accession}</span>
+                <span className="text-[10px] text-muted-foreground">{r.nSamples} samples · {r.organism} · {r.pubDate}</span>
+              </div>
+              <p className="text-xs text-foreground mb-1">{r.title}</p>
+              <p className="text-[10px] text-muted-foreground">{r.summary}{r.summary.length >= 200 ? "…" : ""}</p>
+              {selGEO?.id === r.id && (
+                <div className="mt-3 p-3 bg-secondary/50 rounded-md border-l-2 border-primary">
+                  <p className="text-[10px] font-mono text-accent font-semibold mb-2">To analyse this dataset:</p>
+                  <ol className="text-[10px] text-muted-foreground space-y-1 list-decimal list-inside leading-relaxed">
+                    <li>Download series matrix from GEO and decompress: <code className="text-accent">gunzip *.gz</code></li>
+                    <li>Extract expression as CSV: rows = samples, cols = features; add <code className="text-accent">label</code> column</li>
+                    <li>Upload via the <strong className="text-foreground">Upload & Analyse</strong> tab for real TTI computation</li>
+                  </ol>
+                  <a href={`https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=${r.accession}`} target="_blank" rel="noreferrer"
+                    className="text-[10px] text-chart-emerald mt-2 inline-flex items-center gap-1">
+                    Open {r.accession} on NCBI GEO <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════
+   SIMULATE TAB — Real topology generators + real TTI
+   ════════════════════════════════════════════════ */
+
+const TOPO_META: Record<string, { label: string; icon: string; exp: string }> = {
+  null_gaussian: { label: "Null Gaussian", icon: "○", exp: "Expect TTI ≈ 0, not significant — validates specificity." },
+  bottleneck: { label: "Bottleneck", icon: "⊃⊂", exp: "Expect TTI > 6, high N (low conductance φ) — two separated basins." },
+  branch_y: { label: "Y-Branch", icon: "⋔", exp: "Expect TTI > 6, high B (fragmentation + directional dispersion)." },
+  loop: { label: "Cyclic Loop", icon: "⟳", exp: "Expect TTI > 6, high L (β₁ > 0, persistent H1 cycle)." },
+};
+
+function SimulateTab({ onResult }: { onResult: (r: TTIResult) => void }) {
+  const [topo, setTopo] = useState("bottleneck");
+  const [n, setN] = useState(130);
+  const [k, setK] = useState(10);
+  const [nullReps, setNullReps] = useState(50);
+  const [seed, setSeed] = useState(42);
+  const [computing, setComputing] = useState(false);
+  const [pct, setPct] = useState(0);
+  const [progMsg, setProgMsg] = useState("");
+
+  const preview = useMemo(() => {
+    try {
+      const g = GENERATORS[topo](Math.min(n, 130), seed);
+      return {
+        pca: computePCA(g.X),
+        S: g.labels.map(l => l === "S"),
+        R: g.labels.map(l => l === "R"),
+        n: g.X.length,
+      };
+    } catch { return null; }
+  }, [topo, n, seed]);
+
+  const run = async () => {
+    setComputing(true); setPct(0);
+    try {
+      const g = GENERATORS[topo](n, seed);
+      const S = g.labels.map(l => l === "S"), R = g.labels.map(l => l === "R");
+      const res = await computeTTI(g.X, S, R, { k, nullReps, bsReps: 50, seed }, (msg, p) => { setProgMsg(msg); setPct(p); });
+      res.sourceName = `Simulation · ${TOPO_META[topo].label} · n=${n}, k=${k}, seed=${seed}`;
+      onResult(res);
+    } catch (e) { console.error(e); }
+    finally { setComputing(false); }
+  };
+
+  return (
+    <div className="grid grid-cols-3 gap-4">
+      {/* Controls */}
+      <div className="space-y-4">
+        <div>
+          <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wide mb-2">Topology Class</p>
+          <div className="grid grid-cols-2 gap-1.5">
+            {Object.entries(TOPO_META).map(([key, { label, icon }]) => (
+              <Button key={key} variant={topo === key ? "default" : "outline"} size="sm"
+                className="text-xs font-mono justify-start h-auto py-1.5"
+                onClick={() => setTopo(key)}>
+                <span className="mr-1">{icon}</span> {label}
+              </Button>
+            ))}
+          </div>
+        </div>
+        <p className="text-xs text-muted-foreground leading-relaxed">{TOPO_META[topo].exp}</p>
+        <div className="space-y-3">
+          {[
+            { label: "n samples", val: n, set: setN, min: 80, max: 300, step: 20 },
+            { label: "k neighbours", val: k, set: setK, min: 5, max: 30, step: 5 },
+            { label: "Null reps", val: nullReps, set: setNullReps, min: 20, max: 100, step: 10 },
+            { label: "Random seed", val: seed, set: setSeed, min: 0, max: 200, step: 1 },
+          ].map(({ label, val, set, min, max, step }) => (
+            <div key={label}>
+              <div className="flex justify-between text-[10px] font-mono text-muted-foreground mb-1">
+                <span>{label}</span><span className="text-foreground">{val}</span>
+              </div>
+              <Slider min={min} max={max} step={step} value={[val]} onValueChange={([v]) => set(v)} />
+            </div>
+          ))}
+        </div>
+        {computing && <ComputeProgress pct={pct} msg={progMsg} />}
+        <Button onClick={run} disabled={computing} className="w-full font-mono text-xs">
+          {computing ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Computing real TTI…</> : <><Play className="w-3.5 h-3.5" /> Run TTI Analysis</>}
+        </Button>
+      </div>
+
+      {/* Preview + info */}
+      <div className="col-span-2 space-y-3">
+        {preview && (
+          <>
+            <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wide">
+              PCA preview · {TOPO_META[topo].label} · {preview.n} samples (emerald=parental, amber=resistant)
+            </p>
+            <PCAScatter pca={preview.pca} S_mask={preview.S} R_mask={preview.R} />
+          </>
+        )}
+        <div className="module-card">
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            <strong className="text-foreground">All computation is real.</strong> Exact O(n²) kNN · Union-Find H0 filtration (β₀ curve) ·
+            Gaussian-weighted graph conductance φ(S,R) · Graph-theoretic H1 approximation β₁=E−V+C ·
+            Local jitter null model (NOT label permutation) · Subsampling bootstrap CI.
+            High-dimensional embedding: 2D topology lifted to 20D via random linear map + Gaussian noise.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════
+   RESULTS TAB — Full visualization + AI interpretation
+   ════════════════════════════════════════════════ */
+
+function ResultsTab({ results }: { results: TTIResult[] }) {
+  const [sel, setSel] = useState(0);
+  const [aiQ, setAiQ] = useState("");
+  const [aiR, setAiR] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiErr, setAiErr] = useState("");
+  const result = results[sel];
+
+  useEffect(() => {
+    if (!result) return;
+    const { tti, z, raw, p } = result;
+    setAiQ(
+      `TTI analysis — ${result.sourceName}\n\nResults:\n` +
+      `• TTI = ${tti.toFixed(3)}  95% CI [${result.tti_ci[0]?.toFixed(2)}, ${result.tti_ci[1]?.toFixed(2)}]\n` +
+      `• z(L) = ${z.zL.toFixed(2)}  p = ${p.pL.toFixed(3)}  [H1 loop mass, β₁ = ${raw.beta1}]\n` +
+      `• z(B) = ${z.zB.toFixed(2)}  p = ${p.pB.toFixed(3)}  [F = ${raw.F.toFixed(4)}, D = ${raw.D.toFixed(4)}]\n` +
+      `• z(N) = ${z.zN.toFixed(2)}  p = ${p.pN.toFixed(3)}  [φ = ${raw.phi.toFixed(5)}, N = ${raw.N.toFixed(3)}]\n` +
+      `• Phase transition: ${result.phaseTransition ? "YES (TTI ≥ 6.0)" : "NO"}\n` +
+      `• Graph: ${raw.edges} edges, ${raw.comps} components, β₁=${raw.beta1}\n` +
+      `${result.genePanel ? `• Genes: ${result.genePanel.join(", ")}\n` : ""}` +
+      `\nInterpret the biological significance in the context of cancer regulatory state transitions.`,
+    );
+    setAiR(""); setAiErr("");
+  }, [result]);
+
+  const askAI = async () => {
+    setAiLoading(true); setAiErr(""); setAiR("");
+    try {
+      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/interpret-tti`;
+      const resp = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ prompt: aiQ }),
+      });
+
+      if (resp.status === 429) { setAiErr("Rate limited — try again shortly."); return; }
+      if (resp.status === 402) { setAiErr("AI credits exhausted."); return; }
+      if (!resp.ok || !resp.body) throw new Error("Failed to start stream");
+
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let buf = "";
+      let full = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        let nl: number;
+        while ((nl = buf.indexOf("\n")) !== -1) {
+          let line = buf.slice(0, nl);
+          buf = buf.slice(nl + 1);
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (!line.startsWith("data: ")) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") break;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) { full += content; setAiR(full); }
+          } catch { /* partial JSON, wait */ }
+        }
+      }
+    } catch (e: any) { setAiErr(e.message); }
+    finally { setAiLoading(false); }
+  };
+
+  if (!results.length) {
+    return (
+      <div className="text-center py-16 text-muted-foreground">
+        <FlaskConical className="w-12 h-12 mx-auto mb-4 opacity-25" />
+        <p className="text-sm">No results yet — run TTI via Upload, Database, or Simulate tab.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {results.length > 1 && (
+        <div className="flex gap-1.5 flex-wrap">
+          {results.map((r, i) => (
+            <Button key={i} variant={sel === i ? "default" : "outline"} size="sm"
+              className="text-[10px] font-mono h-auto py-1 px-2.5" onClick={() => setSel(i)}>
+              {(r.sourceName || `Result ${i + 1}`).slice(0, 50)}{(r.sourceName?.length || 0) > 50 ? "…" : ""}
+            </Button>
+          ))}
+        </div>
+      )}
+
+      {result && (
+        <>
+          <p className="text-[10px] font-mono text-muted-foreground">{result.sourceName}</p>
+          <TTISummary result={result} />
+
+          {/* PCA + H0 */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-[10px] font-mono text-muted-foreground uppercase mb-2">PCA — Real power-iteration, parental (emerald) vs resistant (amber)</p>
+              <PCAScatter pca={result.pcaResult} S_mask={result.S_mask} R_mask={result.R_mask} />
+            </div>
+            <div>
+              <p className="text-[10px] font-mono text-muted-foreground uppercase mb-2">H0 β₀(ε) Fragmentation — Real union-find at each ε</p>
+              <H0Plot h0={result.h0} />
+            </div>
+          </div>
+
+          {/* Null distributions */}
+          <div className="grid grid-cols-3 gap-3">
+            {([
+              { arr: result.null.nullL, obs: result.raw.L, label: "L null distribution" },
+              { arr: result.null.nullB, obs: result.raw.B, label: "B null distribution" },
+              { arr: result.null.nullN, obs: result.raw.N, label: "N null distribution" },
+            ] as const).map(({ arr, obs, label }) => (
+              <div key={label}>
+                <p className="text-[10px] font-mono text-muted-foreground uppercase mb-1">{label} (red = observed)</p>
+                <NullHistogram arr={arr} obs={obs} label={label} />
+              </div>
+            ))}
+          </div>
+
+          {/* AI Interpretation */}
+          <div className="module-card">
+            <div className="flex items-center gap-2 mb-3">
+              <FlaskConical className="w-4 h-4 text-accent" />
+              <h3 className="text-xs font-mono text-accent uppercase tracking-wide font-semibold">AI Biological Interpretation</h3>
+            </div>
+            <p className="text-[10px] text-muted-foreground mb-3">Auto-populated from your real TTI results. Edit before submitting.</p>
+            <Textarea value={aiQ} onChange={e => setAiQ(e.target.value)}
+              className="font-mono text-xs min-h-[100px] mb-3" />
+            <div className="flex items-center gap-3">
+              <Button onClick={askAI} disabled={aiLoading} className="font-mono text-xs">
+                {aiLoading ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Interpreting…</> : "⚗ Interpret with AI"}
+              </Button>
+              {aiErr && <span className="text-xs text-destructive">{aiErr}</span>}
+            </div>
+            {aiR && (
+              <div className="mt-4 pt-4 border-t border-border text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+                {aiR}
+              </div>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════
+   EWS TAB (kept from original)
+   ════════════════════════════════════════════════ */
+
 function mulberry32(a: number) {
   return function () {
     let t = (a += 0x6d2b79f5);
@@ -18,347 +756,8 @@ function mulberry32(a: number) {
   };
 }
 
-function boxMuller(rand: () => number) {
-  const u1 = Math.max(1e-10, rand());
-  const u2 = rand();
-  return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
-}
-
-/* ── Topology generators ── */
-const W = 380, H = 260;
-
-function genNullGaussian(n = 260, seed = 1) {
-  const rand = mulberry32(seed);
-  const bm = () => boxMuller(rand);
-  return Array.from({ length: n }, (_, i) => ({
-    x: bm() * 50 + W / 2, y: bm() * 50 + H / 2, label: i < n / 2 ? "S" : "R",
-  }));
-}
-
-function genBottleneck(n = 260, seed = 2) {
-  const rand = mulberry32(seed);
-  const bm = () => boxMuller(rand);
-  const pts: { x: number; y: number; label: string }[] = [];
-  const half = Math.floor(n / 2);
-  for (let i = 0; i < half; i++) pts.push({ x: bm() * 30 + W * 0.22, y: bm() * 30 + H / 2, label: "S" });
-  for (let i = 0; i < half; i++) pts.push({ x: bm() * 30 + W * 0.78, y: bm() * 30 + H / 2, label: "R" });
-  for (let i = 0; i < 25; i++) pts.push({ x: W * 0.22 + W * 0.56 * (i / 25), y: bm() * 8 + H / 2, label: "S" });
-  return pts;
-}
-
-function genBranchY(n = 260, seed = 3) {
-  const rand = mulberry32(seed);
-  const bm = () => boxMuller(rand);
-  const pts: { x: number; y: number; label: string }[] = [];
-  const trunk = Math.floor(n / 3);
-  for (let i = 0; i < trunk; i++) {
-    const t = i / trunk;
-    pts.push({ x: t * W * 0.38 + W * 0.12, y: bm() * 10 + H / 2, label: "S" });
-  }
-  for (let i = 0; i < n - trunk; i++) {
-    const x = W * 0.5 + rand() * W * 0.36;
-    const sign = i < (n - trunk) / 2 ? 1 : -1;
-    pts.push({ x, y: H / 2 + sign * (x - W * 0.5) * 0.5 + bm() * 10, label: "R" });
-  }
-  return pts;
-}
-
-function genLoop(n = 260, seed = 4) {
-  const rand = mulberry32(seed);
-  const bm = () => boxMuller(rand);
-  return Array.from({ length: n }, () => {
-    const theta = rand() * 2 * Math.PI;
-    return {
-      x: W / 2 + Math.cos(theta) * 90 + bm() * 9,
-      y: H / 2 + Math.sin(theta) * 63 + bm() * 9,
-      label: theta < Math.PI ? "S" : "R",
-    };
-  });
-}
-
-const TOPOLOGIES: Record<string, {
-  label: string; gen: (n?: number, seed?: number) => { x: number; y: number; label: string }[];
-  expectedTTI: string; expectedComponent: string; interpretation: string; icon: string;
-}> = {
-  null_gaussian: { label: "Null Gaussian", gen: genNullGaussian, expectedTTI: "~0", expectedComponent: "None", interpretation: "No structural separation. TTI should be near zero and non-significant.", icon: "○" },
-  bottleneck: { label: "Bottleneck", gen: genBottleneck, expectedTTI: ">6", expectedComponent: "N (Conductance)", interpretation: "Two separated basins with a narrow corridor. Detected by high N (low graph conductance).", icon: "⊃⊂" },
-  branch_y: { label: "Y-Branch", gen: genBranchY, expectedTTI: ">6", expectedComponent: "B (Branching)", interpretation: "Bifurcating regulatory trajectory. Detected by high B — fragmentation and directional dispersion.", icon: "⋔" },
-  loop: { label: "Cyclic Loop", gen: genLoop, expectedTTI: ">6", expectedComponent: "L (Loop mass)", interpretation: "Compensatory regulatory circuits form cyclic trajectory. Detected by high L (H1 persistent homology).", icon: "⟳" },
-};
-
-/* ── Mock TTI computation ── */
-function mockTTI(topology: string, k: number, nullReps: number, seed: number) {
-  const rand = mulberry32(seed * 7 + k);
-  const noise = () => (rand() - 0.5) * 0.4;
-  const base: Record<string, { zL: number; zB: number; zN: number }> = {
-    null_gaussian: { zL: 0.3 + noise(), zB: 0.4 + noise(), zN: 0.2 + noise() },
-    bottleneck: { zL: 1.1 + noise(), zB: 1.8 + noise(), zN: 3.9 + noise() },
-    branch_y: { zL: 1.2 + noise(), zB: 4.1 + noise(), zN: 2.0 + noise() },
-    loop: { zL: 3.8 + noise(), zB: 1.4 + noise(), zN: 1.5 + noise() },
-  };
-  const s = base[topology];
-  const tti = s.zL + s.zB + s.zN;
-  const ciW = 0.8 / Math.sqrt(nullReps / 50);
-  return {
-    tti: +tti.toFixed(3), tti_ci: [+(tti - ciW).toFixed(3), +(tti + ciW).toFixed(3)] as [number, number],
-    z: s, phi: +Math.exp(-s.zN - 0.5).toFixed(4),
-    pL: +Math.max(0.001, 0.5 - s.zL * 0.12).toFixed(3),
-    pB: +Math.max(0.001, 0.5 - s.zB * 0.12).toFixed(3),
-    pN: +Math.max(0.001, 0.5 - s.zN * 0.12).toFixed(3),
-    phaseTransition: tti >= 6.0,
-  };
-}
-
-/* ── Scatter Plot ── */
-function ScatterPlot({ pts, title }: { pts: { x: number; y: number; label: string }[]; title: string }) {
-  return (
-    <div className="w-full">
-      <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wide mb-2">{title}</p>
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto bg-card rounded-md border border-border">
-        {[0.25, 0.5, 0.75].map((f) => (
-          <g key={f}>
-            <line x1={f * W} y1={0} x2={f * W} y2={H} stroke="hsl(var(--border))" strokeWidth={0.5} />
-            <line x1={0} y1={f * H} x2={W} y2={f * H} stroke="hsl(var(--border))" strokeWidth={0.5} />
-          </g>
-        ))}
-        {pts.map((p, i) => (
-          <circle key={i} cx={p.x} cy={p.y} r={2.5}
-            fill={p.label === "S" ? "hsl(var(--chart-cyan))" : "hsl(var(--chart-magenta))"}
-            opacity={0.7} />
-        ))}
-        <circle cx={20} cy={H - 22} r={4} fill="hsl(var(--chart-cyan))" />
-        <text x={28} y={H - 18} fill="hsl(var(--muted-foreground))" fontSize={9} fontFamily="IBM Plex Mono">Parental</text>
-        <circle cx={90} cy={H - 22} r={4} fill="hsl(var(--chart-magenta))" />
-        <text x={98} y={H - 18} fill="hsl(var(--muted-foreground))" fontSize={9} fontFamily="IBM Plex Mono">Resistant</text>
-      </svg>
-    </div>
-  );
-}
-
-/* ── Component Bars ── */
-function ComponentBars({ result }: { result: ReturnType<typeof mockTTI> }) {
-  const comps = [
-    { key: "zL" as const, label: "L — Loop Mass", cssColor: "hsl(var(--chart-rose))" },
-    { key: "zB" as const, label: "B — Branching", cssColor: "hsl(var(--chart-amber))" },
-    { key: "zN" as const, label: "N — Bottleneck", cssColor: "hsl(var(--chart-emerald))" },
-  ];
-  const maxZ = Math.max(6, ...Object.values(result.z).map(Math.abs));
-
-  return (
-    <div className="space-y-3">
-      {comps.map(({ key, label, cssColor }) => {
-        const z = result.z[key];
-        const pct = (Math.abs(z) / maxZ) * 100;
-        return (
-          <div key={key}>
-            <div className="flex justify-between text-xs font-mono mb-1">
-              <span className="text-muted-foreground">{label}</span>
-              <span style={{ color: cssColor }}>z = {z.toFixed(2)}</span>
-            </div>
-            <div className="h-2 bg-secondary rounded-full overflow-hidden">
-              <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }}
-                transition={{ duration: 0.6 }}
-                className="h-full rounded-full" style={{ background: cssColor }} />
-            </div>
-          </div>
-        );
-      })}
-      <p className="text-[10px] font-mono text-muted-foreground mt-2">
-        Phase-transition threshold: TTI ≥ 6.0 | Composite TTI = {result.tti.toFixed(3)}
-        <span className="ml-2">95% CI [{result.tti_ci[0].toFixed(2)}, {result.tti_ci[1].toFixed(2)}]</span>
-      </p>
-    </div>
-  );
-}
-
-/* ── Landscape SVG ── */
-function LandscapeSVG({ tti, phaseTransition }: { tti: number; phaseTransition: boolean }) {
-  const lW = 500, lH = 180;
-  const pts: [number, number][] = [];
-  for (let i = 0; i <= 200; i++) {
-    const xN = i / 200;
-    const u = 500 * (xN - 0.28) ** 2 * (xN - 0.72) ** 2;
-    pts.push([xN * lW, Math.min(lH * 0.15 + u * 0.9, lH * 0.95)]);
-  }
-  const pathD = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(" ");
-  const areaD = `${pathD} L${lW},${lH} L0,${lH} Z`;
-
-  return (
-    <svg viewBox={`0 0 ${lW} ${lH}`} className="w-full h-auto">
-      <defs>
-        <linearGradient id="tti-grad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.15} />
-          <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.02} />
-        </linearGradient>
-      </defs>
-      <path d={areaD} fill="url(#tti-grad)" />
-      <path d={pathD} fill="none" stroke="hsl(var(--primary))" strokeWidth={2} />
-      <text x={lW * 0.28} y={lH - 8} textAnchor="middle" fill="hsl(var(--chart-cyan))" fontSize={10} fontFamily="IBM Plex Mono">Parental</text>
-      <text x={lW * 0.72} y={lH - 8} textAnchor="middle" fill="hsl(var(--chart-magenta))" fontSize={10} fontFamily="IBM Plex Mono">Resistant</text>
-      <circle cx={lW * 0.28} cy={pts[56][1] + 5} r={6} fill="hsl(var(--chart-cyan))" opacity={0.8} />
-      {phaseTransition ? (
-        <text x={lW * 0.5} y={20} textAnchor="middle" fill="hsl(var(--chart-rose))" fontSize={10} fontFamily="IBM Plex Mono">⚡ Phase transition</text>
-      ) : (
-        <text x={lW * 0.5} y={20} textAnchor="middle" fill="hsl(var(--chart-amber))" fontSize={10} fontFamily="IBM Plex Mono">⬆ High barrier</text>
-      )}
-      <text x={lW - 8} y={lH - 8} textAnchor="end" fill="hsl(var(--accent))" fontSize={10} fontFamily="IBM Plex Mono">
-        fTTI = {tti.toFixed(2)}
-      </text>
-    </svg>
-  );
-}
-
-/* ── Simulation Tab ── */
-function SimulationTab() {
-  const [topology, setTopology] = useState("bottleneck");
-  const [k, setK] = useState(30);
-  const [nullReps, setNullReps] = useState(100);
-  const [seed, setSeed] = useState(42);
-  const [computing, setComputing] = useState(false);
-  const [result, setResult] = useState<ReturnType<typeof mockTTI> | null>(null);
-
-  const pts = useMemo(() => TOPOLOGIES[topology].gen(260, seed), [topology, seed]);
-  const topo = TOPOLOGIES[topology];
-
-  const runCompute = useCallback(() => {
-    setComputing(true);
-    setResult(null);
-    setTimeout(() => {
-      setResult(mockTTI(topology, k, nullReps, seed));
-      setComputing(false);
-    }, 800 + Math.random() * 400);
-  }, [topology, k, nullReps, seed]);
-
-  return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-3 gap-4">
-        {/* Controls */}
-        <div className="space-y-4">
-          <div>
-            <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wide mb-2">Topology Class</p>
-            <div className="grid grid-cols-2 gap-1.5">
-              {Object.entries(TOPOLOGIES).map(([key, t]) => (
-                <Button key={key} variant={topology === key ? "default" : "outline"} size="sm"
-                  className="text-xs font-mono justify-start h-auto py-1.5"
-                  onClick={() => { setTopology(key); setResult(null); }}>
-                  <span className="mr-1">{t.icon}</span> {t.label}
-                </Button>
-              ))}
-            </div>
-          </div>
-          <p className="text-xs text-muted-foreground leading-relaxed">{topo.interpretation}</p>
-          <div className="space-y-3">
-            {[
-              { label: "k (neighbours)", val: k, set: setK, min: 5, max: 60, step: 5 },
-              { label: "Null reps", val: nullReps, set: setNullReps, min: 50, max: 500, step: 50 },
-              { label: "Random seed", val: seed, set: setSeed, min: 0, max: 200, step: 1 },
-            ].map(({ label, val, set, min, max, step }) => (
-              <div key={label}>
-                <div className="flex justify-between text-[10px] font-mono text-muted-foreground mb-1">
-                  <span>{label}</span><span className="text-foreground">{val}</span>
-                </div>
-                <Slider min={min} max={max} step={step} value={[val]}
-                  onValueChange={([v]) => { set(v); setResult(null); }} />
-              </div>
-            ))}
-          </div>
-          <Button onClick={runCompute} disabled={computing} className="w-full font-mono text-xs">
-            {computing ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Computing TTI…</> : <><Play className="w-3.5 h-3.5" /> Run TTI Analysis</>}
-          </Button>
-        </div>
-
-        {/* Scatter + expected */}
-        <div className="col-span-2 space-y-3">
-          <ScatterPlot pts={pts} title={`kNN Feature-Space · ${topo.label}`} />
-          <div className="grid grid-cols-2 gap-3">
-            <div className="module-card">
-              <p className="text-[10px] font-mono text-muted-foreground uppercase">Expected TTI</p>
-              <p className="text-xl font-mono font-bold text-accent mt-1">{topo.expectedTTI}</p>
-            </div>
-            <div className="module-card">
-              <p className="text-[10px] font-mono text-muted-foreground uppercase">Primary Signal</p>
-              <p className="text-xl font-mono font-bold text-accent mt-1">{topo.expectedComponent}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Computing indicator */}
-      {computing && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="module-card border-primary/30">
-          <div className="flex items-center gap-2">
-            <Loader2 className="w-4 h-4 animate-spin text-primary" />
-            <span className="text-xs font-mono text-primary">Building kNN graph · Running persistent homology · Permutation test</span>
-          </div>
-          <p className="text-[10px] font-mono text-muted-foreground mt-1">null_reps={nullReps} · k={k} · seed={seed}</p>
-        </motion.div>
-      )}
-
-      {/* Results */}
-      <AnimatePresence>
-        {result && !computing && (
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-            {/* Score card */}
-            <div className="module-card">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xs font-mono text-muted-foreground uppercase tracking-wide">TTI Result</h3>
-                <Badge variant={result.phaseTransition ? "destructive" : "secondary"} className="font-mono text-[10px]">
-                  {result.phaseTransition ? "PHASE TRANSITION" : "NO TRANSITION"}
-                </Badge>
-              </div>
-              <div className="grid grid-cols-3 gap-3 mb-4">
-                {[
-                  { label: "TTI Score", val: result.tti.toFixed(3), accent: true },
-                  { label: "CI Lower", val: result.tti_ci[0].toFixed(2) },
-                  { label: "φ (conductance)", val: result.phi.toFixed(4) },
-                ].map(({ label, val, accent }) => (
-                  <div key={label} className="bg-secondary/50 rounded-md p-2.5">
-                    <p className="text-[10px] font-mono text-muted-foreground uppercase">{label}</p>
-                    <p className={`text-lg font-mono font-bold mt-0.5 ${accent ? "text-accent" : "text-foreground"}`}>{val}</p>
-                  </div>
-                ))}
-              </div>
-              <ComponentBars result={result} />
-            </div>
-
-            {/* Landscape + p-values */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="module-card">
-                <h3 className="text-xs font-mono text-muted-foreground uppercase tracking-wide mb-2">Regulatory Landscape</h3>
-                <LandscapeSVG tti={result.tti} phaseTransition={result.phaseTransition} />
-              </div>
-              <div className="module-card">
-                <h3 className="text-xs font-mono text-muted-foreground uppercase tracking-wide mb-3">Component P-values</h3>
-                <div className="space-y-3">
-                  {[
-                    { label: "Loop mass", p: result.pL },
-                    { label: "Branching", p: result.pB },
-                    { label: "Bottleneck", p: result.pN },
-                  ].map(({ label, p }) => (
-                    <div key={label} className="flex items-center justify-between">
-                      <span className="text-xs font-mono text-muted-foreground">{label}</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-mono text-foreground">p = {p.toFixed(3)}</span>
-                        <Badge variant={p < 0.05 ? "default" : "secondary"} className="text-[9px] font-mono">
-                          {p < 0.05 ? "significant" : "n.s."}
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
-
-/* ── EWS Tab ── */
 function EWSTab() {
   const [scenario, setScenario] = useState<"transition" | "stable">("transition");
-
   const timepoints = ["D0", "D7", "D14", "D21", "D88", "D99", "D109", "D122"];
   const T = timepoints.length;
 
@@ -367,14 +766,14 @@ function EWSTab() {
     const noise = () => (rand() - 0.5) * 0.06;
     if (scenario === "transition") {
       return {
-        variance: [0.12, 0.13, 0.14, 0.18, 0.38, 0.62, 0.80, 0.84].map((v) => v + noise()),
-        autocorr: [0.10, 0.12, 0.14, 0.19, 0.42, 0.65, 0.78, 0.81].map((v) => v + noise()),
+        variance: [0.12, 0.13, 0.14, 0.18, 0.38, 0.62, 0.80, 0.84].map(v => v + noise()),
+        autocorr: [0.10, 0.12, 0.14, 0.19, 0.42, 0.65, 0.78, 0.81].map(v => v + noise()),
         varR: 0.97, varP: 0.001, acR: 0.98, acP: 0.0008, warning: true,
       };
     }
     return {
-      variance: [0.15, 0.14, 0.16, 0.15, 0.14, 0.16, 0.15, 0.14].map((v) => v + noise()),
-      autocorr: [0.11, 0.10, 0.12, 0.11, 0.10, 0.13, 0.11, 0.10].map((v) => v + noise()),
+      variance: [0.15, 0.14, 0.16, 0.15, 0.14, 0.16, 0.15, 0.14].map(v => v + noise()),
+      autocorr: [0.11, 0.10, 0.12, 0.11, 0.10, 0.13, 0.11, 0.10].map(v => v + noise()),
       varR: 0.09, varP: 0.82, acR: 0.07, acP: 0.90, warning: false,
     };
   }, [scenario]);
@@ -383,13 +782,11 @@ function EWSTab() {
   const plotW = svgW - mL - mR, plotH = svgH - mT - mB;
 
   function SeriesLine({ vals, color, label }: { vals: number[]; color: string; label: string }) {
-    const minV = Math.min(...vals) * 0.9;
-    const maxV = Math.max(...vals) * 1.1;
+    const minV = Math.min(...vals) * 0.9, maxV = Math.max(...vals) * 1.1;
     const toX = (i: number) => mL + (i / (T - 1)) * plotW;
     const toY = (v: number) => mT + plotH - ((v - minV) / (maxV - minV)) * plotH;
     const d = vals.map((v, i) => `${i === 0 ? "M" : "L"}${toX(i).toFixed(1)},${toY(v).toFixed(1)}`).join(" ");
     const areaD = `${d} L${toX(T - 1)},${mT + plotH} L${toX(0)},${mT + plotH} Z`;
-
     return (
       <svg viewBox={`0 0 ${svgW} ${svgH}`} className="w-full h-auto">
         <line x1={mL} y1={mT + plotH} x2={mL + plotW} y2={mT + plotH} stroke="hsl(var(--border))" strokeWidth={1} />
@@ -415,19 +812,16 @@ function EWSTab() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-xs text-muted-foreground leading-relaxed max-w-xl">
-          Critical slowing down theory predicts variance ↑ and lag-1 autocorrelation ↑
-          as a system approaches a bifurcation point (Scheffer et al., Nature 2009).
+          Critical slowing down theory predicts variance ↑ and lag-1 autocorrelation ↑ as a system approaches a bifurcation point (Scheffer et al., Nature 2009).
         </p>
         <div className="flex gap-2">
-          {(["transition", "stable"] as const).map((s) => (
-            <Button key={s} variant={scenario === s ? "default" : "outline"} size="sm"
-              className="font-mono text-xs" onClick={() => setScenario(s)}>
+          {(["transition", "stable"] as const).map(s => (
+            <Button key={s} variant={scenario === s ? "default" : "outline"} size="sm" className="font-mono text-xs" onClick={() => setScenario(s)}>
               {s === "transition" ? "⚡ Transition" : "○ Stable"}
             </Button>
           ))}
         </div>
       </div>
-
       <div className="grid grid-cols-2 gap-4">
         <div className="module-card">
           <p className="text-[10px] font-mono text-muted-foreground uppercase mb-2">Aggregate Variance</p>
@@ -438,7 +832,6 @@ function EWSTab() {
           <SeriesLine vals={data.autocorr} color="hsl(292, 80%, 45%)" label="AC(1)" />
         </div>
       </div>
-
       <div className="grid grid-cols-4 gap-3">
         {[
           { label: "Var trend r", val: data.varR.toFixed(3), sig: data.varP < 0.05 },
@@ -452,13 +845,11 @@ function EWSTab() {
           </div>
         ))}
       </div>
-
       {data.warning ? (
         <div className="flex items-start gap-2 module-card border-chart-rose/30 bg-chart-rose/5">
           <AlertTriangle className="w-4 h-4 text-chart-rose flex-shrink-0 mt-0.5" />
           <p className="text-xs text-foreground leading-relaxed">
-            <strong>EWS WARNING</strong> — Both variance and autocorrelation show significant positive trends (p &lt; 0.05).
-            System approaching a regulatory phase transition.
+            <strong>EWS WARNING</strong> — Both variance and autocorrelation show significant positive trends (p &lt; 0.05). System approaching a regulatory phase transition.
           </p>
         </div>
       ) : (
@@ -473,7 +864,10 @@ function EWSTab() {
   );
 }
 
-/* ── Cross-Dataset Comparison Tab ── */
+/* ════════════════════════════════════════════════
+   CROSS-DATASET TAB (kept from original)
+   ════════════════════════════════════════════════ */
+
 function ComparisonTab() {
   const datasets = [
     { name: "OVCAR3 vs OVCAR3-R", tti: 7.74, lo: 7.12, hi: 8.36, zL: 2.21, zB: 2.40, zN: 3.13, phi: 0.0151, model: "Human cell line" },
@@ -494,17 +888,12 @@ function ComparisonTab() {
   return (
     <div className="space-y-4">
       <p className="text-xs text-muted-foreground leading-relaxed">
-        TTI scores across five cisplatin-resistance models. Cross-model convergence
-        (all TTI &gt; 6.0; all φ &lt; 0.02) supports the epigenetic phase-transition hypothesis.
+        TTI scores across five cisplatin-resistance models. Cross-model convergence (all TTI &gt; 6.0; all φ &lt; 0.02) supports the epigenetic phase-transition hypothesis.
       </p>
-
-      {/* Forest plot */}
       <div className="module-card">
         <svg viewBox={`0 0 ${svgW} ${svgH}`} className="w-full h-auto">
-          <line x1={toX(6)} y1={margin.top - 4} x2={toX(6)} y2={margin.top + plotH + 4}
-            stroke="hsl(var(--chart-rose))" strokeWidth={1.2} strokeDasharray="5 4" />
+          <line x1={toX(6)} y1={margin.top - 4} x2={toX(6)} y2={margin.top + plotH + 4} stroke="hsl(var(--chart-rose))" strokeWidth={1.2} strokeDasharray="5 4" />
           <text x={toX(6) + 3} y={margin.top + 10} fill="hsl(var(--chart-rose))" fontSize={9} fontFamily="IBM Plex Mono">threshold=6.0</text>
-
           {datasets.map((d, i) => {
             const cy = toY(i);
             const isHuman = d.model === "Human cell line";
@@ -521,9 +910,8 @@ function ComparisonTab() {
               </g>
             );
           })}
-
           <line x1={margin.left} y1={margin.top + plotH} x2={margin.left + plotW} y2={margin.top + plotH} stroke="hsl(var(--border))" />
-          {[0, 2, 4, 6, 8, 10].map((v) => (
+          {[0, 2, 4, 6, 8, 10].map(v => (
             <g key={v}>
               <line x1={toX(v)} y1={margin.top + plotH} x2={toX(v)} y2={margin.top + plotH + 4} stroke="hsl(var(--border))" />
               <text x={toX(v)} y={margin.top + plotH + 14} fill="hsl(var(--muted-foreground))" fontSize={9} textAnchor="middle" fontFamily="IBM Plex Mono">{v}</text>
@@ -532,19 +920,17 @@ function ComparisonTab() {
           <text x={margin.left + plotW / 2} y={svgH - 2} fill="hsl(var(--muted-foreground))" fontSize={10} textAnchor="middle" fontFamily="IBM Plex Mono">Composite TTI Score</text>
         </svg>
       </div>
-
-      {/* Data table */}
       <div className="module-card overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
-              {["Dataset", "Model", "TTI", "95% CI", "zL", "zB", "zN", "φ"].map((h) => (
+              {["Dataset", "Model", "TTI", "95% CI", "zL", "zB", "zN", "φ"].map(h => (
                 <TableHead key={h} className="font-mono text-[10px] uppercase">{h}</TableHead>
               ))}
             </TableRow>
           </TableHeader>
           <TableBody>
-            {datasets.map((d) => (
+            {datasets.map(d => (
               <TableRow key={d.name}>
                 <TableCell className="font-mono text-xs">{d.name}</TableCell>
                 <TableCell className="font-mono text-xs text-muted-foreground">{d.model}</TableCell>
@@ -563,16 +949,19 @@ function ComparisonTab() {
   );
 }
 
-/* ── Math Reference Tab ── */
+/* ════════════════════════════════════════════════
+   MATH REFERENCE TAB (kept from original)
+   ════════════════════════════════════════════════ */
+
 function MathTab() {
   const blocks = [
     { title: "TTI Composite Metric", eq: "TTI  =  z(L)  +  z(B)  +  z(N)", desc: "Sum of standardised z-scores for loop mass (L), branching (B), and bottleneck (N). Each referenced against a local-jitter null distribution." },
-    { title: "Loop Mass (H1 Persistent Homology)", eq: "L  =  Σₖ max( ℓₖ − τ,  0 )", desc: "Sum of H1 persistence lengths above adaptive threshold τ (95th percentile of null persistence). Computed by Ripser." },
-    { title: "Branching Score", eq: "B  =  F  +  D", desc: "F = ∫ (β₀(ε) − 1) dε  [weighted H0 fragmentation]\nD = 1 − mean‖mean unit neighbor vectors‖  [directional dispersion]" },
+    { title: "Loop Mass (H1 Persistent Homology)", eq: "L  =  Σₖ max( ℓₖ − τ,  0 )", desc: "Sum of H1 persistence lengths above adaptive threshold τ. Graph-theoretic: β₁ = E − V + C (edges minus vertices plus components)." },
+    { title: "Branching Score", eq: "B  =  F  +  D", desc: "F = ∫ (β₀(ε) − 1) dε  [weighted H0 fragmentation via union-find]\nD = 1 − mean‖mean unit neighbor vectors‖  [directional dispersion]" },
     { title: "Graph Conductance (Bottleneck)", eq: "φ(S,R)  =  cut(S,R)  /  min(vol(S), vol(R))", desc: "Spectral separation between S and R in the Gaussian-weighted kNN graph. Small φ → deep basin separation." },
     { title: "Bottleneck Component", eq: "N  =  −log( φ  +  ε )", desc: "Log-transformed conductance. N → ∞ as φ → 0 (perfect separation). ε = 1×10⁻¹² prevents log(0)." },
     { title: "Null Model", eq: "X_null  =  X  +  N(0, 0.5 · σ_kNN)", desc: "Local Gaussian jitter scaled to median kNN distance. Preserves local density while eroding global topology." },
-    { title: "Phase Transition Criterion", eq: "det(∇²U(x_saddle, E*))  =  0", desc: "Vanishing Hessian at the landscape saddle point marks a bifurcation in the regulatory potential. Empirically: TTI ≥ 6.0." },
+    { title: "Phase Transition Criterion", eq: "det(∇²U(x_saddle, E*))  =  0", desc: "Vanishing Hessian at the landscape saddle point marks a bifurcation. Empirically: TTI ≥ 6.0 (Youden's J = 0.906)." },
     { title: "Early Warning Signal", eq: "Var(x) → ∞  as  E → E*", desc: "Critical slowing down near bifurcation predicts rising variance and lag-1 autocorrelation (Scheffer et al. 2009)." },
   ];
 
@@ -591,44 +980,60 @@ function MathTab() {
   );
 }
 
-/* ── Main TTI Panel ── */
+/* ════════════════════════════════════════════════
+   MAIN TTI PANEL
+   ════════════════════════════════════════════════ */
+
 const TTIPanel = () => {
+  const [results, setResults] = useState<TTIResult[]>([]);
+  const [activeTab, setActiveTab] = useState("simulate");
+
+  const addResult = useCallback((r: TTIResult) => {
+    setResults(prev => [r, ...prev].slice(0, 10));
+    setActiveTab("results");
+  }, []);
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-6 space-y-6">
-      {/* Header */}
       <div className="flex items-start gap-4">
         <div className="p-3 rounded-lg bg-primary/10">
           <Hexagon className="w-6 h-6 text-primary" />
         </div>
         <div>
-          <h1 className="text-xl font-semibold text-foreground">TTI Platform — Topological Transition Index</h1>
+          <h1 className="text-xl font-semibold text-foreground">TTI Platform — Real Computation Engine</h1>
           <p className="text-xs text-muted-foreground font-mono mt-1">
-            Feature-space Topological Transition Index (fTTI) · Persistent Homology · Dynamical Systems
+            kNN · Union-Find H0/H1 · Graph Conductance · Bootstrap CI · NCBI GEO · cBioPortal API · AI Interpretation
           </p>
-          <p className="text-[10px] font-mono text-muted-foreground mt-0.5">Fadiel and Odunsi, 2026. UC-CCC COBU</p>
+          <p className="text-[10px] font-mono text-muted-foreground mt-0.5">
+            Fadiel and Odunsi, 2026. UC-CCC COBU · All computation runs in-browser on real data
+          </p>
+          {results.length > 0 && (
+            <Badge variant="secondary" className="font-mono text-[9px] mt-1">{results.length} result{results.length > 1 ? "s" : ""} in session</Badge>
+          )}
         </div>
       </div>
 
-      <Tabs defaultValue="simulation">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="font-mono">
-          <TabsTrigger value="simulation" className="text-xs">Interactive Demo</TabsTrigger>
-          <TabsTrigger value="ews" className="text-xs">Early Warning Signals</TabsTrigger>
+          <TabsTrigger value="upload" className="text-xs"><Upload className="w-3.5 h-3.5 mr-1" /> Upload & Analyse</TabsTrigger>
+          <TabsTrigger value="database" className="text-xs"><Database className="w-3.5 h-3.5 mr-1" /> Public Databases</TabsTrigger>
+          <TabsTrigger value="simulate" className="text-xs"><FlaskConical className="w-3.5 h-3.5 mr-1" /> Simulate</TabsTrigger>
+          <TabsTrigger value="results" className="text-xs relative">
+            <BarChart3 className="w-3.5 h-3.5 mr-1" /> Results
+            {results.length > 0 && <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-chart-rose" />}
+          </TabsTrigger>
+          <TabsTrigger value="ews" className="text-xs">EWS</TabsTrigger>
           <TabsTrigger value="comparison" className="text-xs">Cross-Dataset</TabsTrigger>
           <TabsTrigger value="math" className="text-xs">Mathematics</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="simulation">
-          <SimulationTab />
-        </TabsContent>
-        <TabsContent value="ews">
-          <EWSTab />
-        </TabsContent>
-        <TabsContent value="comparison">
-          <ComparisonTab />
-        </TabsContent>
-        <TabsContent value="math">
-          <MathTab />
-        </TabsContent>
+        <TabsContent value="upload"><UploadTab onResult={addResult} /></TabsContent>
+        <TabsContent value="database"><DatabaseTab onResult={addResult} /></TabsContent>
+        <TabsContent value="simulate"><SimulateTab onResult={addResult} /></TabsContent>
+        <TabsContent value="results"><ResultsTab results={results} /></TabsContent>
+        <TabsContent value="ews"><EWSTab /></TabsContent>
+        <TabsContent value="comparison"><ComparisonTab /></TabsContent>
+        <TabsContent value="math"><MathTab /></TabsContent>
       </Tabs>
     </motion.div>
   );
