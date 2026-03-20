@@ -118,7 +118,7 @@ export function computeH0(D: Float32Array, n: number, T = 30) {
   const mid = eps[Math.floor(T / 2)];
   const sigma = Math.sqrt(eps.reduce((s, v) => s + (v - mid) ** 2, 0) / T) || 1;
   let F = 0;
-  for (let t = 0; t < T; t++) F += Math.max(0, beta0[t] - 1) * Math.exp(-eps[t] ** 2 / (2 * sigma ** 2));
+  for (let t = 0; t < T; t++) F += Math.max(0, beta0[t] - 1) * Math.exp(-(eps[t] ** 2) / (2 * sigma ** 2));
   return { eps, beta0, F: F / T };
 }
 
