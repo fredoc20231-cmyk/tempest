@@ -1335,14 +1335,15 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
         signature dominates.
       </p>
       <p className="text-sm text-foreground leading-relaxed mb-4">
-        <strong>Summary.</strong> fTTI outperforms all four comparator methods on both sensitivity and AUC-ROC
-        (Δ AUC = +0.125 to +0.207 vs. comparators). Its advantage derives from three properties absent in
+        <strong>Summary.</strong> fTTI outperforms all five comparator methods on both sensitivity and AUC-ROC
+        (ΔAUC = +0.125 to +0.200 vs. comparators; Table 13). Its advantage derives from three properties absent in
         any single comparator: (i) it quantifies three orthogonal topological features rather than a single
         scalar statistic; (ii) it normalises against a null distribution via z-scores, enabling cross-dataset
         comparability; and (iii) it incorporates graph conductance as an explicit bottleneck metric, capturing
         the <em>irreversibility</em> of basin separation that correlates with biological commitment to the
-        resistant phenotype. The simulated ground-truth experiments confirm that these advantages are not
-        artefacts of the GEM dataset but generalise to controlled synthetic conditions.
+        resistant phenotype. The simulated ground-truth experiments (§5.8.2), statistical power analysis (§5.8.3),
+        and robustness analysis (§5.8.4) confirm that these advantages are not artefacts of the GEM dataset but
+        generalise to controlled synthetic conditions across noise regimes, dimensionalities, and sampling densities.
       </p>
 
       {/* ══════════════════════════════════════════════════════════
