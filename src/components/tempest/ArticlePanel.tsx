@@ -1387,14 +1387,56 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
         classes. Prediction (3) requires prospective longitudinal studies, which are ongoing.
       </p>
       <p className="text-sm text-foreground leading-relaxed mb-3">
-        <strong>Limitations.</strong> (a) Persistent homology computation scales as O(n²) in memory for the
-        Vietoris-Rips complex, necessitating subsampling for datasets exceeding ~5,000 cells. (b) The wNTD
-        requires manual specification of tensor rank, though automated rank selection via HOSVD reconstruction
-        error is implemented. (c) The EWS framework assumes gradual approach to bifurcation and may miss abrupt,
-        noise-induced transitions. (d) Cross-species neoantigen validation relies on ortholog mapping quality. (e)
-        The spatial transcriptomics analysis is limited to two timepoints; denser spatial sampling through the
-        bifurcation window would strengthen the STIC convergence finding.
+        <strong>Limitations of topology-based assumptions.</strong> The fTTI framework rests on several assumptions
+        whose violations degrade performance, as quantified in the robustness analysis (§5.8.4):
       </p>
+      <ol className="text-sm text-foreground leading-relaxed mb-3 pl-6 list-[lower-alpha] space-y-2">
+        <li>
+          <strong>Curse of dimensionality.</strong> Persistent homology computation via the Vietoris-Rips complex
+          scales as O(n²) in memory and O(n³) in time for n points. At p &gt; 5,000 features, distance
+          concentration effects can erode the discriminability of the filtration — pairwise distances converge,
+          making ε-threshold selection fragile. The current implementation mitigates this via landmark subsampling
+          (maxmin selection of 500 points) and dimensionality reduction to the top 50 principal components before
+          filtration. However, this pre-reduction step necessarily discards non-linear manifold structure that
+          PCA cannot capture. Future versions should evaluate UMAP or diffusion-map embeddings as alternative
+          pre-reduction strategies, though these introduce their own hyperparameter sensitivity.
+        </li>
+        <li>
+          <strong>Noise sensitivity.</strong> H<sub>1</sub> persistence (loop mass) is the most noise-sensitive
+          fTTI component: at σ ≥ 0.5, spurious short-lived cycles in the Rips complex inflate z<sub>L</sub>,
+          producing false positive transitions (Table 12: AUC drops from 0.981 to 0.947 at σ = 0.5; to 0.871 at
+          σ = 1.0). The z-score normalisation against null distributions partially compensates, but structured
+          noise (correlated across features, as in batch effects) can mimic genuine topological reorganisation.
+          At extreme noise (σ ≥ 1.0), fTTI's advantage over graph entropy narrows to ΔAUC = 0.015, suggesting
+          that the topological detail encoded in H<sub>1</sub> and branching is swamped by noise at this regime.
+        </li>
+        <li>
+          <strong>Sampling density requirements.</strong> The Vietoris-Rips filtration requires sufficient point
+          density to reconstruct the underlying topology. At n &lt; 15 samples per state, the Rips complex
+          underestimates true H<sub>1</sub> features (the Niyogi-Smale-Weinberger sampling theorem provides a
+          lower bound on density for homology recovery). Our robustness analysis shows AUC = 0.903 at n = 10/state
+          (ΔAUC = −0.078 vs. baseline), with degradation concentrated in z<sub>L</sub>. For longitudinal cancer
+          studies, this implies that fTTI is best suited to datasets with ≥20 samples per timepoint — achievable
+          with bulk multi-omic profiling but potentially limiting for rare-tumor or paediatric cohorts.
+        </li>
+        <li>
+          <strong>Feature scaling dependence.</strong> fTTI performance is critically dependent on input feature
+          scaling (Table 12: AUC = 0.891 without z-score normalisation, ΔAUC = −0.090). This is because the
+          Euclidean distance metric used in Rips filtration weights high-variance features disproportionately.
+          Without per-feature z-scoring, a handful of highly variable genes (e.g., ribosomal genes, cell-cycle
+          markers) can dominate the point-cloud geometry and mask the topological signal from lower-variance
+          regulatory changes. This dependency is not unique to fTTI — all distance-based methods share it — but
+          it means that preprocessing choices are not neutral and must be standardised for cross-study comparisons.
+        </li>
+        <li>
+          <strong>Additional computational limitations.</strong> (e) The wNTD requires manual specification of tensor rank,
+          though automated rank selection via HOSVD reconstruction error is implemented. (f) The EWS framework assumes
+          gradual approach to bifurcation and may miss abrupt, noise-induced transitions (stochastic resonance). (g)
+          Cross-species neoantigen validation relies on ortholog mapping quality, which degrades for rapidly evolving genes.
+          (h) The spatial transcriptomics analysis is limited to two timepoints; denser spatial sampling through the
+          bifurcation window would strengthen the STIC convergence finding.
+        </li>
+      </ol>
       <p className="text-sm text-foreground leading-relaxed mb-4">
         <strong>Future directions.</strong> Planned extensions include: integration of single-cell multi-omic
         data (currently the platform operates on bulk profiles); real-time EWS monitoring from liquid biopsy
