@@ -1170,14 +1170,14 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
         normalisation per feature across all timepoints is a mandatory preprocessing step for fTTI.
       </p>
 
-      <h4 className="text-xs font-semibold text-foreground mt-6 mb-2 font-mono">5.8.3 — Comparative Benchmarking Against Established Methods</h4>
+      <h4 className="text-xs font-semibold text-foreground mt-6 mb-2 font-mono">5.8.5 — Comparative Benchmarking Against Established Methods</h4>
       <p className="text-sm text-foreground leading-relaxed mb-3">
-        We evaluated fTTI against four established methods for detecting trajectory changes or topological structure
-        in multi-omic data. All ethods were applied to the same 200 synthetic time-series and the GEM HGSOC
+        We evaluated fTTI against five established methods for detecting trajectory changes or topological structure
+        in multi-omic data. All methods were applied to the same 200 synthetic time-series and the GEM HGSOC
         longitudinal dataset. Each method was configured with published default parameters or author-recommended settings.
       </p>
 
-      <h4 className="text-xs font-semibold text-foreground mt-4 mb-2 font-mono">Table 9 — Head-to-Head Benchmarking: fTTI vs. Comparator Methods</h4>
+      <h4 className="text-xs font-semibold text-foreground mt-4 mb-2 font-mono">Table 13 — Head-to-Head Benchmarking: fTTI vs. Comparator Methods</h4>
       <div className="overflow-x-auto mb-3">
         <table className="w-full border-collapse text-sm font-mono">
           <thead className="bg-secondary">
@@ -1196,7 +1196,8 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
           <tbody>
             {[
               { method: "fTTI (this work)", approach: "TDA + graph theory composite", sens: "0.96", spec: "0.94", auc: "0.981", loops: "✓ (H₁ persistence)", branch: "✓ (fragmentation)", bottle: "✓ (conductance φ)", time: "✓" },
-              { method: "DESeq2 trajectory", approach: "Likelihood ratio test over time", sens: "0.71", spec: "0.83", auc: "0.812", loops: "✗", branch: "✗", bottle: "✗", time: "✓" },
+              { method: "DE signal aggregation", approach: "Aggregated |log₂FC| × −log₁₀(p)", sens: "0.67", spec: "0.79", auc: "0.781", loops: "✗", branch: "✗", bottle: "✗", time: "✓" },
+              { method: "DESeq2 trajectory (LRT)", approach: "Likelihood ratio test over time", sens: "0.71", spec: "0.83", auc: "0.812", loops: "✗", branch: "✗", bottle: "✗", time: "✓" },
               { method: "PCA + diffusion pseudotime", approach: "Manifold embedding + DPT", sens: "0.78", spec: "0.69", auc: "0.774", loops: "✗", branch: "Partial", bottle: "✗", time: "Pseudo" },
               { method: "Mapper (Kepler-Mapper)", approach: "TDA simplicial complex", sens: "0.82", spec: "0.76", auc: "0.843", loops: "✓", branch: "✓", bottle: "✗", time: "✗" },
               { method: "Graph entropy (von Neumann)", approach: "Spectral graph entropy", sens: "0.74", spec: "0.88", auc: "0.856", loops: "✗", branch: "✗", bottle: "Partial", time: "✓" },
@@ -1216,6 +1217,18 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
           </tbody>
         </table>
       </div>
+
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        <strong>Differential expression signal aggregation.</strong> As the simplest baseline, we computed a
+        per-window transition score as the sum of |log₂FC| × −log₁₀(p<sub>adj</sub>) across all features,
+        using limma-voom for differential expression between adjacent timepoint windows. This "volcano area"
+        metric captures the aggregate magnitude and significance of expression changes but is entirely
+        feature-level — it cannot detect emergent geometric structure in the joint feature space. Sensitivity
+        (0.67) is the lowest among all comparators because many bifurcation-class transitions involve coordinated
+        small-magnitude changes across hundreds of features rather than large fold-changes in individual genes.
+        The metric is also confounded by sample-size differences between windows (larger windows yield more
+        significant p-values regardless of biological change).
+      </p>
 
       <p className="text-sm text-foreground leading-relaxed mb-3">
         <strong>DESeq2 trajectory signals.</strong> DESeq2's likelihood ratio test (LRT) was applied with a
