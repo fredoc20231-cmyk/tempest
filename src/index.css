@@ -102,7 +102,7 @@
 
   .status-active {
     @apply bg-emerald-500;
-    box-shadow: 0 0 8px hsl(160 84% 35% / 0.3);
+    box-shadow: 0 0 8px hsl(160 70% 38% / 0.3);
   }
 
   .status-idle {
