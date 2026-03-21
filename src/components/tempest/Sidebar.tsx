@@ -53,8 +53,8 @@ const Sidebar = ({ active, onNavigate }: SidebarProps) => {
       {/* Logo */}
       <div className="h-16 flex items-center px-4 border-b border-sidebar-border">
         <div className="flex items-center gap-3 overflow-hidden">
-          <div className="w-8 h-8 rounded-md bg-primary/20 flex items-center justify-center flex-shrink-0">
-            <Dna className="w-5 h-5 text-primary" />
+          <div className="w-8 h-8 rounded-md bg-sidebar-primary/20 flex items-center justify-center flex-shrink-0">
+            <Dna className="w-5 h-5 text-sidebar-primary" />
           </div>
           {!collapsed && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
