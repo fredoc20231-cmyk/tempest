@@ -1,58 +1,44 @@
 
 
-# Plan: Rewrite Article Panel as Publication-Ready Manuscript
+# Plan: Generate Publication-Quality Figures and Tables
 
-## Problem
-The current Article panel mixes journal manuscript sections (1-8) with grant-framework sections (9-13), creating a structurally incoherent document. Several critical results sections are missing (spatial transcriptomics, mutational dynamics, clonal architecture, NAD+ experimental evidence). The references list is sparse (11 entries). For full rigor, the article needs standard journal structure, expanded results grounded in the validated data already embedded in the system prompt, and proper end matter.
+## What We're Building
+A multi-page scientific PDF containing 6 figures and 4 tables for the TEMPEST manuscript, styled for journal submission (Nature Methods / Genome Biology quality). Output as a single downloadable PDF artifact.
 
-## Restructured Outline
+## Design Philosophy: "Systematic Cartography"
 
-The article will follow standard computational biology journal format (e.g., *Nature Methods* / *Genome Biology*):
+A `.md` file will be generated capturing the visual language: clinical precision meets scientific illustration. Deep navy ink on clean white stock. Thin ruled lines, geometric nodes, directional arrows. IBM Plex Mono for labels, Instrument Sans for body, CrimsonPro for figure captions. Minimal palette: navy (#0b1826), gold (#c8973a), teal (#1da88a), rose (#b8364e), slate (#5a8099). Every element placed with diagrammatic rigor.
 
-| Section | Content | Status |
-|---------|---------|--------|
-| Abstract | Existing — minor polish | Keep |
-| 1. Introduction | Existing — expand with epidemiology + gap statement | Edit |
-| 2. Platform Architecture | Existing pipeline diagram + module descriptions | Keep |
-| 3. Methods | **NEW** — GEM model details, sequencing, bioinformatics pipeline, statistical framework | Add |
-| 4. Algorithmic Framework | Existing accordion (MOTF through TTI) — keep as-is | Keep |
-| 5. Results | Restructure into 7 subsections (see below) | Major edit |
-| 6. Discussion | Existing + absorb Innovation content + comparative analysis | Edit |
-| 7. Conclusions | Existing — minor polish | Keep |
-| 8. Data Availability | **NEW** | Add |
-| 9. Author Contributions | **NEW** | Add |
-| 10. Acknowledgments | **NEW** | Add |
-| 11. References | Expand from 11 to ~30 entries | Edit |
-| Supplementary: Grant Framework | Move existing grant sections (Aims, Timeline, Rigor) into a collapsible accordion at the bottom | Reorganize |
+## Figures (Python/ReportLab + hand-drawn vector graphics)
 
-### New/Expanded Results Subsections (Section 5)
+| Figure | Approach |
+|--------|----------|
+| **Fig 1. Platform Architecture** | Box-and-arrow diagram: React → FastAPI → Celery/Redis → PostgreSQL/MinIO, with AI assistant and public-data connectors as side nodes. Drawn with ReportLab canvas primitives (rounded rects, arrows, labels). |
+| **Fig 2. fTTI Workflow** | Linear pipeline schematic: Parental/Resistant matrices → kNN graph → Vietoris-Rips → H₀/H₁ computation → conductance → z-score → composite fTTI. Drawn as connected processing blocks with mathematical notation. |
+| **Fig 3. Dashboard Panels** | Stylized schematic grid showing 6 module cards (MOTF, GBSC, BCTN, CNIS, MSRS, fTTI) with mini-chart icons and progress indicators. Abstract representation, not screenshot. |
+| **Fig 4. MOTF Heatmap** | Synthetic heatmap grid (samples × factors) with color gradient showing early/transitional/advanced separation. Modality loading bars on the side. |
+| **Fig 5. Clonal Dynamics** | Stacked area chart (6 timepoints, 4 clones) with Shannon entropy overlay line and uncertainty bands. Drawn with ReportLab path primitives. |
+| **Fig 6. CNIS + fTTI** | Split panel: left = neoantigen ranking bar chart, right = topology signature comparison (parental vs resistant ATAC-seq). |
 
-- **5.1** GEM Model Longitudinal Staging (existing table — keep)
-- **5.2** Mutational Dynamics Across Progression (**NEW** — variant counts, M:S ratios per timepoint, recurrently disrupted genes table)
-- **5.3** Clonal Architecture Evolution (**NEW** — PyClone cluster descriptions, Shannon diversity trajectory, Cluster 0 vs Cluster 2 functional annotations)
-- **5.4** Spatial Transcriptomics (**NEW** — 10x Visium D22-D116, FT-STIC boundary markers, D116 STIC=tumor finding)
-- **5.5** TTI Cross-Model Validation (existing table — keep)
-- **5.6** Neoantigen Master Catalog (existing 3 tables — keep)
-- **5.7** NAD+ Immune Suppression Evidence (**NEW** — experimental findings table from Khaled et al., PRPS1 mechanism, clinical OC context)
+## Tables (ReportLab Table objects)
 
-### New Section 3: Methods
+| Table | Content |
+|-------|---------|
+| **Table 1** | Platform stack: Frontend (React/Vite/Tailwind), Backend (FastAPI/Celery), Storage (PostgreSQL/MinIO/Redis), Visualization (Recharts/D3), Analytics (ttiEngine/PyClone/NetMHCpan) |
+| **Table 2** | GBSC validation: 6 folds × (Macro-F1, Macro-AUC, Calibration) with mean±SD row |
+| **Table 3** | Top 8 neoantigen candidates: Peptide, Gene, IC₅₀, Expression, Clonality, Stability, TPS |
+| **Table 4** | fTTI scores: 5 models × (ΔF, ΔL, N, fTTI, p-value) |
 
-- **3.1** GEM Model and Tissue Collection (Trp53/Rb1/KrasG12D, Pax8-Cre, tamoxifen protocol, timepoints)
-- **3.2** Sequencing and Data Processing (WES: GATK4 Mutect2, RNA-seq: STAR + limma-voom + TMM, Fusion: STAR-Fusion ∩ Arriba 2.5.1, Spatial: 10x Visium)
-- **3.3** Neoantigen Prediction Pipeline (NetMHCpan 4.1b, H-2-Db/Kb, %Rank thresholds, TPS formula)
-- **3.4** Statistical Framework (bootstrap n=1000, LOTO CV, permutation tests for TTI, MCMC 10K iterations for PyClone)
+## Technical Approach
 
-## Files Modified
+1. Write a single Python script using **ReportLab** (canvas + platypus)
+2. Use available fonts: IBM Plex Mono, Instrument Sans, CrimsonPro
+3. All diagrams drawn programmatically with canvas primitives (no external images)
+4. Output: single multi-page PDF to `/mnt/documents/tempest_figures_tables.pdf`
+5. Design philosophy saved as `/mnt/documents/systematic_cartography.md`
+6. QA: convert pages to JPEG, inspect each, fix issues
 
-| File | Change |
-|------|--------|
-| `src/components/tempest/ArticlePanel.tsx` | Full rewrite — restructure sections, add Methods, expand Results with 4 new subsections, expand References, add end matter, move grant sections to collapsible supplementary |
-
-## Technical Notes
-
-- Single file change (~1400 lines total, up from ~1037)
-- No new dependencies — uses existing components (Accordion, Table, Equation, SectionHeading, ModuleLink)
-- All data sourced from validated content already in the chat system prompt (neoantigen catalog, temporal framework, spatial transcriptomics findings, NAD+ mechanism, clonal architecture)
-- No database or edge function changes required
-- Grant sections preserved but reorganized as "Supplementary: Grant Framework" in a collapsible accordion at the end, maintaining the content for grant use while keeping the article structure clean
+## Output Files
+- `/mnt/documents/systematic_cartography.md` — design philosophy
+- `/mnt/documents/tempest_figures_tables.pdf` — 10-page PDF (6 figures + 4 tables)
 
