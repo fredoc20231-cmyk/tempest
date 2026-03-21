@@ -92,7 +92,7 @@
   }
 
   .module-card:hover {
-    border-color: hsl(var(--primary) / 0.4);
+    border-color: hsl(var(--primary) / 0.35);
     box-shadow: var(--glow-primary);
   }
 
