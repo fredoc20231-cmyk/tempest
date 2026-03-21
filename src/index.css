@@ -45,14 +45,14 @@
     --glow-primary: 0 0 20px hsl(172 60% 28% / 0.15);
     --glow-accent: 0 0 20px hsl(199 70% 42% / 0.15);
 
-    --sidebar-background: 172 15% 96%;
-    --sidebar-foreground: 200 20% 18%;
-    --sidebar-primary: 172 60% 28%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 172 15% 88%;
-    --sidebar-accent-foreground: 200 20% 12%;
-    --sidebar-border: 172 12% 85%;
-    --sidebar-ring: 172 60% 28%;
+    --sidebar-background: 210 45% 14%;
+    --sidebar-foreground: 210 20% 88%;
+    --sidebar-primary: 172 55% 50%;
+    --sidebar-primary-foreground: 210 45% 10%;
+    --sidebar-accent: 210 35% 22%;
+    --sidebar-accent-foreground: 210 15% 92%;
+    --sidebar-border: 210 30% 20%;
+    --sidebar-ring: 172 55% 50%;
 
     font-family: 'Inter', sans-serif;
   }
