@@ -6,53 +6,53 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
+    --background: 0 0% 99%;
+    --foreground: 200 25% 10%;
 
-    --card: 210 20% 97%;
-    --card-foreground: 222 47% 11%;
+    --card: 180 10% 97%;
+    --card-foreground: 200 25% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 200 25% 10%;
 
-    --primary: 216 100% 21%;
+    --primary: 172 60% 28%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 20% 93%;
-    --secondary-foreground: 222 30% 25%;
+    --secondary: 180 12% 92%;
+    --secondary-foreground: 200 18% 22%;
 
-    --muted: 210 20% 95%;
-    --muted-foreground: 215 20% 42%;
+    --muted: 180 10% 95%;
+    --muted-foreground: 200 12% 44%;
 
-    --accent: 292 80% 45%;
+    --accent: 199 70% 42%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 72% 50%;
+    --destructive: 0 65% 48%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 210 20% 88%;
-    --input: 210 20% 88%;
-    --ring: 216 100% 21%;
+    --border: 180 12% 87%;
+    --input: 180 12% 87%;
+    --ring: 172 60% 28%;
 
     --radius: 0.5rem;
 
-    --chart-cyan: 216 100% 35%;
-    --chart-magenta: 292 80% 45%;
-    --chart-amber: 38 100% 45%;
-    --chart-emerald: 160 84% 35%;
-    --chart-rose: 350 80% 50%;
+    --chart-cyan: 172 60% 32%;
+    --chart-magenta: 280 55% 52%;
+    --chart-amber: 38 85% 48%;
+    --chart-emerald: 160 70% 38%;
+    --chart-rose: 350 65% 50%;
 
-    --glow-primary: 0 0 20px hsl(216 100% 21% / 0.2);
-    --glow-accent: 0 0 20px hsl(292 80% 45% / 0.2);
+    --glow-primary: 0 0 20px hsl(172 60% 28% / 0.15);
+    --glow-accent: 0 0 20px hsl(199 70% 42% / 0.15);
 
-    --sidebar-background: 216 30% 95%;
-    --sidebar-foreground: 216 40% 20%;
-    --sidebar-primary: 216 100% 21%;
+    --sidebar-background: 172 15% 96%;
+    --sidebar-foreground: 200 20% 18%;
+    --sidebar-primary: 172 60% 28%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 216 30% 88%;
-    --sidebar-accent-foreground: 216 40% 12%;
-    --sidebar-border: 216 25% 85%;
-    --sidebar-ring: 216 100% 21%;
+    --sidebar-accent: 172 15% 88%;
+    --sidebar-accent-foreground: 200 20% 12%;
+    --sidebar-border: 172 12% 85%;
+    --sidebar-ring: 172 60% 28%;
 
     font-family: 'Inter', sans-serif;
   }
