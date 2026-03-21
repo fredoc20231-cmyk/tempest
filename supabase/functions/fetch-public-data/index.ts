@@ -74,29 +74,63 @@ async function fetchTCGA(query: string, category: string) {
 }
 
 async function fetchCBioPortal(query: string, category: string) {
-  const endpoints: Record<string, string> = {
-    studies: "/studies",
-    genes: `/genes/fetch`,
-    mutations: `/molecular-profiles/${query || "brca_tcga_mutations"}/mutations?sampleListId=${query || "brca_tcga"}_all&entrezGeneId=672`,
-  };
+  const base = SOURCES.cbioportal.baseUrl;
 
-  const path = endpoints[category] || endpoints.studies;
-  const url = `${SOURCES.cbioportal.baseUrl}${path}`;
+  try {
+    // Default to studies list — most reliable endpoint
+    if (category === "genes" && query) {
+      const url = `${base}/genes/fetch`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify({ geneIds: query.split(",").map((g: string) => g.trim()) }),
+      });
+      if (!res.ok) {
+        // Fallback: try keyword search via studies
+        console.warn(`cBioPortal genes fetch failed (${res.status}), falling back to studies search`);
+        return await fetchCBioPortalStudies(base, query);
+      }
+      const data = await res.json();
+      return { hits: Array.isArray(data) ? data.slice(0, 100) : [data], total: Array.isArray(data) ? data.length : 1 };
+    }
 
-  let res;
-  if (category === "genes" && query) {
-    res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ geneIds: query.split(",").map((g: string) => g.trim()) }),
-    });
-  } else {
-    res = await fetch(url, { headers: { "Content-Type": "application/json" } });
+    if (category === "mutations" && query) {
+      // Validate study exists first, then fetch mutations
+      const profileId = query.includes("_mutations") ? query : `${query}_mutations`;
+      const sampleListId = query.includes("_all") ? query : `${query}_all`;
+      const url = `${base}/molecular-profiles/${encodeURIComponent(profileId)}/mutations?sampleListId=${encodeURIComponent(sampleListId)}&entrezGeneId=672`;
+      const res = await fetch(url, { headers: { "Accept": "application/json" } });
+      if (!res.ok) {
+        console.warn(`cBioPortal mutations fetch failed (${res.status}), falling back to studies search`);
+        return await fetchCBioPortalStudies(base, query);
+      }
+      const data = await res.json();
+      return { hits: Array.isArray(data) ? data.slice(0, 100) : [data], total: Array.isArray(data) ? data.length : 1 };
+    }
+
+    // Default: search studies
+    return await fetchCBioPortalStudies(base, query);
+  } catch (e) {
+    console.warn("cBioPortal request failed, returning empty:", e);
+    return { hits: [], total: 0 };
   }
+}
 
-  if (!res.ok) throw new Error(`cBioPortal API error: ${res.status}`);
+async function fetchCBioPortalStudies(base: string, query: string) {
+  const url = `${base}/studies`;
+  const res = await fetch(url, { headers: { "Accept": "application/json" } });
+  if (!res.ok) return { hits: [], total: 0 };
   const data = await res.json();
-  return { hits: Array.isArray(data) ? data.slice(0, 100) : [data], total: Array.isArray(data) ? data.length : 1 };
+  const studies = Array.isArray(data) ? data : [];
+  // Filter by query keyword if provided
+  const filtered = query
+    ? studies.filter((s: any) =>
+        (s.name || "").toLowerCase().includes(query.toLowerCase()) ||
+        (s.description || "").toLowerCase().includes(query.toLowerCase()) ||
+        (s.studyId || "").toLowerCase().includes(query.toLowerCase())
+      )
+    : studies;
+  return { hits: filtered.slice(0, 100), total: filtered.length };
 }
 
 async function fetchUniProt(query: string, category: string) {
