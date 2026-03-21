@@ -82,9 +82,9 @@
   }
 
   .gradient-mesh {
-    background: radial-gradient(ellipse at 20% 50%, hsl(216 100% 21% / 0.04) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 20%, hsl(292 80% 45% / 0.03) 0%, transparent 50%),
-                radial-gradient(ellipse at 50% 80%, hsl(38 100% 45% / 0.02) 0%, transparent 50%);
+    background: radial-gradient(ellipse at 20% 50%, hsl(172 60% 28% / 0.04) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, hsl(199 70% 42% / 0.03) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, hsl(38 85% 48% / 0.02) 0%, transparent 50%);
   }
 
   .module-card {
