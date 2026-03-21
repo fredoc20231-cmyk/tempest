@@ -107,7 +107,7 @@
 
   .status-idle {
     @apply bg-amber-500;
-    box-shadow: 0 0 8px hsl(38 100% 45% / 0.3);
+    box-shadow: 0 0 8px hsl(38 85% 48% / 0.3);
   }
 
   /* Markdown table styles for chat and report panels */
