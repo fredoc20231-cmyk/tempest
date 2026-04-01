@@ -145,12 +145,29 @@ async function fetchUniProt(query: string, category: string) {
 
 async function fetchEnsembl(query: string, category: string) {
   const gene = query || "BRCA1";
-  const url = `${SOURCES.ensembl.baseUrl}/lookup/symbol/homo_sapiens/${gene}?expand=1`;
+  const symbol = encodeURIComponent(gene.replace(/[^a-zA-Z0-9_-]/g, ""));
+  const url = `${SOURCES.ensembl.baseUrl}/lookup/symbol/homo_sapiens/${symbol}?expand=1`;
 
-  const res = await fetch(url, { headers: { "Content-Type": "application/json" } });
-  if (!res.ok) throw new Error(`Ensembl API error: ${res.status}`);
-  const data = await res.json();
-  return { hits: [data], total: 1 };
+  try {
+    const res = await fetch(url, { headers: { "Content-Type": "application/json" } });
+    if (!res.ok) {
+      console.warn(`Ensembl lookup failed for "${gene}" (${res.status}), trying search endpoint`);
+      // Fallback: use xrefs search
+      const searchUrl = `${SOURCES.ensembl.baseUrl}/xrefs/symbol/homo_sapiens/${symbol}?external_db=HGNC`;
+      const searchRes = await fetch(searchUrl, { headers: { "Content-Type": "application/json" } });
+      if (!searchRes.ok) {
+        console.warn(`Ensembl xrefs also failed (${searchRes.status}), returning empty`);
+        return { hits: [], total: 0 };
+      }
+      const searchData = await searchRes.json();
+      return { hits: Array.isArray(searchData) ? searchData : [searchData], total: Array.isArray(searchData) ? searchData.length : 1 };
+    }
+    const data = await res.json();
+    return { hits: [data], total: 1 };
+  } catch (e) {
+    console.warn("Ensembl request failed, returning empty:", e);
+    return { hits: [], total: 0 };
+  }
 }
 
 serve(async (req) => {
