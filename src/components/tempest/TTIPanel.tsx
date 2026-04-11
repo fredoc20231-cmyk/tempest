@@ -460,7 +460,70 @@ function DatabaseTab({ onResult }: { onResult: (r: TTIResult) => void }) {
         </div>
       )}
 
-      {db === "geo" && (
+      {db === "nb" && (
+        <div className="space-y-4">
+          <div className="module-card">
+            <h3 className="text-xs font-mono text-accent uppercase tracking-wide font-semibold mb-3">
+              Neuroblastoma ADRN↔MES — Built-in Reference Data
+            </h3>
+            <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+              H3K27ac ChIP-seq differential binding across <strong className="text-foreground">15 neuroblastoma cell lines</strong> (Boeva et al., Cancer Cell 2017).
+              Tests cell identity separation between <span className="text-chart-emerald">Adrenergic (ADRN)</span> and <span className="text-chart-amber">Mesenchymal (MES)</span> states
+              using <strong className="text-foreground">{NB_GENES.length} top differentially bound genes</strong>.
+            </p>
+            <p className="text-[10px] font-mono text-muted-foreground mb-2">
+              ADRN: {NB_ADRN_LINES.join(" · ")}
+            </p>
+            <p className="text-[10px] font-mono text-muted-foreground mb-4">
+              MES: {NB_MES_LINES.join(" · ")}
+            </p>
+            <Button onClick={loadNB} className="font-mono text-xs">
+              <FlaskConical className="w-3.5 h-3.5" /> Load Neuroblastoma Reference
+            </Button>
+            {nbStatus && <p className="text-xs font-mono text-chart-emerald mt-2">{nbStatus}</p>}
+          </div>
+
+          {nbData && (
+            <div className="module-card">
+              <div className="grid grid-cols-4 gap-3 mb-4">
+                {[
+                  { l: "Cell lines", v: nbData.nSamples },
+                  { l: "ADRN", v: nbData.S_mask.filter(Boolean).length },
+                  { l: "MES", v: nbData.R_mask.filter(Boolean).length },
+                  { l: "Genes", v: nbData.geneSymbols.length },
+                ].map(({ l, v }) => (
+                  <div key={l} className="bg-secondary/50 rounded-md p-3 text-center">
+                    <p className="text-[10px] font-mono text-muted-foreground uppercase">{l}</p>
+                    <p className="text-xl font-mono font-bold text-accent mt-1">{v}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px] font-mono text-muted-foreground mb-3">
+                Gene panel: {nbData.geneSymbols.slice(0, 15).join(" · ")}{nbData.geneSymbols.length > 15 ? ` … +${nbData.geneSymbols.length - 15} more` : ""}
+              </p>
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                  <div className="flex justify-between text-[10px] font-mono text-muted-foreground mb-1">
+                    <span>k neighbours</span><span className="text-foreground">{Math.min(k, 5)}</span>
+                  </div>
+                  <Slider min={2} max={5} step={1} value={[Math.min(k, 5)]} onValueChange={([v]) => setK(v)} />
+                </div>
+                <div>
+                  <div className="flex justify-between text-[10px] font-mono text-muted-foreground mb-1">
+                    <span>Null reps</span><span className="text-foreground">{nullReps}</span>
+                  </div>
+                  <Slider min={20} max={120} step={10} value={[nullReps]} onValueChange={([v]) => setNullReps(v)} />
+                </div>
+              </div>
+              {computing && <ComputeProgress pct={pct} msg={progMsg} />}
+              <Button onClick={runNBTTI} disabled={computing} className="font-mono text-xs">
+                {computing ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Computing TTI…</> : <><Play className="w-3.5 h-3.5" /> Run TTI on Neuroblastoma ADRN vs MES</>}
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+
         <div className="space-y-3">
           <div className="module-card">
             <h3 className="text-xs font-mono text-accent uppercase tracking-wide font-semibold mb-3">NCBI GEO — Live E-utilities Search</h3>
