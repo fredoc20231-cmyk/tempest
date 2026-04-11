@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import NeuroblastomaFigures from "./charts/NeuroblastomaFigures";
 import { Dna, Activity, FlaskConical, Shield, BarChart3, ArrowUpRight, TrendingUp, Download, RefreshCw, RotateCcw, FlaskRound } from "lucide-react";
 import SurvivalCurveChart from "./charts/SurvivalCurveChart";
 import ClonalDynamicsChart from "./charts/ClonalDynamicsChart";
