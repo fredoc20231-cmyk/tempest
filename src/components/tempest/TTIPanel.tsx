@@ -970,7 +970,7 @@ function ComparisonTab() {
     { name: "SH-EP (MES baseline)", tti: 4.12, lo: 3.50, hi: 4.74, zL: 1.05, zB: 1.22, zN: 1.85, phi: 0.0412, model: "NB cell line", cancer: "nb" },
   ];
 
-  const svgW = 520, svgH = 200;
+  const svgW = 520, svgH = 340;
   const margin = { left: 155, right: 30, top: 18, bottom: 35 };
   const plotW = svgW - margin.left - margin.right;
   const plotH = svgH - margin.top - margin.bottom;
