@@ -322,7 +322,7 @@ function UploadTab({ onResult }: { onResult: (r: TTIResult) => void }) {
    ════════════════════════════════════════════════ */
 
 function DatabaseTab({ onResult }: { onResult: (r: TTIResult) => void }) {
-  const [db, setDb] = useState<"tcga" | "geo">("tcga");
+  const [db, setDb] = useState<"tcga" | "geo" | "nb">("tcga");
   const [geoQ, setGeoQ] = useState("ovarian cancer cisplatin resistance");
   const [geoRes, setGeoRes] = useState<GEOResult[]>([]);
   const [geoLoading, setGeoLoading] = useState(false);
@@ -333,6 +333,9 @@ function DatabaseTab({ onResult }: { onResult: (r: TTIResult) => void }) {
   const [tcgaData, setTcgaData] = useState<TCGAData | null>(null);
   const [tcgaErr, setTcgaErr] = useState("");
   const [tcgaLoading, setTcgaLoading] = useState(false);
+
+  const [nbData, setNbData] = useState<NeuroblastomaData | null>(null);
+  const [nbStatus, setNbStatus] = useState("");
 
   const [computing, setComputing] = useState(false);
   const [pct, setPct] = useState(0);
@@ -352,6 +355,25 @@ function DatabaseTab({ onResult }: { onResult: (r: TTIResult) => void }) {
     try { const d = await fetchTCGAOV(setTcgaStatus); setTcgaData(d); }
     catch (e: any) { setTcgaErr(e.message); }
     finally { setTcgaLoading(false); }
+  };
+
+  const loadNB = () => {
+    const d = loadNeuroblastomaReference(setNbStatus);
+    setNbData(d);
+  };
+
+  const runNBTTI = async () => {
+    if (!nbData) return;
+    setComputing(true); setPct(0);
+    try {
+      const Xs = standardize(nbData.X);
+      const res = await computeTTI(Xs, nbData.S_mask, nbData.R_mask,
+        { k: Math.min(k, 5), nullReps, bsReps: 30, seed: 42 }, (msg, p) => { setProgMsg(msg); setPct(p); });
+      res.sourceName = `Neuroblastoma · H3K27ac ChIP-seq · ADRN vs MES · ${NB_GENES.length} genes × ${nbData.nSamples} cell lines (Boeva et al.)`;
+      res.genePanel = nbData.geneSymbols;
+      onResult(res);
+    } catch (e: any) { setNbStatus(e.message); }
+    finally { setComputing(false); }
   };
 
   const runTCGATTI = async () => {
@@ -375,11 +397,11 @@ function DatabaseTab({ onResult }: { onResult: (r: TTIResult) => void }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-2">
-        {([["tcga", "TCGA-OV (cBioPortal)"], ["geo", "NCBI GEO Search"]] as const).map(([id, lbl]) => (
+      <div className="flex gap-2 flex-wrap">
+        {([["tcga", "TCGA-OV (cBioPortal)"], ["nb", "Neuroblastoma (Reference)"], ["geo", "NCBI GEO Search"]] as const).map(([id, lbl]) => (
           <Button key={id} variant={db === id ? "default" : "outline"} size="sm"
             className="font-mono text-xs" onClick={() => setDb(id)}>
-            {id === "tcga" ? <Database className="w-3.5 h-3.5" /> : <Search className="w-3.5 h-3.5" />} {lbl}
+            {id === "tcga" ? <Database className="w-3.5 h-3.5" /> : id === "nb" ? <FlaskConical className="w-3.5 h-3.5" /> : <Search className="w-3.5 h-3.5" />} {lbl}
           </Button>
         ))}
       </div>
