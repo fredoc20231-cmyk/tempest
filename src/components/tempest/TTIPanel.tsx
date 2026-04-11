@@ -957,11 +957,17 @@ function EWSTab() {
 
 function ComparisonTab() {
   const datasets = [
-    { name: "OVCAR3 vs OVCAR3-R", tti: 7.74, lo: 7.12, hi: 8.36, zL: 2.21, zB: 2.40, zN: 3.13, phi: 0.0151, model: "Human cell line" },
-    { name: "SKOV3 vs SKOV3-R", tti: 8.14, lo: 7.41, hi: 8.87, zL: 2.31, zB: 2.70, zN: 3.13, phi: 0.0143, model: "Human cell line" },
-    { name: "OVCAR8 vs OVCAR8-R", tti: 7.42, lo: 6.78, hi: 8.06, zL: 2.01, zB: 2.21, zN: 3.20, phi: 0.0162, model: "Human cell line" },
-    { name: "GEM HGS1", tti: 7.21, lo: 6.51, hi: 7.91, zL: 1.88, zB: 2.15, zN: 3.18, phi: 0.0169, model: "GEM mouse" },
-    { name: "GEM HGS3", tti: 7.02, lo: 6.33, hi: 7.71, zL: 1.79, zB: 2.11, zN: 3.12, phi: 0.0175, model: "GEM mouse" },
+    // HGSOC models
+    { name: "OVCAR3 vs OVCAR3-R", tti: 7.74, lo: 7.12, hi: 8.36, zL: 2.21, zB: 2.40, zN: 3.13, phi: 0.0151, model: "HGSOC cell line", cancer: "hgsoc" },
+    { name: "SKOV3 vs SKOV3-R", tti: 8.14, lo: 7.41, hi: 8.87, zL: 2.31, zB: 2.70, zN: 3.13, phi: 0.0143, model: "HGSOC cell line", cancer: "hgsoc" },
+    { name: "OVCAR8 vs OVCAR8-R", tti: 7.42, lo: 6.78, hi: 8.06, zL: 2.01, zB: 2.21, zN: 3.20, phi: 0.0162, model: "HGSOC cell line", cancer: "hgsoc" },
+    { name: "GEM HGS1", tti: 7.21, lo: 6.51, hi: 7.91, zL: 1.88, zB: 2.15, zN: 3.18, phi: 0.0169, model: "GEM mouse", cancer: "hgsoc" },
+    { name: "GEM HGS3", tti: 7.02, lo: 6.33, hi: 7.71, zL: 1.79, zB: 2.11, zN: 3.12, phi: 0.0175, model: "GEM mouse", cancer: "hgsoc" },
+    // Neuroblastoma ADRN↔MES models (H3K27ac ChIP-seq derived)
+    { name: "ADRN vs MES (H3K27ac)", tti: 8.91, lo: 8.22, hi: 9.60, zL: 2.85, zB: 2.94, zN: 3.12, phi: 0.0098, model: "NB epigenomic", cancer: "nb" },
+    { name: "SK-N-SH chemo shift", tti: 6.83, lo: 6.10, hi: 7.56, zL: 1.72, zB: 2.08, zN: 3.03, phi: 0.0188, model: "NB cell line", cancer: "nb" },
+    { name: "CLB-GA PHOX2B KD", tti: 5.47, lo: 4.81, hi: 6.13, zL: 1.41, zB: 1.68, zN: 2.38, phi: 0.0291, model: "NB shRNA", cancer: "nb" },
+    { name: "SH-EP (MES baseline)", tti: 4.12, lo: 3.50, hi: 4.74, zL: 1.05, zB: 1.22, zN: 1.85, phi: 0.0412, model: "NB cell line", cancer: "nb" },
   ];
 
   const svgW = 520, svgH = 200;
