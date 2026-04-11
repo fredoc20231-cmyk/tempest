@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import NeuroblastomaFigures from "./charts/NeuroblastomaFigures";
 import { Dna, Activity, FlaskConical, Shield, BarChart3, ArrowUpRight, TrendingUp, Download, RefreshCw, RotateCcw, FlaskRound } from "lucide-react";
 import SurvivalCurveChart from "./charts/SurvivalCurveChart";
 import ClonalDynamicsChart from "./charts/ClonalDynamicsChart";
@@ -139,6 +140,10 @@ const OverviewPanel = () => {
         <ChartCard id="chart-risk" title="Multi-Dimensional Risk">
           {isLoading ? <Skeleton className="h-[220px] w-full" /> : <RiskRadar data={mapRadarData(msrsResults?.results)} />}
         </ChartCard>
+      </motion.div>
+
+      <motion.div variants={item}>
+        <NeuroblastomaFigures />
       </motion.div>
 
       <motion.div variants={item} className="module-card">
