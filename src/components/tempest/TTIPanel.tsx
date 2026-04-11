@@ -328,7 +328,7 @@ function UploadTab({ onResult }: { onResult: (r: TTIResult) => void }) {
    ════════════════════════════════════════════════ */
 
 function DatabaseTab({ onResult }: { onResult: (r: TTIResult) => void }) {
-  const [db, setDb] = useState<"tcga" | "geo" | "nb">("tcga");
+  const [db, setDb] = useState<"tcga" | "geo" | "nb" | "pr" | "gem">("tcga");
   const [geoQ, setGeoQ] = useState("ovarian cancer cisplatin resistance");
   const [geoRes, setGeoRes] = useState<GEOResult[]>([]);
   const [geoLoading, setGeoLoading] = useState(false);
@@ -343,11 +343,44 @@ function DatabaseTab({ onResult }: { onResult: (r: TTIResult) => void }) {
   const [nbData, setNbData] = useState<NeuroblastomaData | null>(null);
   const [nbStatus, setNbStatus] = useState("");
 
+  const [prData, setPrData] = useState<ParentResistantData | null>(null);
+  const [prStatus, setPrStatus] = useState("");
+
+  const [gemData, setGemData] = useState<GEMData | null>(null);
+  const [gemStatus, setGemStatus] = useState("");
+
   const [computing, setComputing] = useState(false);
   const [pct, setPct] = useState(0);
   const [progMsg, setProgMsg] = useState("");
   const [k, setK] = useState(10);
   const [nullReps, setNullReps] = useState(50);
+
+  const { setAIContext } = useTempest();
+
+  // Auto-save dataset as training data + update AI context
+  const trainOnDataset = async (name: string, source: string, category: string, geneSymbols: string[], nSamples: number, ttiResult: TTIResult) => {
+    try {
+      const trainingRecord = {
+        name,
+        source: "reference",
+        category,
+        description: `${name} — TTI=${ttiResult.tti.toFixed(2)}, phase transition: ${ttiResult.phaseTransition ? "YES" : "NO"}. ${nSamples} samples, ${geneSymbols.length} genes.`,
+        data: { genes: geneSymbols, tti: ttiResult.tti, z: ttiResult.z, raw: ttiResult.raw, sourceName: ttiResult.sourceName },
+        record_count: nSamples,
+        metadata: { tti_score: ttiResult.tti, phase_transition: ttiResult.phaseTransition, gene_panel: geneSymbols },
+        is_training: true,
+      };
+      await supabase.from("datasets").insert(trainingRecord);
+      setAIContext({
+        module: "tti",
+        content: `Training dataset loaded: ${name}. TTI=${ttiResult.tti.toFixed(2)}, zL=${ttiResult.z.zL.toFixed(2)}, zB=${ttiResult.z.zB.toFixed(2)}, zN=${ttiResult.z.zN.toFixed(2)}. Genes: ${geneSymbols.slice(0, 15).join(", ")}. Phase transition: ${ttiResult.phaseTransition ? "YES" : "NO"}.`,
+        timestamp: Date.now(),
+      });
+      toast.success(`${name} saved as training data — AI model enriched`);
+    } catch (e) {
+      console.error("Failed to save training data:", e);
+    }
+  };
 
   const doGEO = async () => {
     setGeoLoading(true); setGeoErr(""); setGeoRes([]);
@@ -363,22 +396,26 @@ function DatabaseTab({ onResult }: { onResult: (r: TTIResult) => void }) {
     finally { setTcgaLoading(false); }
   };
 
-  const loadNB = () => {
-    const d = loadNeuroblastomaReference(setNbStatus);
-    setNbData(d);
-  };
+  const loadNB = () => { setNbData(loadNeuroblastomaReference(setNbStatus)); };
+  const loadPR = () => { setPrData(loadParentResistantReference(setPrStatus)); };
+  const loadGEM = () => { setGemData(loadGEMReference(setGemStatus)); };
 
-  const runNBTTI = async () => {
-    if (!nbData) return;
+  const runGenericTTI = async (
+    label: string, X: number[][], S_mask: boolean[], R_mask: boolean[],
+    geneSymbols: string[], category: string, kOverride?: number,
+  ) => {
     setComputing(true); setPct(0);
     try {
-      const Xs = standardize(nbData.X);
-      const res = await computeTTI(Xs, nbData.S_mask, nbData.R_mask,
-        { k: Math.min(k, 5), nullReps, bsReps: 30, seed: 42 }, (msg, p) => { setProgMsg(msg); setPct(p); });
-      res.sourceName = `Neuroblastoma · H3K27ac ChIP-seq · ADRN vs MES · ${NB_GENES.length} genes × ${nbData.nSamples} cell lines (Boeva et al.)`;
-      res.genePanel = nbData.geneSymbols;
+      const Xs = standardize(X);
+      const kVal = kOverride ?? Math.min(k, Math.floor(X.length / 3));
+      const res = await computeTTI(Xs, S_mask, R_mask,
+        { k: kVal, nullReps, bsReps: 30, seed: 42 }, (msg, p) => { setProgMsg(msg); setPct(p); });
+      res.sourceName = label;
+      res.genePanel = geneSymbols;
       onResult(res);
-    } catch (e: any) { setNbStatus(e.message); }
+      // Auto-train
+      await trainOnDataset(label, "reference", category, geneSymbols, X.length, res);
+    } catch (e: any) { console.error(e); toast.error(e.message); }
     finally { setComputing(false); }
   };
 
@@ -397,17 +434,26 @@ function DatabaseTab({ onResult }: { onResult: (r: TTIResult) => void }) {
       res.sourceName = `TCGA-OV · cBioPortal · ${tcgaData.geneSymbols.join(", ")} · Stage I–II vs III–IV · n=${sub.X.length}`;
       res.genePanel = tcgaData.geneSymbols;
       onResult(res);
+      await trainOnDataset(res.sourceName, "tcga", "expression", tcgaData.geneSymbols, sub.X.length, res);
     } catch (e: any) { setTcgaErr(e.message); }
     finally { setComputing(false); }
   };
 
+  const DB_SOURCES = [
+    { id: "tcga" as const, label: "TCGA-OV (cBioPortal)", icon: <Database className="w-3.5 h-3.5" /> },
+    { id: "pr" as const, label: "Parent vs Resistant", icon: <FlaskConical className="w-3.5 h-3.5" /> },
+    { id: "gem" as const, label: "STIC GEM Mouse", icon: <FlaskConical className="w-3.5 h-3.5" /> },
+    { id: "nb" as const, label: "Neuroblastoma (Reference)", icon: <FlaskConical className="w-3.5 h-3.5" /> },
+    { id: "geo" as const, label: "NCBI GEO Search", icon: <Search className="w-3.5 h-3.5" /> },
+  ];
+
   return (
     <div className="space-y-4">
       <div className="flex gap-2 flex-wrap">
-        {([["tcga", "TCGA-OV (cBioPortal)"], ["nb", "Neuroblastoma (Reference)"], ["geo", "NCBI GEO Search"]] as const).map(([id, lbl]) => (
+        {DB_SOURCES.map(({ id, label, icon }) => (
           <Button key={id} variant={db === id ? "default" : "outline"} size="sm"
             className="font-mono text-xs" onClick={() => setDb(id)}>
-            {id === "tcga" ? <Database className="w-3.5 h-3.5" /> : id === "nb" ? <FlaskConical className="w-3.5 h-3.5" /> : <Search className="w-3.5 h-3.5" />} {lbl}
+            {icon} {label}
           </Button>
         ))}
       </div>
@@ -427,7 +473,6 @@ function DatabaseTab({ onResult }: { onResult: (r: TTIResult) => void }) {
             {tcgaErr && <p className="text-xs text-destructive mt-2">{tcgaErr}</p>}
             {tcgaStatus && <p className="text-xs font-mono text-chart-emerald mt-2">{tcgaStatus}</p>}
           </div>
-
           {tcgaData && (
             <div className="module-card">
               <div className="grid grid-cols-4 gap-3 mb-4">
@@ -445,15 +490,11 @@ function DatabaseTab({ onResult }: { onResult: (r: TTIResult) => void }) {
               </div>
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div>
-                  <div className="flex justify-between text-[10px] font-mono text-muted-foreground mb-1">
-                    <span>k neighbours</span><span className="text-foreground">{k}</span>
-                  </div>
+                  <div className="flex justify-between text-[10px] font-mono text-muted-foreground mb-1"><span>k neighbours</span><span className="text-foreground">{k}</span></div>
                   <Slider min={5} max={25} step={1} value={[k]} onValueChange={([v]) => setK(v)} />
                 </div>
                 <div>
-                  <div className="flex justify-between text-[10px] font-mono text-muted-foreground mb-1">
-                    <span>Null reps</span><span className="text-foreground">{nullReps}</span>
-                  </div>
+                  <div className="flex justify-between text-[10px] font-mono text-muted-foreground mb-1"><span>Null reps</span><span className="text-foreground">{nullReps}</span></div>
                   <Slider min={20} max={120} step={10} value={[nullReps]} onValueChange={([v]) => setNullReps(v)} />
                 </div>
               </div>
@@ -462,6 +503,69 @@ function DatabaseTab({ onResult }: { onResult: (r: TTIResult) => void }) {
                 {computing ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Computing TTI…</> : <><Play className="w-3.5 h-3.5" /> Run TTI on TCGA-OV</>}
               </Button>
             </div>
+          )}
+        </div>
+      )}
+
+      {db === "pr" && (
+        <div className="space-y-4">
+          <div className="module-card">
+            <h3 className="text-xs font-mono text-accent uppercase tracking-wide font-semibold mb-3">
+              HGSOC Parental vs Cisplatin-Resistant — Built-in Reference
+            </h3>
+            <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+              Matched <span className="text-chart-emerald">parental</span> and <span className="text-chart-amber">cisplatin-resistant</span> HGSOC cell line pairs
+              (OVCAR3, SKOV3, OVCAR8, A2780). <strong className="text-foreground">{PR_GENES.length} genes</strong> spanning
+              tumor suppressors, oncogenic drivers, stemness markers (SOX2, NANOG, CD44, ALDH1A1), and EMT effectors (ZEB1, SNAI1, TWIST1).
+            </p>
+            <p className="text-[10px] font-mono text-muted-foreground mb-2">Parental: {PR_PARENTAL.join(" · ")}</p>
+            <p className="text-[10px] font-mono text-muted-foreground mb-4">Resistant: {PR_RESISTANT.join(" · ")}</p>
+            <Button onClick={loadPR} className="font-mono text-xs">
+              <FlaskConical className="w-3.5 h-3.5" /> Load Parent vs Resistant Reference
+            </Button>
+            {prStatus && <p className="text-xs font-mono text-chart-emerald mt-2">{prStatus}</p>}
+          </div>
+          {prData && (
+            <ReferenceDataRunner
+              label={`HGSOC Parent vs Resistant · ${PR_GENES.length} genes × ${prData.nSamples} samples`}
+              data={prData} category="expression" k={k} setK={setK} nullReps={nullReps} setNullReps={setNullReps}
+              computing={computing} pct={pct} progMsg={progMsg} runTTI={() => runGenericTTI(
+                `HGSOC Parent vs Resistant · ${PR_GENES.length} genes × ${prData.nSamples} samples (OVCAR3/SKOV3/OVCAR8/A2780)`,
+                prData.X, prData.S_mask, prData.R_mask, prData.geneSymbols, "expression", Math.min(k, 6)
+              )} runLabel="Run TTI on Parent vs Resistant"
+            />
+          )}
+        </div>
+      )}
+
+      {db === "gem" && (
+        <div className="space-y-4">
+          <div className="module-card">
+            <h3 className="text-xs font-mono text-accent uppercase tracking-wide font-semibold mb-3">
+              STIC→Tumor GEM Mouse Model — Built-in Reference
+            </h3>
+            <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+              GEM mouse model of HGSOC progression from <span className="text-chart-emerald">serous tubal intraepithelial carcinoma (STIC)</span> through
+              <span className="text-chart-amber"> high-grade serous carcinoma + metastasis</span>.
+              Based on D116 STIC→tumor switch (Pearson r = 0.94 convergence). <strong className="text-foreground">{GEM_GENES.length} genes</strong> spanning
+              tumor suppressors, proliferation markers, terminal driver fusions (Camk1d::Arid1a, Mfhas1::Tns3), and immune infiltrate markers (Ccl18, Ccl4, Cxcl7, Cd8a).
+            </p>
+            <p className="text-[10px] font-mono text-muted-foreground mb-2">STIC/Early: {GEM_STIC_LABELS.join(" · ")}</p>
+            <p className="text-[10px] font-mono text-muted-foreground mb-4">HGS/Metastatic: {GEM_TUMOR_LABELS.join(" · ")}</p>
+            <Button onClick={loadGEM} className="font-mono text-xs">
+              <FlaskConical className="w-3.5 h-3.5" /> Load STIC GEM Mouse Reference
+            </Button>
+            {gemStatus && <p className="text-xs font-mono text-chart-emerald mt-2">{gemStatus}</p>}
+          </div>
+          {gemData && (
+            <ReferenceDataRunner
+              label={`STIC→Tumor GEM Mouse · ${GEM_GENES.length} genes × ${gemData.nSamples} samples`}
+              data={gemData} category="expression" k={k} setK={setK} nullReps={nullReps} setNullReps={setNullReps}
+              computing={computing} pct={pct} progMsg={progMsg} runTTI={() => runGenericTTI(
+                `STIC→Tumor GEM Mouse · D116 progression · ${GEM_GENES.length} genes × ${gemData.nSamples} samples`,
+                gemData.X, gemData.S_mask, gemData.R_mask, gemData.geneSymbols, "expression", Math.min(k, 5)
+              )} runLabel="Run TTI on STIC GEM Mouse"
+            />
           )}
         </div>
       )}
@@ -477,55 +581,22 @@ function DatabaseTab({ onResult }: { onResult: (r: TTIResult) => void }) {
               Tests cell identity separation between <span className="text-chart-emerald">Adrenergic (ADRN)</span> and <span className="text-chart-amber">Mesenchymal (MES)</span> states
               using <strong className="text-foreground">{NB_GENES.length} top differentially bound genes</strong>.
             </p>
-            <p className="text-[10px] font-mono text-muted-foreground mb-2">
-              ADRN: {NB_ADRN_LINES.join(" · ")}
-            </p>
-            <p className="text-[10px] font-mono text-muted-foreground mb-4">
-              MES: {NB_MES_LINES.join(" · ")}
-            </p>
+            <p className="text-[10px] font-mono text-muted-foreground mb-2">ADRN: {NB_ADRN_LINES.join(" · ")}</p>
+            <p className="text-[10px] font-mono text-muted-foreground mb-4">MES: {NB_MES_LINES.join(" · ")}</p>
             <Button onClick={loadNB} className="font-mono text-xs">
               <FlaskConical className="w-3.5 h-3.5" /> Load Neuroblastoma Reference
             </Button>
             {nbStatus && <p className="text-xs font-mono text-chart-emerald mt-2">{nbStatus}</p>}
           </div>
-
           {nbData && (
-            <div className="module-card">
-              <div className="grid grid-cols-4 gap-3 mb-4">
-                {[
-                  { l: "Cell lines", v: nbData.nSamples },
-                  { l: "ADRN", v: nbData.S_mask.filter(Boolean).length },
-                  { l: "MES", v: nbData.R_mask.filter(Boolean).length },
-                  { l: "Genes", v: nbData.geneSymbols.length },
-                ].map(({ l, v }) => (
-                  <div key={l} className="bg-secondary/50 rounded-md p-3 text-center">
-                    <p className="text-[10px] font-mono text-muted-foreground uppercase">{l}</p>
-                    <p className="text-xl font-mono font-bold text-accent mt-1">{v}</p>
-                  </div>
-                ))}
-              </div>
-              <p className="text-[10px] font-mono text-muted-foreground mb-3">
-                Gene panel: {nbData.geneSymbols.slice(0, 15).join(" · ")}{nbData.geneSymbols.length > 15 ? ` … +${nbData.geneSymbols.length - 15} more` : ""}
-              </p>
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                  <div className="flex justify-between text-[10px] font-mono text-muted-foreground mb-1">
-                    <span>k neighbours</span><span className="text-foreground">{Math.min(k, 5)}</span>
-                  </div>
-                  <Slider min={2} max={5} step={1} value={[Math.min(k, 5)]} onValueChange={([v]) => setK(v)} />
-                </div>
-                <div>
-                  <div className="flex justify-between text-[10px] font-mono text-muted-foreground mb-1">
-                    <span>Null reps</span><span className="text-foreground">{nullReps}</span>
-                  </div>
-                  <Slider min={20} max={120} step={10} value={[nullReps]} onValueChange={([v]) => setNullReps(v)} />
-                </div>
-              </div>
-              {computing && <ComputeProgress pct={pct} msg={progMsg} />}
-              <Button onClick={runNBTTI} disabled={computing} className="font-mono text-xs">
-                {computing ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Computing TTI…</> : <><Play className="w-3.5 h-3.5" /> Run TTI on Neuroblastoma ADRN vs MES</>}
-              </Button>
-            </div>
+            <ReferenceDataRunner
+              label={`Neuroblastoma · H3K27ac · ADRN vs MES · ${NB_GENES.length} genes × ${nbData.nSamples} cell lines`}
+              data={nbData} category="epigenomic" k={k} setK={setK} nullReps={nullReps} setNullReps={setNullReps}
+              computing={computing} pct={pct} progMsg={progMsg} runTTI={() => runGenericTTI(
+                `Neuroblastoma · H3K27ac ChIP-seq · ADRN vs MES · ${NB_GENES.length} genes × ${nbData.nSamples} cell lines (Boeva et al.)`,
+                nbData.X, nbData.S_mask, nbData.R_mask, nbData.geneSymbols, "epigenomic", Math.min(k, 5)
+              )} runLabel="Run TTI on Neuroblastoma ADRN vs MES"
+            />
           )}
         </div>
       )}
@@ -572,6 +643,51 @@ function DatabaseTab({ onResult }: { onResult: (r: TTIResult) => void }) {
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+/* ── Reusable runner sub-component for reference datasets ── */
+function ReferenceDataRunner({ label, data, category, k, setK, nullReps, setNullReps, computing, pct, progMsg, runTTI, runLabel }: {
+  label: string; data: { nSamples: number; S_mask: boolean[]; R_mask: boolean[]; geneSymbols: string[] };
+  category: string; k: number; setK: (v: number) => void; nullReps: number; setNullReps: (v: number) => void;
+  computing: boolean; pct: number; progMsg: string; runTTI: () => void; runLabel: string;
+}) {
+  return (
+    <div className="module-card">
+      <div className="grid grid-cols-4 gap-3 mb-4">
+        {[
+          { l: "Samples", v: data.nSamples },
+          { l: "Group A", v: data.S_mask.filter(Boolean).length },
+          { l: "Group B", v: data.R_mask.filter(Boolean).length },
+          { l: "Genes", v: data.geneSymbols.length },
+        ].map(({ l, v }) => (
+          <div key={l} className="bg-secondary/50 rounded-md p-3 text-center">
+            <p className="text-[10px] font-mono text-muted-foreground uppercase">{l}</p>
+            <p className="text-xl font-mono font-bold text-accent mt-1">{v}</p>
+          </div>
+        ))}
+      </div>
+      <p className="text-[10px] font-mono text-muted-foreground mb-3">
+        Gene panel: {data.geneSymbols.slice(0, 15).join(" · ")}{data.geneSymbols.length > 15 ? ` … +${data.geneSymbols.length - 15} more` : ""}
+      </p>
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        <div>
+          <div className="flex justify-between text-[10px] font-mono text-muted-foreground mb-1"><span>k neighbours</span><span className="text-foreground">{Math.min(k, Math.floor(data.nSamples / 3))}</span></div>
+          <Slider min={2} max={Math.min(10, Math.floor(data.nSamples / 3))} step={1} value={[Math.min(k, Math.floor(data.nSamples / 3))]} onValueChange={([v]) => setK(v)} />
+        </div>
+        <div>
+          <div className="flex justify-between text-[10px] font-mono text-muted-foreground mb-1"><span>Null reps</span><span className="text-foreground">{nullReps}</span></div>
+          <Slider min={20} max={120} step={10} value={[nullReps]} onValueChange={([v]) => setNullReps(v)} />
+        </div>
+      </div>
+      {computing && <ComputeProgress pct={pct} msg={progMsg} />}
+      <Button onClick={runTTI} disabled={computing} className="font-mono text-xs">
+        {computing ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Computing TTI…</> : <><Play className="w-3.5 h-3.5" /> {runLabel}</>}
+      </Button>
+      <p className="text-[10px] text-muted-foreground mt-2 italic">
+        <Info className="w-3 h-3 inline mr-1" /> Results will be auto-saved as training data to enrich the AI model.
+      </p>
     </div>
   );
 }
