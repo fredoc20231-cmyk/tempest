@@ -142,6 +142,10 @@ const OverviewPanel = () => {
         </ChartCard>
       </motion.div>
 
+      <motion.div variants={item}>
+        <NeuroblastomaFigures />
+      </motion.div>
+
       <motion.div variants={item} className="module-card">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xs font-mono text-muted-foreground uppercase tracking-wide">Pipeline Status</h3>
