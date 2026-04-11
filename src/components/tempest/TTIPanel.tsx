@@ -981,7 +981,7 @@ function ComparisonTab() {
   return (
     <div className="space-y-4">
       <p className="text-xs text-muted-foreground leading-relaxed">
-        TTI scores across five cisplatin-resistance models. Cross-model convergence (all TTI &gt; 6.0; all φ &lt; 0.02) supports the epigenetic phase-transition hypothesis.
+        TTI scores across HGSOC cisplatin-resistance models and neuroblastoma ADRN↔MES lineage plasticity models. Cross-cancer convergence validates the topological phase-transition framework: high TTI in both HGSOC and NB ADRN↔MES bifurcations (all TTI &gt; 6.0), while gradual perturbations (PHOX2B KD, MES baselines) show lower scores consistent with incomplete transitions.
       </p>
       <div className="module-card">
         <svg viewBox={`0 0 ${svgW} ${svgH}`} className="w-full h-auto">
@@ -989,8 +989,9 @@ function ComparisonTab() {
           <text x={toX(6) + 3} y={margin.top + 10} fill="hsl(var(--chart-rose))" fontSize={9} fontFamily="IBM Plex Mono">threshold=6.0</text>
           {datasets.map((d, i) => {
             const cy = toY(i);
-            const isHuman = d.model === "Human cell line";
-            const color = isHuman ? "hsl(var(--chart-emerald))" : "hsl(var(--chart-amber))";
+            const color = d.cancer === "hgsoc"
+              ? (d.model === "GEM mouse" ? "hsl(var(--chart-amber))" : "hsl(var(--chart-emerald))")
+              : "hsl(var(--chart-cyan))";
             return (
               <g key={d.name}>
                 <text x={margin.left - 6} y={cy + 4} fill="hsl(var(--foreground))" fontSize={10} textAnchor="end" fontFamily="IBM Plex Mono">{d.name}</text>
