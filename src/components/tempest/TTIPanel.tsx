@@ -1095,8 +1095,8 @@ function ComparisonTab() {
     { name: "SH-EP (MES baseline)", tti: 4.12, lo: 3.50, hi: 4.74, zL: 1.05, zB: 1.22, zN: 1.85, phi: 0.0412, model: "NB cell line", cancer: "nb" },
   ];
 
-  const svgW = 520, svgH = 340;
-  const margin = { left: 155, right: 30, top: 18, bottom: 35 };
+  const svgW = 520, svgH = 420;
+  const margin = { left: 165, right: 30, top: 18, bottom: 35 };
   const plotW = svgW - margin.left - margin.right;
   const plotH = svgH - margin.top - margin.bottom;
   const maxTTI = 10;
@@ -1106,7 +1106,8 @@ function ComparisonTab() {
   return (
     <div className="space-y-4">
       <p className="text-xs text-muted-foreground leading-relaxed">
-        TTI scores across HGSOC cisplatin-resistance models and neuroblastoma ADRN↔MES lineage plasticity models. Cross-cancer convergence validates the topological phase-transition framework: high TTI in both HGSOC and NB ADRN↔MES bifurcations (all TTI &gt; 6.0), while gradual perturbations (PHOX2B KD, MES baselines) show lower scores consistent with incomplete transitions.
+        TTI scores across <strong className="text-foreground">HGSOC parental vs resistant cell lines</strong>, <strong className="text-foreground">STIC GEM mouse progression models</strong>, and <strong className="text-foreground">neuroblastoma ADRN↔MES</strong> lineage plasticity. Cross-cancer convergence validates the topological phase-transition framework.
+        <span className="text-chart-emerald"> ■ HGSOC cell lines</span> · <span className="text-chart-amber"> ■ GEM mouse</span> · <span className="text-chart-cyan"> ■ Neuroblastoma</span>
       </p>
       <div className="module-card">
         <svg viewBox={`0 0 ${svgW} ${svgH}`} className="w-full h-auto">
