@@ -16,7 +16,8 @@ import {
 import {
   computeTTI, computePCA, standardize, subsampleData, parseUpload,
   GENERATORS, searchGEO, fetchTCGAOV, OV_SYMBOLS, OV_GENES,
-  type TTIResult, type GEOResult, type TCGAData,
+  loadNeuroblastomaReference, NB_GENES, NB_CELL_LINES, NB_ADRN_LINES, NB_MES_LINES,
+  type TTIResult, type GEOResult, type TCGAData, type NeuroblastomaData,
 } from "@/lib/ttiEngine";
 
 /* ════════════════════════════════════════════════
@@ -321,7 +322,7 @@ function UploadTab({ onResult }: { onResult: (r: TTIResult) => void }) {
    ════════════════════════════════════════════════ */
 
 function DatabaseTab({ onResult }: { onResult: (r: TTIResult) => void }) {
-  const [db, setDb] = useState<"tcga" | "geo">("tcga");
+  const [db, setDb] = useState<"tcga" | "geo" | "nb">("tcga");
   const [geoQ, setGeoQ] = useState("ovarian cancer cisplatin resistance");
   const [geoRes, setGeoRes] = useState<GEOResult[]>([]);
   const [geoLoading, setGeoLoading] = useState(false);
@@ -332,6 +333,9 @@ function DatabaseTab({ onResult }: { onResult: (r: TTIResult) => void }) {
   const [tcgaData, setTcgaData] = useState<TCGAData | null>(null);
   const [tcgaErr, setTcgaErr] = useState("");
   const [tcgaLoading, setTcgaLoading] = useState(false);
+
+  const [nbData, setNbData] = useState<NeuroblastomaData | null>(null);
+  const [nbStatus, setNbStatus] = useState("");
 
   const [computing, setComputing] = useState(false);
   const [pct, setPct] = useState(0);
@@ -351,6 +355,25 @@ function DatabaseTab({ onResult }: { onResult: (r: TTIResult) => void }) {
     try { const d = await fetchTCGAOV(setTcgaStatus); setTcgaData(d); }
     catch (e: any) { setTcgaErr(e.message); }
     finally { setTcgaLoading(false); }
+  };
+
+  const loadNB = () => {
+    const d = loadNeuroblastomaReference(setNbStatus);
+    setNbData(d);
+  };
+
+  const runNBTTI = async () => {
+    if (!nbData) return;
+    setComputing(true); setPct(0);
+    try {
+      const Xs = standardize(nbData.X);
+      const res = await computeTTI(Xs, nbData.S_mask, nbData.R_mask,
+        { k: Math.min(k, 5), nullReps, bsReps: 30, seed: 42 }, (msg, p) => { setProgMsg(msg); setPct(p); });
+      res.sourceName = `Neuroblastoma · H3K27ac ChIP-seq · ADRN vs MES · ${NB_GENES.length} genes × ${nbData.nSamples} cell lines (Boeva et al.)`;
+      res.genePanel = nbData.geneSymbols;
+      onResult(res);
+    } catch (e: any) { setNbStatus(e.message); }
+    finally { setComputing(false); }
   };
 
   const runTCGATTI = async () => {
@@ -374,11 +397,11 @@ function DatabaseTab({ onResult }: { onResult: (r: TTIResult) => void }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-2">
-        {([["tcga", "TCGA-OV (cBioPortal)"], ["geo", "NCBI GEO Search"]] as const).map(([id, lbl]) => (
+      <div className="flex gap-2 flex-wrap">
+        {([["tcga", "TCGA-OV (cBioPortal)"], ["nb", "Neuroblastoma (Reference)"], ["geo", "NCBI GEO Search"]] as const).map(([id, lbl]) => (
           <Button key={id} variant={db === id ? "default" : "outline"} size="sm"
             className="font-mono text-xs" onClick={() => setDb(id)}>
-            {id === "tcga" ? <Database className="w-3.5 h-3.5" /> : <Search className="w-3.5 h-3.5" />} {lbl}
+            {id === "tcga" ? <Database className="w-3.5 h-3.5" /> : id === "nb" ? <FlaskConical className="w-3.5 h-3.5" /> : <Search className="w-3.5 h-3.5" />} {lbl}
           </Button>
         ))}
       </div>
@@ -437,6 +460,70 @@ function DatabaseTab({ onResult }: { onResult: (r: TTIResult) => void }) {
         </div>
       )}
 
+      {db === "nb" && (
+        <div className="space-y-4">
+          <div className="module-card">
+            <h3 className="text-xs font-mono text-accent uppercase tracking-wide font-semibold mb-3">
+              Neuroblastoma ADRN↔MES — Built-in Reference Data
+            </h3>
+            <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+              H3K27ac ChIP-seq differential binding across <strong className="text-foreground">15 neuroblastoma cell lines</strong> (Boeva et al., Cancer Cell 2017).
+              Tests cell identity separation between <span className="text-chart-emerald">Adrenergic (ADRN)</span> and <span className="text-chart-amber">Mesenchymal (MES)</span> states
+              using <strong className="text-foreground">{NB_GENES.length} top differentially bound genes</strong>.
+            </p>
+            <p className="text-[10px] font-mono text-muted-foreground mb-2">
+              ADRN: {NB_ADRN_LINES.join(" · ")}
+            </p>
+            <p className="text-[10px] font-mono text-muted-foreground mb-4">
+              MES: {NB_MES_LINES.join(" · ")}
+            </p>
+            <Button onClick={loadNB} className="font-mono text-xs">
+              <FlaskConical className="w-3.5 h-3.5" /> Load Neuroblastoma Reference
+            </Button>
+            {nbStatus && <p className="text-xs font-mono text-chart-emerald mt-2">{nbStatus}</p>}
+          </div>
+
+          {nbData && (
+            <div className="module-card">
+              <div className="grid grid-cols-4 gap-3 mb-4">
+                {[
+                  { l: "Cell lines", v: nbData.nSamples },
+                  { l: "ADRN", v: nbData.S_mask.filter(Boolean).length },
+                  { l: "MES", v: nbData.R_mask.filter(Boolean).length },
+                  { l: "Genes", v: nbData.geneSymbols.length },
+                ].map(({ l, v }) => (
+                  <div key={l} className="bg-secondary/50 rounded-md p-3 text-center">
+                    <p className="text-[10px] font-mono text-muted-foreground uppercase">{l}</p>
+                    <p className="text-xl font-mono font-bold text-accent mt-1">{v}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px] font-mono text-muted-foreground mb-3">
+                Gene panel: {nbData.geneSymbols.slice(0, 15).join(" · ")}{nbData.geneSymbols.length > 15 ? ` … +${nbData.geneSymbols.length - 15} more` : ""}
+              </p>
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                  <div className="flex justify-between text-[10px] font-mono text-muted-foreground mb-1">
+                    <span>k neighbours</span><span className="text-foreground">{Math.min(k, 5)}</span>
+                  </div>
+                  <Slider min={2} max={5} step={1} value={[Math.min(k, 5)]} onValueChange={([v]) => setK(v)} />
+                </div>
+                <div>
+                  <div className="flex justify-between text-[10px] font-mono text-muted-foreground mb-1">
+                    <span>Null reps</span><span className="text-foreground">{nullReps}</span>
+                  </div>
+                  <Slider min={20} max={120} step={10} value={[nullReps]} onValueChange={([v]) => setNullReps(v)} />
+                </div>
+              </div>
+              {computing && <ComputeProgress pct={pct} msg={progMsg} />}
+              <Button onClick={runNBTTI} disabled={computing} className="font-mono text-xs">
+                {computing ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Computing TTI…</> : <><Play className="w-3.5 h-3.5" /> Run TTI on Neuroblastoma ADRN vs MES</>}
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+
       {db === "geo" && (
         <div className="space-y-3">
           <div className="module-card">
@@ -467,7 +554,7 @@ function DatabaseTab({ onResult }: { onResult: (r: TTIResult) => void }) {
                   <ol className="text-[10px] text-muted-foreground space-y-1 list-decimal list-inside leading-relaxed">
                     <li>Download series matrix from GEO and decompress: <code className="text-accent">gunzip *.gz</code></li>
                     <li>Extract expression as CSV: rows = samples, cols = features; add <code className="text-accent">label</code> column</li>
-                    <li>Upload via the <strong className="text-foreground">Upload & Analyse</strong> tab for real TTI computation</li>
+                    <li>Upload via the <strong className="text-foreground">Upload &amp; Analyse</strong> tab for real TTI computation</li>
                   </ol>
                   <a href={`https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=${r.accession}`} target="_blank" rel="noreferrer"
                     className="text-[10px] text-chart-emerald mt-2 inline-flex items-center gap-1">
