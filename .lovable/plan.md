@@ -1,44 +1,51 @@
 
 
-# Plan: Generate Publication-Quality Figures and Tables
+# Plan: Integrate Neuroblastoma Multi-Omic Reference Data into TEMPEST
 
-## What We're Building
-A multi-page scientific PDF containing 6 figures and 4 tables for the TEMPEST manuscript, styled for journal submission (Nature Methods / Genome Biology quality). Output as a single downloadable PDF artifact.
+## Overview
+Embed two neuroblastoma datasets — ChIP-seq H3K27ac differential binding (Noradrenergic vs Mesenchymal) and RNA-seq expression with drug perturbations — into the TEMPEST platform as built-in reference knowledge and cross-cancer validation data.
 
-## Design Philosophy: "Systematic Cartography"
+## What This Achieves
+- Expands TEMPEST beyond HGSOC-only to demonstrate cross-cancer applicability (neuroblastoma cell identity heterogeneity)
+- Adds real epigenomic (H3K27ac) and transcriptomic (RNA-seq) data for the AI agent and analysis modules to reference
+- Strengthens the platform's scientific credibility by grounding it in published data (Boeva et al., Noradrenergic vs NCC-like Mesenchymal lineages)
 
-A `.md` file will be generated capturing the visual language: clinical precision meets scientific illustration. Deep navy ink on clean white stock. Thin ruled lines, geometric nodes, directional arrows. IBM Plex Mono for labels, Instrument Sans for body, CrimsonPro for figure captions. Minimal palette: navy (#0b1826), gold (#c8973a), teal (#1da88a), rose (#b8364e), slate (#5a8099). Every element placed with diagrammatic rigor.
+## Data Summary
+1. **ChIP-seq** (17,763 genes): H3K27ac differential binding across 15 neuroblastoma cell lines — captures enhancer landscape differences between Noradrenergic (ADRN) and Mesenchymal (MES) cell states. Includes log2FoldChange and padj.
+2. **RNA-seq** (19,399 genes): Expression across 29 conditions including drug perturbations (doxorubicin, cisplatin) and PHOX2B shRNA knockdown. Captures lineage-specific transcription and plasticity under therapy.
 
-## Figures (Python/ReportLab + hand-drawn vector graphics)
+## Changes
 
-| Figure | Approach |
-|--------|----------|
-| **Fig 1. Platform Architecture** | Box-and-arrow diagram: React → FastAPI → Celery/Redis → PostgreSQL/MinIO, with AI assistant and public-data connectors as side nodes. Drawn with ReportLab canvas primitives (rounded rects, arrows, labels). |
-| **Fig 2. fTTI Workflow** | Linear pipeline schematic: Parental/Resistant matrices → kNN graph → Vietoris-Rips → H₀/H₁ computation → conductance → z-score → composite fTTI. Drawn as connected processing blocks with mathematical notation. |
-| **Fig 3. Dashboard Panels** | Stylized schematic grid showing 6 module cards (MOTF, GBSC, BCTN, CNIS, MSRS, fTTI) with mini-chart icons and progress indicators. Abstract representation, not screenshot. |
-| **Fig 4. MOTF Heatmap** | Synthetic heatmap grid (samples × factors) with color gradient showing early/transitional/advanced separation. Modality loading bars on the side. |
-| **Fig 5. Clonal Dynamics** | Stacked area chart (6 timepoints, 4 clones) with Shannon entropy overlay line and uncertainty bands. Drawn with ReportLab path primitives. |
-| **Fig 6. CNIS + fTTI** | Split panel: left = neoantigen ranking bar chart, right = topology signature comparison (parental vs resistant ATAC-seq). |
+### 1. Add Neuroblastoma Knowledge to Chat AI System Prompt
+**File**: `supabase/functions/chat/index.ts`
+- Add a new `NEUROBLASTOMA_REFERENCE` knowledge block covering:
+  - ADRN vs MES cell identity framework (super-enhancers, core regulatory circuitries)
+  - Key lineage markers from the ChIP-seq data: ADRN (PHOX2B, HAND2, GATA3, DBH, TH) vs MES (PRRX1, SNAI2, VIM, FN1, YAP1)
+  - Drug response signatures: top differentially expressed genes under doxorubicin/cisplatin
+  - PHOX2B knockdown → MES transition evidence from the shRNA time course (J0→J2→J5→J13)
+  - Cross-cancer parallels to HGSOC: EMT-like transitions, therapy-induced plasticity, bifurcation biology
+- Append to `SYSTEM_PROMPT` so the AI can answer neuroblastoma questions and draw HGSOC parallels
 
-## Tables (ReportLab Table objects)
+### 2. Add Neuroblastoma Context to Analysis Modules
+**File**: `supabase/functions/run-analysis/index.ts`
+- Add a `NEUROBLASTOMA_CONTEXT` block summarizing the key biological findings
+- Update each `MODULE_PROMPTS` entry to include a cross-cancer validation instruction: "When generating results, note how this framework could be applied to neuroblastoma ADRN↔MES transitions as a validation case"
+- This grounds module outputs in real multi-cancer data
 
-| Table | Content |
-|-------|---------|
-| **Table 1** | Platform stack: Frontend (React/Vite/Tailwind), Backend (FastAPI/Celery), Storage (PostgreSQL/MinIO/Redis), Visualization (Recharts/D3), Analytics (ttiEngine/PyClone/NetMHCpan) |
-| **Table 2** | GBSC validation: 6 folds × (Macro-F1, Macro-AUC, Calibration) with mean±SD row |
-| **Table 3** | Top 8 neoantigen candidates: Peptide, Gene, IC₅₀, Expression, Clonality, Stability, TPS |
-| **Table 4** | fTTI scores: 5 models × (ΔF, ΔL, N, fTTI, p-value) |
+### 3. Pre-load Datasets into Database
+- Copy both uploaded files to a temp location
+- Parse the top significant genes (padj < 0.05, |log2FC| > 1) from each dataset
+- Insert summarized records into the `datasets` table with `is_training: true` so they automatically enrich AI context
+- Two dataset entries: one for ChIP-seq, one for RNA-seq
 
-## Technical Approach
+### 4. Update Data Sources Panel with Neuroblastoma Reference
+**File**: `src/components/tempest/DataSourcesPanel.tsx`
+- No structural changes needed — the pre-loaded datasets will appear in the "Saved" tab automatically since they are inserted into the `datasets` table
 
-1. Write a single Python script using **ReportLab** (canvas + platypus)
-2. Use available fonts: IBM Plex Mono, Instrument Sans, CrimsonPro
-3. All diagrams drawn programmatically with canvas primitives (no external images)
-4. Output: single multi-page PDF to `/mnt/documents/tempest_figures_tables.pdf`
-5. Design philosophy saved as `/mnt/documents/systematic_cartography.md`
-6. QA: convert pages to JPEG, inspect each, fix issues
-
-## Output Files
-- `/mnt/documents/systematic_cartography.md` — design philosophy
-- `/mnt/documents/tempest_figures_tables.pdf` — 10-page PDF (6 figures + 4 tables)
+## Technical Details
+- ChIP-seq significant genes extracted using padj < 0.05 and |log2FC| > 1 filters
+- RNA-seq significant genes extracted using same thresholds
+- Top ~50 genes per dataset stored as structured JSON in the `data` column
+- Knowledge blocks keep the system prompt under token limits by summarizing rather than embedding raw data
+- All dataset inserts use the existing `datasets` table schema (source: "uploaded", category: "epigenomic"/"expression")
 
