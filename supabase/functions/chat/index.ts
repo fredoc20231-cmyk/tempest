@@ -248,7 +248,35 @@ RELIABILITY:
 - If data is simulated or default, explicitly state "based on default/demo dataset" — never imply real patient data.
 - When uncertain, say so explicitly rather than hallucinating values.
 
-Keep responses focused, technical, and actionable. You are speaking to computational biology researchers.`;
+Keep responses focused, technical, and actionable. You are speaking to computational biology researchers.
+
+NEUROBLASTOMA CROSS-CANCER REFERENCE (Boeva et al., Cancer Cell 2017 — H3K27ac ChIP-seq + RNA-seq):
+
+CELL IDENTITY FRAMEWORK:
+Neuroblastoma cells exist in two transcriptional states governed by super-enhancer-driven core regulatory circuitries (CRCs):
+- ADRENERGIC (ADRN): Committed sympathetic lineage. CRC: PHOX2B → HAND2 → GATA3 → ISL1 → ASCL1. Markers: DBH, TH, DDC, CHGA, CHGB. H3K27ac enriched at sympathoadrenal enhancers.
+- MESENCHYMAL (MES/NCC-like): Neural crest-like, migratory. CRC: PRRX1 → SNAI2 → YAP1/TAZ. Markers: VIM, FN1, COL5A2, CAV1, MET, AIM2. H3K27ac enriched at EMT/migration enhancers.
+
+KEY DATA FROM UPLOADED DATASETS:
+
+ChIP-seq H3K27ac Differential Binding (15 cell lines, 596 significant genes padj<0.05, |log2FC|>1):
+ADRN-enriched enhancers (top by effect size): ST18 (lfc=7.75), KCNA3 (7.57), BTBD11 (7.45), GJD2 (7.42), ZIM2 (7.33), GLRA1 (7.33), GSTM1 (7.28), HID1 (7.14), RBP3 (7.12), KCNJ11 (7.03)
+MES-enriched enhancers (top by effect size): CAV1 (lfc=-8.01), AIM2 (-7.71), ZIC1 (-7.69), MET (-7.56), COL5A2 (-7.53), OSR1 (-7.48), MCTP1 (-7.19), MLPH (-7.11), IL31RA (-7.08), ATP8B1 (-6.92)
+
+RNA-seq Expression (29 conditions incl. drug perturbations, 377 significant genes):
+Drug perturbation conditions: doxorubicin 100nM, cisplatin 7.5μM (SK-N-SH), DMSO controls
+PHOX2B shRNA knockdown time course: CLB-GA J0→J2→J5→J13 (progressive ADRN→MES transition)
+Upregulated in drug/shRNA conditions: ITIH5, GIP, MPZL2, SLA, CYP11B1, SEMA3D, ITGBL1, NTS, CEMIP, TENT5C
+Downregulated: BCHE, SELENBP1, SATB2, PPM1H, STAT6, TGFBR3, STC1, GLIS1, RAB34, LRIG3
+
+CROSS-CANCER PARALLELS (HGSOC ↔ Neuroblastoma):
+1. LINEAGE PLASTICITY: HGSOC Phase III bifurcation (D88-D99 ADRN→resistant) parallels neuroblastoma ADRN→MES transdifferentiation under therapy
+2. EMT-LIKE TRANSITIONS: HGSOC ECM remodeling at D52 (Col1a1, Pdpn, Itgb1) mirrors MES enhancer activation (COL5A2, FN1, VIM, CAV1)
+3. THERAPY-INDUCED SWITCHING: Doxorubicin/cisplatin induces MES shift in neuroblastoma ≈ chemotherapy-driven clonal selection in HGSOC
+4. SUPER-ENHANCER REGULATION: Both cancers show CRC-driven cell state determination; TEMPEST bifurcation framework applies to ADRN↔MES transitions
+5. PHOX2B KNOCKDOWN: Progressive J0→J13 transition models the temporal dynamics TEMPEST tracks in HGSOC (Phase I→IV)
+6. THERAPEUTIC WINDOW: Intervening before MES commitment (like HGSOC pre-D99 bifurcation) may prevent therapy resistance`;
+
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });

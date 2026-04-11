@@ -28,6 +28,11 @@ CRITICAL ANALYSIS RULES:
 - Report progression phase (I-IV) alongside Day number in all analyses
 `;
 
+const NEUROBLASTOMA_CONTEXT = `
+CROSS-CANCER VALIDATION — Neuroblastoma ADRN↔MES Plasticity (Boeva et al., Cancer Cell 2017):
+Neuroblastoma cells switch between Adrenergic (ADRN: PHOX2B, HAND2, GATA3, DBH, TH) and Mesenchymal (MES: PRRX1, SNAI2, VIM, FN1, CAV1) states via super-enhancer reprogramming. H3K27ac ChIP-seq across 15 cell lines identified 596 differentially bound genes. Drug perturbation (doxorubicin, cisplatin) and PHOX2B knockdown induce ADRN→MES transdifferentiation — analogous to HGSOC Phase III bifurcation. When generating results, note how this analytical framework could be applied to neuroblastoma ADRN↔MES transitions as a cross-cancer validation case, highlighting shared mechanisms: lineage plasticity, therapy-induced switching, and bifurcation biology.
+`;
+
 const MODULE_PROMPTS: Record<string, string> = {
   motf: TEMPORAL_FRAMEWORK + "\nGenerate realistic MOTF (Multi-Omic Tensor Factorization) analysis results for this HGSOC GEM longitudinal cohort. The tensor T ∈ ℝ^(8 × 12,451 × 4) spans 8 timepoints (D0–D122) × 12,451 features × 4 modalities. Use weighted Non-negative Tucker Decomposition. Include: per-timepoint factor loadings showing how latent factors evolve across disease phases, LF1 stage correlation (r=0.94, p<10⁻⁶), cross-modal variance (92.3%), and PROGENy pathway correlations. MAP latent factors to the temporal stages — which factors activate at which disease phase. Return as JSON with keys: metrics (array of {metric, value, trend}), narrative (string summary).",
   gbsc: TEMPORAL_FRAMEWORK + "\nGenerate realistic GBSC (Gradient-Boosted Stage Classifier) results. XGBoost with 350 estimators, depth 5, η=0.04, L2 γ=1.2. LOTO cross-validation across the 8 timepoints. Include: per-phase classification accuracy, AUC-ROC per disease state (Phase I-IV), SHAP feature importances showing which features best discriminate EACH phase transition (I→II, II→III, III→IV), Brier calibration. Emphasise the D88-D99 boundary as the hardest classification challenge. Return as JSON with keys: metrics (array of {metric, value, trend}), narrative (string summary).",
