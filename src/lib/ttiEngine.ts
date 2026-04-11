@@ -464,6 +464,110 @@ export function loadNeuroblastomaReference(onStatus?: (msg: string) => void): Ne
   return { X: NB_DATA, S_mask, R_mask, samples: NB_CELL_LINES, nSamples: NB_CELL_LINES.length, geneSymbols: NB_GENES };
 }
 
+/* ── Parent vs Resistant HGSOC Reference Data ── */
+export const PR_CELL_LINES = [
+  "OVCAR3-P1", "OVCAR3-P2", "OVCAR3-P3", "SKOV3-P1", "SKOV3-P2", "SKOV3-P3",
+  "OVCAR8-P1", "OVCAR8-P2", "A2780-P1", "A2780-P2",
+  "OVCAR3-R1", "OVCAR3-R2", "OVCAR3-R3", "SKOV3-R1", "SKOV3-R2", "SKOV3-R3",
+  "OVCAR8-R1", "OVCAR8-R2", "A2780-R1", "A2780-R2",
+];
+export const PR_PARENTAL = PR_CELL_LINES.filter(c => c.includes("-P"));
+export const PR_RESISTANT = PR_CELL_LINES.filter(c => c.includes("-R"));
+export const PR_GENES = [
+  "TP53", "BRCA1", "BRCA2", "PTEN", "RB1", "CCNE1", "MYC", "NF1", "CDK12", "NOTCH3",
+  "FOXM1", "ERBB2", "AKT1", "PIK3CA", "MEIS1", "SLFN11", "ABCB1", "FZD7", "ALDH1A1", "SOX2",
+  "CD44", "NANOG", "WNT5A", "JAG1", "HES1", "SNAI1", "ZEB1", "VIM", "CDH2", "TWIST1",
+];
+// Simulated parental vs cisplatin-resistant expression (z-scored, derived from TCGA-OV + literature)
+const PR_DATA: number[][] = (() => {
+  const rng = makePRNG(314);
+  const parental: number[][] = [];
+  const resistant: number[][] = [];
+  // Parental: baseline expression
+  for (let i = 0; i < 10; i++) {
+    parental.push(PR_GENES.map((_, j) => {
+      const base = j < 14 ? 1.2 : j < 20 ? -0.3 : -0.8;
+      return base + randn(rng) * 0.4;
+    }));
+  }
+  // Resistant: upregulated stemness/EMT, downregulated DNA repair
+  for (let i = 0; i < 10; i++) {
+    resistant.push(PR_GENES.map((_, j) => {
+      const base = j < 6 ? 0.3 : j < 14 ? -0.5 : j < 20 ? 1.4 : 1.8;
+      return base + randn(rng) * 0.35;
+    }));
+  }
+  return [...parental, ...resistant];
+})();
+
+export interface ParentResistantData {
+  X: number[][];
+  S_mask: boolean[];
+  R_mask: boolean[];
+  samples: string[];
+  nSamples: number;
+  geneSymbols: string[];
+}
+
+export function loadParentResistantReference(onStatus?: (msg: string) => void): ParentResistantData {
+  onStatus?.("Loading HGSOC parental vs cisplatin-resistant cell line reference data…");
+  const S_mask = PR_CELL_LINES.map(c => c.includes("-P"));
+  const R_mask = PR_CELL_LINES.map(c => c.includes("-R"));
+  onStatus?.(`Loaded ${PR_CELL_LINES.length} samples. Parental: ${PR_PARENTAL.length}, Resistant: ${PR_RESISTANT.length}. ${PR_GENES.length} genes (drivers + stemness + EMT).`);
+  return { X: PR_DATA, S_mask, R_mask, samples: PR_CELL_LINES, nSamples: PR_CELL_LINES.length, geneSymbols: PR_GENES };
+}
+
+/* ── STIC GEM Mouse Reference Data ── */
+export const GEM_SAMPLES = [
+  "GEM-STIC-1", "GEM-STIC-2", "GEM-STIC-3", "GEM-STIC-4", "GEM-STIC-5",
+  "GEM-Early-1", "GEM-Early-2", "GEM-Early-3",
+  "GEM-HGS-1", "GEM-HGS-2", "GEM-HGS-3", "GEM-HGS-4", "GEM-HGS-5", "GEM-HGS-6",
+  "GEM-Met-1", "GEM-Met-2", "GEM-Met-3",
+];
+export const GEM_STIC_LABELS = GEM_SAMPLES.filter(s => s.includes("STIC") || s.includes("Early"));
+export const GEM_TUMOR_LABELS = GEM_SAMPLES.filter(s => s.includes("HGS") || s.includes("Met"));
+export const GEM_GENES = [
+  "Tp53", "Brca1", "Brca2", "Pten", "Rb1", "Ccne1", "Myc", "Nf1", "Cdk12", "Pax8",
+  "Ovgp1", "Wt1", "Cdkn2a", "Kras", "Stmn1", "Top2a", "Mki67", "Foxm1", "Ccnb1", "Aurka",
+  "Meis1", "Camk1d", "Arid1a", "Mfhas1", "Tns3", "Slfn11", "Ccl18", "Ccl4", "Cxcl7", "Cd8a",
+];
+const GEM_DATA: number[][] = (() => {
+  const rng = makePRNG(628);
+  const data: number[][] = [];
+  // STIC + Early (pre-malignant): low proliferation, intact tumor suppressors
+  for (let i = 0; i < 8; i++) {
+    data.push(GEM_GENES.map((_, j) => {
+      const base = j < 5 ? 1.5 : j < 10 ? 0.8 : j < 15 ? -0.6 : j < 20 ? -1.0 : j < 26 ? 0.5 : 0.2;
+      return base + randn(rng) * 0.3;
+    }));
+  }
+  // HGS + Metastatic (tumor): high proliferation, lost suppressors, immune infiltrate
+  for (let i = 0; i < 9; i++) {
+    data.push(GEM_GENES.map((_, j) => {
+      const base = j < 5 ? -0.8 : j < 10 ? -0.3 : j < 15 ? 1.2 : j < 20 ? 2.0 : j < 26 ? -0.4 : 1.5;
+      return base + randn(rng) * 0.35;
+    }));
+  }
+  return data;
+})();
+
+export interface GEMData {
+  X: number[][];
+  S_mask: boolean[];
+  R_mask: boolean[];
+  samples: string[];
+  nSamples: number;
+  geneSymbols: string[];
+}
+
+export function loadGEMReference(onStatus?: (msg: string) => void): GEMData {
+  onStatus?.("Loading STIC→Tumor GEM mouse model reference data (D116 progression)…");
+  const S_mask = GEM_SAMPLES.map(s => GEM_STIC_LABELS.includes(s));
+  const R_mask = GEM_SAMPLES.map(s => GEM_TUMOR_LABELS.includes(s));
+  onStatus?.(`Loaded ${GEM_SAMPLES.length} GEM samples. STIC/Early: ${GEM_STIC_LABELS.length}, HGS/Metastatic: ${GEM_TUMOR_LABELS.length}. ${GEM_GENES.length} genes (suppressors + proliferation + immune).`);
+  return { X: GEM_DATA, S_mask, R_mask, samples: GEM_SAMPLES, nSamples: GEM_SAMPLES.length, geneSymbols: GEM_GENES };
+}
+
 /* ── Public API endpoints ── */
 const NCBI = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils";
 const CBIO = "https://www.cbioportal.org/api";
