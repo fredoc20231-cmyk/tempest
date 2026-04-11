@@ -524,6 +524,7 @@ function DatabaseTab({ onResult }: { onResult: (r: TTIResult) => void }) {
         </div>
       )}
 
+      {db === "geo" && (
         <div className="space-y-3">
           <div className="module-card">
             <h3 className="text-xs font-mono text-accent uppercase tracking-wide font-semibold mb-3">NCBI GEO — Live E-utilities Search</h3>
@@ -553,7 +554,7 @@ function DatabaseTab({ onResult }: { onResult: (r: TTIResult) => void }) {
                   <ol className="text-[10px] text-muted-foreground space-y-1 list-decimal list-inside leading-relaxed">
                     <li>Download series matrix from GEO and decompress: <code className="text-accent">gunzip *.gz</code></li>
                     <li>Extract expression as CSV: rows = samples, cols = features; add <code className="text-accent">label</code> column</li>
-                    <li>Upload via the <strong className="text-foreground">Upload & Analyse</strong> tab for real TTI computation</li>
+                    <li>Upload via the <strong className="text-foreground">Upload &amp; Analyse</strong> tab for real TTI computation</li>
                   </ol>
                   <a href={`https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=${r.accession}`} target="_blank" rel="noreferrer"
                     className="text-[10px] text-chart-emerald mt-2 inline-flex items-center gap-1">
