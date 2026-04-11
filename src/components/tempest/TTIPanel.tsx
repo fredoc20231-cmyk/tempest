@@ -16,7 +16,8 @@ import {
 import {
   computeTTI, computePCA, standardize, subsampleData, parseUpload,
   GENERATORS, searchGEO, fetchTCGAOV, OV_SYMBOLS, OV_GENES,
-  type TTIResult, type GEOResult, type TCGAData,
+  loadNeuroblastomaReference, NB_GENES, NB_CELL_LINES, NB_ADRN_LINES, NB_MES_LINES,
+  type TTIResult, type GEOResult, type TCGAData, type NeuroblastomaData,
 } from "@/lib/ttiEngine";
 
 /* ════════════════════════════════════════════════
