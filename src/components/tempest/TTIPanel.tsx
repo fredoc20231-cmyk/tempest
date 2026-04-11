@@ -17,8 +17,14 @@ import {
   computeTTI, computePCA, standardize, subsampleData, parseUpload,
   GENERATORS, searchGEO, fetchTCGAOV, OV_SYMBOLS, OV_GENES,
   loadNeuroblastomaReference, NB_GENES, NB_CELL_LINES, NB_ADRN_LINES, NB_MES_LINES,
+  loadParentResistantReference, PR_GENES, PR_CELL_LINES, PR_PARENTAL, PR_RESISTANT,
+  loadGEMReference, GEM_GENES, GEM_SAMPLES, GEM_STIC_LABELS, GEM_TUMOR_LABELS,
   type TTIResult, type GEOResult, type TCGAData, type NeuroblastomaData,
+  type ParentResistantData, type GEMData,
 } from "@/lib/ttiEngine";
+import { supabase } from "@/integrations/supabase/client";
+import { useTempest } from "@/contexts/TempestContext";
+import { toast } from "sonner";
 
 /* ════════════════════════════════════════════════
    SVG Visualizations — all driven by real computed data
