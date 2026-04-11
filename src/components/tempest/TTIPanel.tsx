@@ -693,7 +693,7 @@ function ReferenceDataRunner({ label, data, category, k, setK, nullReps, setNull
 }
 
 /* ════════════════════════════════════════════════
-   SIMULATE TAB — Real topology generators + real TTI
+   SIMULATE TAB — Supports both synthetic topologies AND loaded reference datasets
    ════════════════════════════════════════════════ */
 
 const TOPO_META: Record<string, { label: string; icon: string; exp: string }> = {
@@ -703,8 +703,25 @@ const TOPO_META: Record<string, { label: string; icon: string; exp: string }> = 
   loop: { label: "Cyclic Loop", icon: "⟳", exp: "Expect TTI > 6, high L (β₁ > 0, persistent H1 cycle)." },
 };
 
+interface RefDataset {
+  id: string;
+  label: string;
+  loader: (cb: (s: string) => void) => { X: number[][]; S_mask: boolean[]; R_mask: boolean[]; nSamples: number; geneSymbols: string[] };
+  category: string;
+  groupA: string;
+  groupB: string;
+}
+
+const REF_DATASETS: RefDataset[] = [
+  { id: "pr", label: "HGSOC Parent vs Resistant", loader: (cb) => loadParentResistantReference(cb), category: "expression", groupA: "Parental", groupB: "Resistant" },
+  { id: "gem", label: "STIC GEM Mouse", loader: (cb) => loadGEMReference(cb), category: "expression", groupA: "STIC/Early", groupB: "HGS/Tumor" },
+  { id: "nb", label: "Neuroblastoma ADRN↔MES", loader: (cb) => loadNeuroblastomaReference(cb), category: "epigenomic", groupA: "ADRN", groupB: "MES" },
+];
+
 function SimulateTab({ onResult }: { onResult: (r: TTIResult) => void }) {
+  const [mode, setMode] = useState<"synthetic" | "reference">("synthetic");
   const [topo, setTopo] = useState("bottleneck");
+  const [refId, setRefId] = useState("pr");
   const [n, setN] = useState(130);
   const [k, setK] = useState(10);
   const [nullReps, setNullReps] = useState(50);
@@ -713,7 +730,11 @@ function SimulateTab({ onResult }: { onResult: (r: TTIResult) => void }) {
   const [pct, setPct] = useState(0);
   const [progMsg, setProgMsg] = useState("");
 
-  const preview = useMemo(() => {
+  const { setAIContext } = useTempest();
+
+  // Synthetic preview
+  const syntheticPreview = useMemo(() => {
+    if (mode !== "synthetic") return null;
     try {
       const g = GENERATORS[topo](Math.min(n, 130), seed);
       return {
@@ -723,75 +744,183 @@ function SimulateTab({ onResult }: { onResult: (r: TTIResult) => void }) {
         n: g.X.length,
       };
     } catch { return null; }
-  }, [topo, n, seed]);
+  }, [topo, n, seed, mode]);
+
+  // Reference preview
+  const refPreview = useMemo(() => {
+    if (mode !== "reference") return null;
+    const ds = REF_DATASETS.find(d => d.id === refId);
+    if (!ds) return null;
+    try {
+      const data = ds.loader(() => {});
+      return {
+        pca: computePCA(standardize(data.X)),
+        S: data.S_mask,
+        R: data.R_mask,
+        n: data.nSamples,
+        genes: data.geneSymbols,
+        groupA: ds.groupA,
+        groupB: ds.groupB,
+      };
+    } catch { return null; }
+  }, [refId, mode]);
 
   const run = async () => {
     setComputing(true); setPct(0);
     try {
-      const g = GENERATORS[topo](n, seed);
-      const S = g.labels.map(l => l === "S"), R = g.labels.map(l => l === "R");
-      const res = await computeTTI(g.X, S, R, { k, nullReps, bsReps: 50, seed }, (msg, p) => { setProgMsg(msg); setPct(p); });
-      res.sourceName = `Simulation · ${TOPO_META[topo].label} · n=${n}, k=${k}, seed=${seed}`;
-      onResult(res);
+      if (mode === "synthetic") {
+        const g = GENERATORS[topo](n, seed);
+        const S = g.labels.map(l => l === "S"), R = g.labels.map(l => l === "R");
+        const res = await computeTTI(g.X, S, R, { k, nullReps, bsReps: 50, seed }, (msg, p) => { setProgMsg(msg); setPct(p); });
+        res.sourceName = `Simulation · ${TOPO_META[topo].label} · n=${n}, k=${k}, seed=${seed}`;
+        onResult(res);
+      } else {
+        const ds = REF_DATASETS.find(d => d.id === refId)!;
+        const data = ds.loader(() => {});
+        const Xs = standardize(data.X);
+        const kVal = Math.min(k, Math.floor(data.nSamples / 3));
+        const res = await computeTTI(Xs, data.S_mask, data.R_mask,
+          { k: kVal, nullReps, bsReps: 30, seed }, (msg, p) => { setProgMsg(msg); setPct(p); });
+        res.sourceName = `Simulation · ${ds.label} · ${data.geneSymbols.length} genes × ${data.nSamples} samples`;
+        res.genePanel = data.geneSymbols;
+        onResult(res);
+        // Save as training data
+        try {
+          const trainingRecord = {
+            name: res.sourceName,
+            source: "reference",
+            category: ds.category,
+            description: `${ds.label} simulation — TTI=${res.tti.toFixed(2)}, phase transition: ${res.phaseTransition ? "YES" : "NO"}.`,
+            data: { genes: data.geneSymbols, tti: res.tti, z: res.z, raw: res.raw },
+            record_count: data.nSamples,
+            metadata: { tti_score: res.tti, phase_transition: res.phaseTransition, gene_panel: data.geneSymbols },
+            is_training: true,
+          };
+          await supabase.from("datasets").insert(trainingRecord);
+          setAIContext({
+            module: "tti",
+            content: `Simulation training: ${ds.label}. TTI=${res.tti.toFixed(2)}, zL=${res.z.zL.toFixed(2)}, zB=${res.z.zB.toFixed(2)}, zN=${res.z.zN.toFixed(2)}.`,
+            timestamp: Date.now(),
+          });
+          toast.success(`${ds.label} simulation saved as training data`);
+        } catch (e) { console.error("Training save failed:", e); }
+      }
     } catch (e) { console.error(e); }
     finally { setComputing(false); }
   };
 
+  const activeRef = REF_DATASETS.find(d => d.id === refId);
+
   return (
-    <div className="grid grid-cols-3 gap-4">
-      {/* Controls */}
-      <div className="space-y-4">
-        <div>
-          <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wide mb-2">Topology Class</p>
-          <div className="grid grid-cols-2 gap-1.5">
-            {Object.entries(TOPO_META).map(([key, { label, icon }]) => (
-              <Button key={key} variant={topo === key ? "default" : "outline"} size="sm"
-                className="text-xs font-mono justify-start h-auto py-1.5"
-                onClick={() => setTopo(key)}>
-                <span className="mr-1">{icon}</span> {label}
-              </Button>
-            ))}
-          </div>
-        </div>
-        <p className="text-xs text-muted-foreground leading-relaxed">{TOPO_META[topo].exp}</p>
-        <div className="space-y-3">
-          {[
-            { label: "n samples", val: n, set: setN, min: 80, max: 300, step: 20 },
-            { label: "k neighbours", val: k, set: setK, min: 5, max: 30, step: 5 },
-            { label: "Null reps", val: nullReps, set: setNullReps, min: 20, max: 100, step: 10 },
-            { label: "Random seed", val: seed, set: setSeed, min: 0, max: 200, step: 1 },
-          ].map(({ label, val, set, min, max, step }) => (
-            <div key={label}>
-              <div className="flex justify-between text-[10px] font-mono text-muted-foreground mb-1">
-                <span>{label}</span><span className="text-foreground">{val}</span>
-              </div>
-              <Slider min={min} max={max} step={step} value={[val]} onValueChange={([v]) => set(v)} />
-            </div>
-          ))}
-        </div>
-        {computing && <ComputeProgress pct={pct} msg={progMsg} />}
-        <Button onClick={run} disabled={computing} className="w-full font-mono text-xs">
-          {computing ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Computing real TTI…</> : <><Play className="w-3.5 h-3.5" /> Run TTI Analysis</>}
+    <div className="space-y-4">
+      {/* Mode toggle */}
+      <div className="flex gap-2 mb-2">
+        <Button variant={mode === "synthetic" ? "default" : "outline"} size="sm" className="font-mono text-xs" onClick={() => setMode("synthetic")}>
+          <Hexagon className="w-3.5 h-3.5 mr-1" /> Synthetic Topologies
+        </Button>
+        <Button variant={mode === "reference" ? "default" : "outline"} size="sm" className="font-mono text-xs" onClick={() => setMode("reference")}>
+          <Database className="w-3.5 h-3.5 mr-1" /> Reference Datasets
         </Button>
       </div>
 
-      {/* Preview + info */}
-      <div className="col-span-2 space-y-3">
-        {preview && (
-          <>
-            <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wide">
-              PCA preview · {TOPO_META[topo].label} · {preview.n} samples (emerald=parental, amber=resistant)
+      <div className="grid grid-cols-3 gap-4">
+        {/* Controls */}
+        <div className="space-y-4">
+          {mode === "synthetic" ? (
+            <>
+              <div>
+                <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wide mb-2">Topology Class</p>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {Object.entries(TOPO_META).map(([key, { label, icon }]) => (
+                    <Button key={key} variant={topo === key ? "default" : "outline"} size="sm"
+                      className="text-xs font-mono justify-start h-auto py-1.5"
+                      onClick={() => setTopo(key)}>
+                      <span className="mr-1">{icon}</span> {label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">{TOPO_META[topo].exp}</p>
+            </>
+          ) : (
+            <>
+              <div>
+                <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wide mb-2">Reference Dataset</p>
+                <div className="space-y-1.5">
+                  {REF_DATASETS.map(ds => (
+                    <Button key={ds.id} variant={refId === ds.id ? "default" : "outline"} size="sm"
+                      className="text-xs font-mono justify-start h-auto py-1.5 w-full"
+                      onClick={() => setRefId(ds.id)}>
+                      <FlaskConical className="w-3 h-3 mr-1" /> {ds.label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              {activeRef && (
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Simulate TTI on <strong className="text-foreground">{activeRef.label}</strong> — compares <span className="text-chart-emerald">{activeRef.groupA}</span> vs <span className="text-chart-amber">{activeRef.groupB}</span>. Results auto-saved as training data.
+                </p>
+              )}
+            </>
+          )}
+          <div className="space-y-3">
+            {(mode === "synthetic" ? [
+              { label: "n samples", val: n, set: setN, min: 80, max: 300, step: 20 },
+              { label: "k neighbours", val: k, set: setK, min: 5, max: 30, step: 5 },
+              { label: "Null reps", val: nullReps, set: setNullReps, min: 20, max: 100, step: 10 },
+              { label: "Random seed", val: seed, set: setSeed, min: 0, max: 200, step: 1 },
+            ] : [
+              { label: "k neighbours", val: k, set: setK, min: 2, max: 15, step: 1 },
+              { label: "Null reps", val: nullReps, set: setNullReps, min: 20, max: 120, step: 10 },
+              { label: "Random seed", val: seed, set: setSeed, min: 0, max: 200, step: 1 },
+            ]).map(({ label, val, set, min, max, step }) => (
+              <div key={label}>
+                <div className="flex justify-between text-[10px] font-mono text-muted-foreground mb-1">
+                  <span>{label}</span><span className="text-foreground">{val}</span>
+                </div>
+                <Slider min={min} max={max} step={step} value={[val]} onValueChange={([v]) => set(v)} />
+              </div>
+            ))}
+          </div>
+          {computing && <ComputeProgress pct={pct} msg={progMsg} />}
+          <Button onClick={run} disabled={computing} className="w-full font-mono text-xs">
+            {computing ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Computing real TTI…</> : <><Play className="w-3.5 h-3.5" /> Simulate & Run TTI</>}
+          </Button>
+        </div>
+
+        {/* Preview + info */}
+        <div className="col-span-2 space-y-3">
+          {mode === "synthetic" && syntheticPreview && (
+            <>
+              <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wide">
+                PCA preview · {TOPO_META[topo].label} · {syntheticPreview.n} samples (emerald=parental, amber=resistant)
+              </p>
+              <PCAScatter pca={syntheticPreview.pca} S_mask={syntheticPreview.S} R_mask={syntheticPreview.R} />
+            </>
+          )}
+          {mode === "reference" && refPreview && (
+            <>
+              <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wide">
+                PCA preview · {activeRef?.label} · {refPreview.n} samples (emerald={activeRef?.groupA}, amber={activeRef?.groupB}) · {refPreview.genes?.length} genes
+              </p>
+              <PCAScatter pca={refPreview.pca} S_mask={refPreview.S} R_mask={refPreview.R} />
+              <div className="module-card">
+                <p className="text-[10px] font-mono text-muted-foreground mb-1 uppercase">Gene Panel</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  {refPreview.genes?.slice(0, 20).join(" · ")}{(refPreview.genes?.length ?? 0) > 20 ? ` … +${(refPreview.genes?.length ?? 0) - 20} more` : ""}
+                </p>
+              </div>
+            </>
+          )}
+          <div className="module-card">
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              <strong className="text-foreground">All computation is real.</strong> Exact O(n²) kNN · Union-Find H0 filtration (β₀ curve) ·
+              Gaussian-weighted graph conductance φ(S,R) · Graph-theoretic H1 approximation β₁=E−V+C ·
+              Local jitter null model (NOT label permutation) · Subsampling bootstrap CI.
+              {mode === "synthetic" && " High-dimensional embedding: 2D topology lifted to 20D via random linear map + Gaussian noise."}
+              {mode === "reference" && " Running on real biological data — results auto-saved as training data to enrich the AI model."}
             </p>
-            <PCAScatter pca={preview.pca} S_mask={preview.S} R_mask={preview.R} />
-          </>
-        )}
-        <div className="module-card">
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            <strong className="text-foreground">All computation is real.</strong> Exact O(n²) kNN · Union-Find H0 filtration (β₀ curve) ·
-            Gaussian-weighted graph conductance φ(S,R) · Graph-theoretic H1 approximation β₁=E−V+C ·
-            Local jitter null model (NOT label permutation) · Subsampling bootstrap CI.
-            High-dimensional embedding: 2D topology lifted to 20D via random linear map + Gaussian noise.
-          </p>
+          </div>
         </div>
       </div>
     </div>
