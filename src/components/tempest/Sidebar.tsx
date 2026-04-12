@@ -27,7 +27,8 @@ interface SidebarProps {
 
 const modules = [
   { id: "home" as Module, label: "Home", icon: Home },
-  { id: "overview" as Module, label: "Overview", icon: LayoutDashboard },
+  { id: "datasources" as Module, label: "Data Sources", desc: "Upload & Public DB", icon: Database },
+  { id: "overview" as Module, label: "Overview", desc: "Dashboard", icon: LayoutDashboard },
   { id: "motf" as Module, label: "MOTF", desc: "Tucker Decomposition", icon: Dna },
   { id: "gbsc" as Module, label: "GBSC", desc: "Survival Analysis", icon: Activity },
   { id: "bctn" as Module, label: "BCTN", desc: "Clonal Dynamics", icon: FlaskConical },
@@ -35,7 +36,6 @@ const modules = [
   { id: "msrs" as Module, label: "MSRS", desc: "Risk Scoring", icon: BarChart3 },
   { id: "trajectory" as Module, label: "Trajectory", desc: "Bifurcation Prediction", icon: GitBranch },
   { id: "tti" as Module, label: "TTI Platform", desc: "Topological Transition Index", icon: Hexagon },
-  { id: "datasources" as Module, label: "Data Sources", desc: "Public Databases", icon: Database },
   { id: "chat" as Module, label: "AI Agent", desc: "NL Search", icon: MessageSquare },
   { id: "report" as Module, label: "Analysis Report", desc: "Full Report", icon: FileText },
   { id: "article" as Module, label: "Article", desc: "Scientific Paper", icon: BookOpen },
