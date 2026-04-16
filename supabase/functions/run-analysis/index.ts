@@ -100,6 +100,38 @@ serve(async (req) => {
       .update({ status: "running", progress: 25, started_at: new Date().toISOString() })
       .eq("module", module);
 
+    // Fetch training datasets to enrich analysis context
+    let trainingEnrichment = "";
+    try {
+      const { data: trainingData } = await supabase
+        .from("datasets")
+        .select("name, source, category, description, data, record_count")
+        .eq("is_training", true)
+        .order("created_at", { ascending: false })
+        .limit(10);
+
+      if (trainingData && trainingData.length > 0) {
+        // Prioritize learning summaries
+        const learningSummary = trainingData.find((d: any) => d.category === "learning");
+        const otherData = trainingData.filter((d: any) => d.category !== "learning").slice(0, 5);
+
+        const parts: string[] = [];
+        if (learningSummary) {
+          parts.push(`ACCUMULATED KNOWLEDGE (auto-learned from ${learningSummary.data?.source_count || "multiple"} public datasets):\n${typeof learningSummary.data?.summary === "string" ? learningSummary.data.summary.slice(0, 3000) : ""}`);
+        }
+        if (otherData.length > 0) {
+          const snippets = otherData.map((ds: any) => {
+            const preview = JSON.stringify(Array.isArray(ds.data) ? ds.data.slice(0, 3) : ds.data, null, 1).slice(0, 500);
+            return `- ${ds.name} (${ds.source}/${ds.category}, ${ds.record_count} records): ${preview}`;
+          });
+          parts.push(`TRAINING DATA SAMPLES:\n${snippets.join("\n")}`);
+        }
+        trainingEnrichment = "\n\n" + parts.join("\n\n") + "\n\nIMPORTANT: Use the above accumulated knowledge and training data to ground your analysis in REAL data from public databases. Cross-reference findings with this data when applicable.";
+      }
+    } catch (err) {
+      console.error("Failed to fetch training data for analysis:", err);
+    }
+
     // Update progress to 50%
     await supabase
       .from("pipeline_runs")
