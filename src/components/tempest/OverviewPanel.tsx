@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
 import NeuroblastomaFigures from "./charts/NeuroblastomaFigures";
+import AnalysisSummaryFooter from "./AnalysisSummaryFooter";
+import { moduleSummaries } from "./moduleSummaries";
 import { Dna, Activity, FlaskConical, Shield, BarChart3, ArrowUpRight, TrendingUp, Download, RefreshCw, RotateCcw, FlaskRound } from "lucide-react";
 import SurvivalCurveChart from "./charts/SurvivalCurveChart";
 import ClonalDynamicsChart from "./charts/ClonalDynamicsChart";
@@ -230,6 +232,15 @@ const OverviewPanel = () => {
           )}
         </div>
       </motion.div>
+
+      {/* Analysis Summary Footer */}
+      <AnalysisSummaryFooter
+        title={moduleSummaries.overview.title}
+        objective={moduleSummaries.overview.objective}
+        accomplishments={moduleSummaries.overview.accomplishments}
+        significance={moduleSummaries.overview.significance}
+        nextStep={{ label: moduleSummaries.overview.nextLabel! }}
+      />
     </motion.div>
   );
 };

@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Database, Download, Search, Save, Loader2, Tag, Trash2, RefreshCw, Globe, FlaskConical } from "lucide-react";
+import AnalysisSummaryFooter from "./AnalysisSummaryFooter";
+import { moduleSummaries } from "./moduleSummaries";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -259,6 +261,15 @@ const DataSourcesPanel = () => {
           )}
         </div>
       )}
+
+      {/* Analysis Summary Footer */}
+      <AnalysisSummaryFooter
+        title={moduleSummaries.datasources.title}
+        objective={moduleSummaries.datasources.objective}
+        accomplishments={moduleSummaries.datasources.accomplishments}
+        significance={moduleSummaries.datasources.significance}
+        nextStep={{ label: moduleSummaries.datasources.nextLabel! }}
+      />
     </motion.div>
   );
 };
