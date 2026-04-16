@@ -26,16 +26,22 @@ interface SidebarProps {
 }
 
 const modules = [
+  // ── Getting Started ──
   { id: "home" as Module, label: "Home", icon: Home },
   { id: "datasources" as Module, label: "Data Sources", desc: "Upload & Public DB", icon: Database },
   { id: "overview" as Module, label: "Overview", desc: "Dashboard", icon: LayoutDashboard },
+  // ── Decomposition & Feature Extraction ──
   { id: "motf" as Module, label: "MOTF", desc: "Tucker Decomposition", icon: Dna },
+  // ── Survival & Clonal Architecture ──
   { id: "gbsc" as Module, label: "GBSC", desc: "Survival Analysis", icon: Activity },
   { id: "bctn" as Module, label: "BCTN", desc: "Clonal Dynamics", icon: FlaskConical },
+  // ── Immune & Risk Landscape ──
   { id: "cnis" as Module, label: "CNIS", desc: "Neoantigen Intel", icon: Shield },
   { id: "msrs" as Module, label: "MSRS", desc: "Risk Scoring", icon: BarChart3 },
+  // ── Predictive Modeling ──
   { id: "trajectory" as Module, label: "Trajectory", desc: "Bifurcation Prediction", icon: GitBranch },
   { id: "tti" as Module, label: "TTI Platform", desc: "Topological Transition Index", icon: Hexagon },
+  // ── Intelligence & Output ──
   { id: "chat" as Module, label: "AI Agent", desc: "NL Search", icon: MessageSquare },
   { id: "report" as Module, label: "Analysis Report", desc: "Full Report", icon: FileText },
   { id: "article" as Module, label: "Article", desc: "Scientific Paper", icon: BookOpen },
