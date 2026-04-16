@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import AnalysisSummaryFooter from "./AnalysisSummaryFooter";
+import { moduleSummaries } from "./moduleSummaries";
 import { GitBranch, Play, Loader2, Download, FileText, RefreshCw, RotateCcw, Info, Bot, X, ChevronDown, ChevronUp, Shield } from "lucide-react";
 import BifurcationChart from "./charts/BifurcationChart";
 import { downloadChartAsPng, downloadTableAsCsv, downloadHtmlReport } from "./utils/downloadUtils";
@@ -409,6 +411,15 @@ const TrajectoryPanel = () => {
           </div>
         </div>
       </div>
+
+      {/* Analysis Summary Footer */}
+      <AnalysisSummaryFooter
+        title={moduleSummaries.trajectory.title}
+        objective={moduleSummaries.trajectory.objective}
+        accomplishments={moduleSummaries.trajectory.accomplishments}
+        significance={moduleSummaries.trajectory.significance}
+        nextStep={{ label: moduleSummaries.trajectory.nextLabel! }}
+      />
     </motion.div>
   );
 };

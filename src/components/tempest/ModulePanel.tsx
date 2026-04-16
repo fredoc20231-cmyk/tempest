@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Module } from "./Sidebar";
+import AnalysisSummaryFooter from "./AnalysisSummaryFooter";
+import { moduleSummaries } from "./moduleSummaries";
 import type { CohortPayload } from "./ChatPanel";
 import SurvivalCurveChart from "./charts/SurvivalCurveChart";
 import ClonalDynamicsChart from "./charts/ClonalDynamicsChart";
@@ -425,6 +427,17 @@ const ModulePanel = ({ module, cohort }: Props) => {
           ))}
         </div>
       </div>
+
+      {/* Analysis Summary Footer */}
+      {moduleSummaries[module] && (
+        <AnalysisSummaryFooter
+          title={moduleSummaries[module].title}
+          objective={moduleSummaries[module].objective}
+          accomplishments={moduleSummaries[module].accomplishments}
+          significance={moduleSummaries[module].significance}
+          nextStep={moduleSummaries[module].nextLabel ? { label: moduleSummaries[module].nextLabel! } : undefined}
+        />
+      )}
     </motion.div>
   );
 };

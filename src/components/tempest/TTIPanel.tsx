@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import AnalysisSummaryFooter from "./AnalysisSummaryFooter";
+import { moduleSummaries } from "./moduleSummaries";
 import { motion, AnimatePresence } from "framer-motion";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -1384,6 +1386,15 @@ const TTIPanel = () => {
         <TabsContent value="comparison"><ComparisonTab /></TabsContent>
         <TabsContent value="math"><MathTab /></TabsContent>
       </Tabs>
+
+      {/* Analysis Summary Footer */}
+      <AnalysisSummaryFooter
+        title={moduleSummaries.tti.title}
+        objective={moduleSummaries.tti.objective}
+        accomplishments={moduleSummaries.tti.accomplishments}
+        significance={moduleSummaries.tti.significance}
+        nextStep={{ label: moduleSummaries.tti.nextLabel! }}
+      />
     </motion.div>
   );
 };
