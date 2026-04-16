@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Database, Download, Search, Save, Loader2, Tag, Trash2, RefreshCw, Globe, FlaskConical } from "lucide-react";
+import { Database, Download, Search, Save, Loader2, Tag, Trash2, RefreshCw, Globe, FlaskConical, Brain, Zap, BookOpen } from "lucide-react";
 import AnalysisSummaryFooter from "./AnalysisSummaryFooter";
 import { moduleSummaries } from "./moduleSummaries";
 import { supabase } from "@/integrations/supabase/client";
@@ -44,7 +44,9 @@ const DataSourcesPanel = () => {
   const [saveToDb, setSaveToDb] = useState(true);
   const [markTraining, setMarkTraining] = useState(false);
   const [previewData, setPreviewData] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<"fetch" | "saved">("fetch");
+  const [activeTab, setActiveTab] = useState<"fetch" | "saved" | "learn">("fetch");
+  const [learning, setLearning] = useState(false);
+  const [learnResult, setLearnResult] = useState<any>(null);
 
   const refreshDatasets = useCallback(async () => {
     setLoading(true);
@@ -75,6 +77,22 @@ const DataSourcesPanel = () => {
       toast.error(err.message || "Failed to fetch data");
     }
     setFetching(false);
+  };
+
+  const handleAutoLearn = async () => {
+    setLearning(true);
+    setLearnResult(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("auto-learn", { body: {} });
+      if (error) throw error;
+      setLearnResult(data);
+      await refreshDatasets();
+      toast.success(`Self-learning complete: ${data.fetched} new datasets ingested, ${data.total_training} total training sources`);
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || "Auto-learn failed");
+    }
+    setLearning(false);
   };
 
   const toggleTraining = async (id: string, current: boolean) => {
