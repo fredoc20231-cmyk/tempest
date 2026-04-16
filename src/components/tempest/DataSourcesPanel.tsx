@@ -127,7 +127,13 @@ const DataSourcesPanel = () => {
             onClick={() => setActiveTab("saved")}
             className={`px-4 py-2 text-xs font-mono rounded-md transition-colors ${activeTab === "saved" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}
           >
-            <Save className="w-3 h-3 inline mr-1" /> Saved Datasets ({datasets.length})
+            <Save className="w-3 h-3 inline mr-1" /> Saved ({datasets.length})
+          </button>
+          <button
+            onClick={() => setActiveTab("learn")}
+            className={`px-4 py-2 text-xs font-mono rounded-md transition-colors ${activeTab === "learn" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}
+          >
+            <Brain className="w-3 h-3 inline mr-1" /> Auto-Learn
           </button>
         </div>
       </div>
