@@ -152,7 +152,7 @@ serve(async (req) => {
         model: "google/gemini-3-flash-preview",
         messages: [
           { role: "system", content: "You are a biomedical data analysis engine. Return ONLY valid JSON, no markdown fences, no extra text." },
-          { role: "user", content: MODULE_PROMPTS[module] },
+          { role: "user", content: MODULE_PROMPTS[module] + trainingEnrichment },
         ],
         tools: [
           {
