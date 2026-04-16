@@ -286,6 +286,102 @@ const DataSourcesPanel = () => {
         </div>
       )}
 
+      {activeTab === "learn" && (
+        <div className="space-y-4">
+          <div className="module-card p-6 text-center space-y-4">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10">
+              <Brain className="w-8 h-8 text-primary" />
+            </div>
+            <h2 className="text-lg font-semibold text-foreground">Self-Learning Pipeline</h2>
+            <p className="text-sm text-muted-foreground max-w-lg mx-auto">
+              Automatically fetch data from all accessible public databases (TCGA, cBioPortal, UniProt, Ensembl),
+              synthesize knowledge, and continuously improve analytical judgment across all TEMPEST modules.
+            </p>
+            <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground font-mono">
+              <span className="flex items-center gap-1"><Zap className="w-3 h-3 text-chart-amber" /> 19 predefined queries</span>
+              <span className="flex items-center gap-1"><Database className="w-3 h-3 text-chart-cyan" /> 4 public sources</span>
+              <span className="flex items-center gap-1"><BookOpen className="w-3 h-3 text-chart-emerald" /> {datasets.filter(d => d.is_training).length} training datasets</span>
+            </div>
+            <button
+              onClick={handleAutoLearn}
+              disabled={learning}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50"
+            >
+              {learning ? <Loader2 className="w-5 h-5 animate-spin" /> : <Brain className="w-5 h-5" />}
+              {learning ? "Learning in progress..." : "Start Self-Learning"}
+            </button>
+          </div>
+
+          {learning && (
+            <div className="module-card p-4">
+              <div className="flex items-center gap-3">
+                <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">Crawling public databases...</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Fetching cancer genomics data, generating knowledge synthesis, and updating AI context. This may take 1-2 minutes.</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {learnResult && (
+            <div className="module-card p-4 space-y-3">
+              <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <Zap className="w-4 h-4 text-chart-amber" /> Learning Complete
+              </h3>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="bg-chart-cyan/5 border border-chart-cyan/20 rounded-md p-3 text-center">
+                  <p className="text-2xl font-bold text-chart-cyan">{learnResult.fetched || 0}</p>
+                  <p className="text-[10px] text-muted-foreground font-mono mt-1">New Datasets</p>
+                </div>
+                <div className="bg-chart-emerald/5 border border-chart-emerald/20 rounded-md p-3 text-center">
+                  <p className="text-2xl font-bold text-chart-emerald">{learnResult.total_training || 0}</p>
+                  <p className="text-[10px] text-muted-foreground font-mono mt-1">Total Training</p>
+                </div>
+                <div className="bg-chart-amber/5 border border-chart-amber/20 rounded-md p-3 text-center">
+                  <p className="text-2xl font-bold text-chart-amber">{learnResult.skipped || 0}</p>
+                  <p className="text-[10px] text-muted-foreground font-mono mt-1">Already Known</p>
+                </div>
+              </div>
+              {learnResult.summary && (
+                <div className="bg-background border border-border rounded-md p-3">
+                  <p className="text-[10px] font-mono text-muted-foreground uppercase mb-2">Knowledge Synthesis Preview</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-wrap">{learnResult.summary}</p>
+                </div>
+              )}
+              {learnResult.errors && learnResult.errors.length > 0 && (
+                <div className="bg-destructive/5 border border-destructive/20 rounded-md p-3">
+                  <p className="text-[10px] font-mono text-destructive uppercase mb-1">Partial Errors ({learnResult.errors.length})</p>
+                  {learnResult.errors.slice(0, 5).map((e: string, i: number) => (
+                    <p key={i} className="text-[10px] text-muted-foreground">{e}</p>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="module-card p-4">
+            <h3 className="text-xs font-mono text-muted-foreground uppercase mb-3">How Self-Learning Works</h3>
+            <div className="space-y-2">
+              {[
+                { step: "1", title: "Crawl", desc: "Fetches cancer genomics data from TCGA, cBioPortal, UniProt, and Ensembl with predefined cancer-relevant queries" },
+                { step: "2", title: "Ingest", desc: "Saves all fetched data to the database marked as training datasets, skipping duplicates" },
+                { step: "3", title: "Synthesize", desc: "AI analyzes all training data to extract cross-dataset patterns, biological insights, and clinical correlations" },
+                { step: "4", title: "Enrich", desc: "Knowledge synthesis is automatically injected into all analysis modules (MOTF, GBSC, BCTN, CNIS, MSRS, Trajectory) and the AI Agent" },
+              ].map(s => (
+                <div key={s.step} className="flex items-start gap-3">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center">{s.step}</span>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{s.title}</p>
+                    <p className="text-xs text-muted-foreground">{s.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Analysis Summary Footer */}
       <AnalysisSummaryFooter
         title={moduleSummaries.datasources.title}
