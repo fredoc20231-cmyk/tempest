@@ -188,7 +188,7 @@ export function TempestProvider({ children }: { children: ReactNode }) {
   }, [refreshPipeline]);
 
   return (
-    <TempestContext.Provider value={{ pipelineRuns, analysisResults, cohorts, activeCohort, setActiveCohort, aiContext, setAIContext, isLoading, refreshPipeline, refreshResults, refreshCohorts, saveCohort, resetPipeline }}>
+    <TempestContext.Provider value={{ pipelineRuns, analysisResults, cohorts, activeCohort, setActiveCohort, aiContext, setAIContext, isLoading, pipelineRunning, lastSynthesis, runFullPipeline, refreshPipeline, refreshResults, refreshCohorts, saveCohort, resetPipeline }}>
       {children}
     </TempestContext.Provider>
   );
