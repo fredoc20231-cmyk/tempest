@@ -63,6 +63,8 @@ export function TempestProvider({ children }: { children: ReactNode }) {
   const [activeCohort, setActiveCohort] = useState<Cohort | null>(null);
   const [aiContext, setAIContext] = useState<AIContext | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [pipelineRunning, setPipelineRunning] = useState(false);
+  const [lastSynthesis, setLastSynthesis] = useState<string | null>(null);
 
   const refreshPipeline = useCallback(async () => {
     const { data } = await supabase.from("pipeline_runs").select("*").order("module");
