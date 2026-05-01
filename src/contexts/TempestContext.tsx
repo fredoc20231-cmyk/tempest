@@ -104,6 +104,63 @@ export function TempestProvider({ children }: { children: ReactNode }) {
     }
   }, [pipelineRuns, refreshPipeline]);
 
+  const runFullPipeline = useCallback(
+    async (opts?: { scenario?: string; onModule?: (m: string, status: "start" | "done" | "error") => void }) => {
+      setPipelineRunning(true);
+      const sequence = ["motf", "gbsc", "bctn", "cnis", "msrs", "trajectory"];
+      // Compute a data signature from current datasets so AI varies its output
+      const { data: ds } = await supabase
+        .from("datasets")
+        .select("name, source, record_count, is_training, created_at")
+        .order("created_at", { ascending: false })
+        .limit(20);
+      const dataSignature = `n=${ds?.length || 0};training=${(ds || []).filter((d: any) => d.is_training).length};latest=${ds?.[0]?.created_at || "none"};hash=${(ds || []).map((d: any) => d.name).join(",").slice(0, 200)}`;
+
+      let ok = true;
+      for (const m of sequence) {
+        try {
+          opts?.onModule?.(m, "start");
+          const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/run-analysis`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            },
+            body: JSON.stringify({ module: m, scenario: opts?.scenario, dataSignature }),
+          });
+          if (!resp.ok) { ok = false; opts?.onModule?.(m, "error"); }
+          else { await refreshResults(m); opts?.onModule?.(m, "done"); }
+        } catch (e) {
+          console.error(`pipeline ${m} error`, e);
+          ok = false;
+          opts?.onModule?.(m, "error");
+        }
+      }
+
+      // Now ask AI Agent to synthesize and predict next phase
+      let synthesis: string | undefined;
+      try {
+        const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/synthesize-prediction`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ scenario: opts?.scenario }),
+        });
+        if (resp.ok) {
+          const j = await resp.json();
+          synthesis = j.interpretation;
+          if (synthesis) setLastSynthesis(synthesis);
+        }
+      } catch (e) { console.error("synthesis error", e); }
+
+      setPipelineRunning(false);
+      return { ok, synthesis };
+    },
+    [refreshResults]
+  );
+
   // Initial load
   useEffect(() => {
     const load = async () => {
