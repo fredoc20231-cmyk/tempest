@@ -166,7 +166,42 @@ const DataSourcesPanel = () => {
           >
             <Brain className="w-3 h-3 inline mr-1" /> Auto-Learn
           </button>
+          <button
+            onClick={() => setActiveTab("predict")}
+            className={`px-4 py-2 text-xs font-mono rounded-md transition-colors ${activeTab === "predict" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}
+          >
+            <Sparkles className="w-3 h-3 inline mr-1" /> Predict
+          </button>
         </div>
+      </div>
+
+      {/* Reactive pipeline control bar — applies to ALL tabs */}
+      <div className="module-card p-3 flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-3">
+          <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
+            <input type="checkbox" checked={autoRunPipeline} onChange={(e) => setAutoRunPipeline(e.target.checked)} className="accent-primary" />
+            <Activity className="w-3 h-3" /> Auto re-run pipeline when data changes
+          </label>
+          <div className="h-4 w-px bg-border" />
+          <div className="flex items-center gap-1 text-[10px] font-mono">
+            {["motf","gbsc","bctn","cnis","msrs","trajectory"].map((m) => {
+              const s = moduleStatus[m];
+              const cls = s === "done" ? "bg-chart-emerald/15 text-chart-emerald" :
+                          s === "start" ? "bg-primary/15 text-primary animate-pulse" :
+                          s === "error" ? "bg-destructive/15 text-destructive" :
+                          "bg-muted text-muted-foreground";
+              return <span key={m} className={`px-1.5 py-0.5 rounded ${cls}`}>{m}</span>;
+            })}
+          </div>
+        </div>
+        <button
+          onClick={() => runPipeline()}
+          disabled={pipelineRunning}
+          className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-xs font-medium hover:bg-primary/90 disabled:opacity-50"
+        >
+          {pipelineRunning ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
+          {pipelineRunning ? "Running…" : "Run Full Pipeline + Predict"}
+        </button>
       </div>
 
       {activeTab === "fetch" && (
