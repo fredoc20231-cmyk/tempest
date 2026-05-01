@@ -47,9 +47,14 @@ const DataSourcesPanel = () => {
   const [saveToDb, setSaveToDb] = useState(true);
   const [markTraining, setMarkTraining] = useState(false);
   const [previewData, setPreviewData] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<"fetch" | "saved" | "learn">("fetch");
+  const [activeTab, setActiveTab] = useState<"fetch" | "saved" | "learn" | "predict">("fetch");
   const [learning, setLearning] = useState(false);
   const [learnResult, setLearnResult] = useState<any>(null);
+  const [autoRunPipeline, setAutoRunPipeline] = useState(true);
+  const [scenario, setScenario] = useState("");
+  const [moduleStatus, setModuleStatus] = useState<Record<string, "idle" | "start" | "done" | "error">>({});
+  const { runFullPipeline, pipelineRunning, lastSynthesis } = useTempest();
+  const debounceRef = useRef<number | null>(null);
 
   const refreshDatasets = useCallback(async () => {
     setLoading(true);
