@@ -448,6 +448,61 @@ const DataSourcesPanel = () => {
         </div>
       )}
 
+      {activeTab === "predict" && (
+        <div className="space-y-4">
+          <div className="module-card p-4 space-y-3">
+            <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-primary" /> Simulate a Case & Predict Next Phase
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              Describe ANY cancer case (cancer type, stage, mutations, treatment, time since diagnosis). The platform will adapt its temporal-bifurcation framework to your scenario, re-run all six analytical modules, and the AI Agent will predict the next likely phase of evolution.
+            </p>
+            <textarea
+              value={scenario}
+              onChange={(e) => setScenario(e.target.value)}
+              placeholder={"e.g. 58-y-old female, neuroblastoma stage 4, MYCN-amplified, 6 weeks post-cisplatin, RNA-seq shows ADRN signature dropping, MES markers (PRRX1, VIM) rising. Predict next phase."}
+              rows={4}
+              className="w-full px-3 py-2 bg-background border border-border rounded-md text-sm font-mono text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={() => runPipeline(scenario)}
+                disabled={pipelineRunning || !scenario.trim()}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md text-xs font-medium hover:bg-primary/90 disabled:opacity-50"
+              >
+                {pipelineRunning ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+                Simulate & Predict
+              </button>
+              <button
+                onClick={() => { setScenario(""); runPipeline(); }}
+                disabled={pipelineRunning}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-md text-xs font-medium hover:bg-secondary/80 disabled:opacity-50"
+              >
+                <Play className="w-3.5 h-3.5" /> Run on Current Data
+              </button>
+            </div>
+          </div>
+
+          {lastSynthesis ? (
+            <div className="module-card p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                  <Brain className="w-4 h-4 text-primary" /> AI Agent Synthesis & Phase Prediction
+                </h3>
+                <span className="text-[10px] text-muted-foreground font-mono">cross-module · live</span>
+              </div>
+              <div className="prose prose-sm max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-li:text-foreground prose-td:text-foreground prose-th:text-foreground max-h-[600px] overflow-y-auto">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{lastSynthesis}</ReactMarkdown>
+              </div>
+            </div>
+          ) : (
+            <div className="module-card p-6 text-center text-sm text-muted-foreground">
+              No prediction yet. Add data, run a pipeline, or describe a scenario above to generate the AI Agent's next-phase prediction.
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Analysis Summary Footer */}
       <AnalysisSummaryFooter
         title={moduleSummaries.datasources.title}
