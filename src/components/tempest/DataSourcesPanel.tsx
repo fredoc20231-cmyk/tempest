@@ -97,6 +97,7 @@ const DataSourcesPanel = () => {
       setLearnResult(data);
       await refreshDatasets();
       toast.success(`Self-learning complete: ${data.fetched} new datasets ingested, ${data.total_training} total training sources`);
+      triggerAutoPipeline();
     } catch (err: any) {
       console.error(err);
       toast.error(err.message || "Auto-learn failed");
