@@ -1,9 +1,12 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
-import { Database, Download, Search, Save, Loader2, Tag, Trash2, RefreshCw, Globe, FlaskConical, Brain, Zap, BookOpen } from "lucide-react";
+import { Database, Download, Search, Save, Loader2, Tag, Trash2, RefreshCw, Globe, FlaskConical, Brain, Zap, BookOpen, Play, Sparkles, Activity } from "lucide-react";
 import AnalysisSummaryFooter from "./AnalysisSummaryFooter";
 import { moduleSummaries } from "./moduleSummaries";
 import { supabase } from "@/integrations/supabase/client";
+import { useTempest } from "@/contexts/TempestContext";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { toast } from "sonner";
 
 interface Dataset {
