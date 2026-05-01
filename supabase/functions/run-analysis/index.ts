@@ -82,7 +82,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { module } = await req.json();
+    const { module, scenario, dataSignature } = await req.json();
     if (!module || !MODULE_PROMPTS[module]) {
       return new Response(JSON.stringify({ error: "Invalid module" }), {
         status: 400,
