@@ -44,6 +44,9 @@ interface TempestState {
   aiContext: AIContext | null;
   setAIContext: (ctx: AIContext | null) => void;
   isLoading: boolean;
+  pipelineRunning: boolean;
+  lastSynthesis: string | null;
+  runFullPipeline: (opts?: { scenario?: string; onModule?: (m: string, status: "start" | "done" | "error") => void }) => Promise<{ ok: boolean; synthesis?: string }>;
   refreshPipeline: () => Promise<void>;
   refreshResults: (module: string) => Promise<void>;
   refreshCohorts: () => Promise<void>;
