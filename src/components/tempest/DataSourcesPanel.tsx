@@ -113,6 +113,27 @@ const DataSourcesPanel = () => {
     await supabase.from("datasets").delete().eq("id", id);
     await refreshDatasets();
     toast.success("Dataset deleted");
+    triggerAutoPipeline();
+  };
+
+  const triggerAutoPipeline = useCallback((scenarioOverride?: string) => {
+    if (!autoRunPipeline && !scenarioOverride) return;
+    if (debounceRef.current) window.clearTimeout(debounceRef.current);
+    debounceRef.current = window.setTimeout(() => {
+      runPipeline(scenarioOverride);
+    }, 800);
+  }, [autoRunPipeline]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const runPipeline = async (scenarioOverride?: string) => {
+    setModuleStatus({});
+    toast.info("Running full analysis pipeline → AI prediction…");
+    const result = await runFullPipeline({
+      scenario: scenarioOverride || scenario || undefined,
+      onModule: (m, status) => setModuleStatus((s) => ({ ...s, [m]: status })),
+    });
+    if (result.ok) toast.success("Pipeline complete — AI synthesis ready in Predict tab");
+    else toast.error("Pipeline finished with errors");
+    setActiveTab("predict");
   };
 
   return (
