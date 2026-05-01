@@ -44,6 +44,9 @@ interface TempestState {
   aiContext: AIContext | null;
   setAIContext: (ctx: AIContext | null) => void;
   isLoading: boolean;
+  pipelineRunning: boolean;
+  lastSynthesis: string | null;
+  runFullPipeline: (opts?: { scenario?: string; onModule?: (m: string, status: "start" | "done" | "error") => void }) => Promise<{ ok: boolean; synthesis?: string }>;
   refreshPipeline: () => Promise<void>;
   refreshResults: (module: string) => Promise<void>;
   refreshCohorts: () => Promise<void>;
@@ -60,6 +63,8 @@ export function TempestProvider({ children }: { children: ReactNode }) {
   const [activeCohort, setActiveCohort] = useState<Cohort | null>(null);
   const [aiContext, setAIContext] = useState<AIContext | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [pipelineRunning, setPipelineRunning] = useState(false);
+  const [lastSynthesis, setLastSynthesis] = useState<string | null>(null);
 
   const refreshPipeline = useCallback(async () => {
     const { data } = await supabase.from("pipeline_runs").select("*").order("module");
@@ -99,6 +104,63 @@ export function TempestProvider({ children }: { children: ReactNode }) {
     }
   }, [pipelineRuns, refreshPipeline]);
 
+  const runFullPipeline = useCallback(
+    async (opts?: { scenario?: string; onModule?: (m: string, status: "start" | "done" | "error") => void }) => {
+      setPipelineRunning(true);
+      const sequence = ["motf", "gbsc", "bctn", "cnis", "msrs", "trajectory"];
+      // Compute a data signature from current datasets so AI varies its output
+      const { data: ds } = await supabase
+        .from("datasets")
+        .select("name, source, record_count, is_training, created_at")
+        .order("created_at", { ascending: false })
+        .limit(20);
+      const dataSignature = `n=${ds?.length || 0};training=${(ds || []).filter((d: any) => d.is_training).length};latest=${ds?.[0]?.created_at || "none"};hash=${(ds || []).map((d: any) => d.name).join(",").slice(0, 200)}`;
+
+      let ok = true;
+      for (const m of sequence) {
+        try {
+          opts?.onModule?.(m, "start");
+          const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/run-analysis`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            },
+            body: JSON.stringify({ module: m, scenario: opts?.scenario, dataSignature }),
+          });
+          if (!resp.ok) { ok = false; opts?.onModule?.(m, "error"); }
+          else { await refreshResults(m); opts?.onModule?.(m, "done"); }
+        } catch (e) {
+          console.error(`pipeline ${m} error`, e);
+          ok = false;
+          opts?.onModule?.(m, "error");
+        }
+      }
+
+      // Now ask AI Agent to synthesize and predict next phase
+      let synthesis: string | undefined;
+      try {
+        const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/synthesize-prediction`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ scenario: opts?.scenario }),
+        });
+        if (resp.ok) {
+          const j = await resp.json();
+          synthesis = j.interpretation;
+          if (synthesis) setLastSynthesis(synthesis);
+        }
+      } catch (e) { console.error("synthesis error", e); }
+
+      setPipelineRunning(false);
+      return { ok, synthesis };
+    },
+    [refreshResults]
+  );
+
   // Initial load
   useEffect(() => {
     const load = async () => {
@@ -126,7 +188,7 @@ export function TempestProvider({ children }: { children: ReactNode }) {
   }, [refreshPipeline]);
 
   return (
-    <TempestContext.Provider value={{ pipelineRuns, analysisResults, cohorts, activeCohort, setActiveCohort, aiContext, setAIContext, isLoading, refreshPipeline, refreshResults, refreshCohorts, saveCohort, resetPipeline }}>
+    <TempestContext.Provider value={{ pipelineRuns, analysisResults, cohorts, activeCohort, setActiveCohort, aiContext, setAIContext, isLoading, pipelineRunning, lastSynthesis, runFullPipeline, refreshPipeline, refreshResults, refreshCohorts, saveCohort, resetPipeline }}>
       {children}
     </TempestContext.Provider>
   );

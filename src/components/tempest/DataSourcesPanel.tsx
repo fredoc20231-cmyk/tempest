@@ -1,9 +1,12 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
-import { Database, Download, Search, Save, Loader2, Tag, Trash2, RefreshCw, Globe, FlaskConical, Brain, Zap, BookOpen } from "lucide-react";
+import { Database, Download, Search, Save, Loader2, Tag, Trash2, RefreshCw, Globe, FlaskConical, Brain, Zap, BookOpen, Play, Sparkles, Activity } from "lucide-react";
 import AnalysisSummaryFooter from "./AnalysisSummaryFooter";
 import { moduleSummaries } from "./moduleSummaries";
 import { supabase } from "@/integrations/supabase/client";
+import { useTempest } from "@/contexts/TempestContext";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { toast } from "sonner";
 
 interface Dataset {
@@ -44,9 +47,14 @@ const DataSourcesPanel = () => {
   const [saveToDb, setSaveToDb] = useState(true);
   const [markTraining, setMarkTraining] = useState(false);
   const [previewData, setPreviewData] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<"fetch" | "saved" | "learn">("fetch");
+  const [activeTab, setActiveTab] = useState<"fetch" | "saved" | "learn" | "predict">("fetch");
   const [learning, setLearning] = useState(false);
   const [learnResult, setLearnResult] = useState<any>(null);
+  const [autoRunPipeline, setAutoRunPipeline] = useState(true);
+  const [scenario, setScenario] = useState("");
+  const [moduleStatus, setModuleStatus] = useState<Record<string, "idle" | "start" | "done" | "error">>({});
+  const { runFullPipeline, pipelineRunning, lastSynthesis } = useTempest();
+  const debounceRef = useRef<number | null>(null);
 
   const refreshDatasets = useCallback(async () => {
     setLoading(true);
@@ -72,6 +80,7 @@ const DataSourcesPanel = () => {
       setPreviewData(data);
       if (saveToDb) await refreshDatasets();
       toast.success(`Fetched ${data.record_count} records from ${data.source}`);
+      if (saveToDb) triggerAutoPipeline();
     } catch (err: any) {
       console.error(err);
       toast.error(err.message || "Failed to fetch data");
@@ -88,6 +97,7 @@ const DataSourcesPanel = () => {
       setLearnResult(data);
       await refreshDatasets();
       toast.success(`Self-learning complete: ${data.fetched} new datasets ingested, ${data.total_training} total training sources`);
+      triggerAutoPipeline();
     } catch (err: any) {
       console.error(err);
       toast.error(err.message || "Auto-learn failed");
@@ -105,6 +115,27 @@ const DataSourcesPanel = () => {
     await supabase.from("datasets").delete().eq("id", id);
     await refreshDatasets();
     toast.success("Dataset deleted");
+    triggerAutoPipeline();
+  };
+
+  const triggerAutoPipeline = useCallback((scenarioOverride?: string) => {
+    if (!autoRunPipeline && !scenarioOverride) return;
+    if (debounceRef.current) window.clearTimeout(debounceRef.current);
+    debounceRef.current = window.setTimeout(() => {
+      runPipeline(scenarioOverride);
+    }, 800);
+  }, [autoRunPipeline]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const runPipeline = async (scenarioOverride?: string) => {
+    setModuleStatus({});
+    toast.info("Running full analysis pipeline → AI prediction…");
+    const result = await runFullPipeline({
+      scenario: scenarioOverride || scenario || undefined,
+      onModule: (m, status) => setModuleStatus((s) => ({ ...s, [m]: status })),
+    });
+    if (result.ok) toast.success("Pipeline complete — AI synthesis ready in Predict tab");
+    else toast.error("Pipeline finished with errors");
+    setActiveTab("predict");
   };
 
   return (
@@ -135,7 +166,42 @@ const DataSourcesPanel = () => {
           >
             <Brain className="w-3 h-3 inline mr-1" /> Auto-Learn
           </button>
+          <button
+            onClick={() => setActiveTab("predict")}
+            className={`px-4 py-2 text-xs font-mono rounded-md transition-colors ${activeTab === "predict" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}
+          >
+            <Sparkles className="w-3 h-3 inline mr-1" /> Predict
+          </button>
         </div>
+      </div>
+
+      {/* Reactive pipeline control bar — applies to ALL tabs */}
+      <div className="module-card p-3 flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-3">
+          <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
+            <input type="checkbox" checked={autoRunPipeline} onChange={(e) => setAutoRunPipeline(e.target.checked)} className="accent-primary" />
+            <Activity className="w-3 h-3" /> Auto re-run pipeline when data changes
+          </label>
+          <div className="h-4 w-px bg-border" />
+          <div className="flex items-center gap-1 text-[10px] font-mono">
+            {["motf","gbsc","bctn","cnis","msrs","trajectory"].map((m) => {
+              const s = moduleStatus[m];
+              const cls = s === "done" ? "bg-chart-emerald/15 text-chart-emerald" :
+                          s === "start" ? "bg-primary/15 text-primary animate-pulse" :
+                          s === "error" ? "bg-destructive/15 text-destructive" :
+                          "bg-muted text-muted-foreground";
+              return <span key={m} className={`px-1.5 py-0.5 rounded ${cls}`}>{m}</span>;
+            })}
+          </div>
+        </div>
+        <button
+          onClick={() => runPipeline()}
+          disabled={pipelineRunning}
+          className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-xs font-medium hover:bg-primary/90 disabled:opacity-50"
+        >
+          {pipelineRunning ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
+          {pipelineRunning ? "Running…" : "Run Full Pipeline + Predict"}
+        </button>
       </div>
 
       {activeTab === "fetch" && (
@@ -379,6 +445,61 @@ const DataSourcesPanel = () => {
               ))}
             </div>
           </div>
+        </div>
+      )}
+
+      {activeTab === "predict" && (
+        <div className="space-y-4">
+          <div className="module-card p-4 space-y-3">
+            <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-primary" /> Simulate a Case & Predict Next Phase
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              Describe ANY cancer case (cancer type, stage, mutations, treatment, time since diagnosis). The platform will adapt its temporal-bifurcation framework to your scenario, re-run all six analytical modules, and the AI Agent will predict the next likely phase of evolution.
+            </p>
+            <textarea
+              value={scenario}
+              onChange={(e) => setScenario(e.target.value)}
+              placeholder={"e.g. 58-y-old female, neuroblastoma stage 4, MYCN-amplified, 6 weeks post-cisplatin, RNA-seq shows ADRN signature dropping, MES markers (PRRX1, VIM) rising. Predict next phase."}
+              rows={4}
+              className="w-full px-3 py-2 bg-background border border-border rounded-md text-sm font-mono text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={() => runPipeline(scenario)}
+                disabled={pipelineRunning || !scenario.trim()}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md text-xs font-medium hover:bg-primary/90 disabled:opacity-50"
+              >
+                {pipelineRunning ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+                Simulate & Predict
+              </button>
+              <button
+                onClick={() => { setScenario(""); runPipeline(); }}
+                disabled={pipelineRunning}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-md text-xs font-medium hover:bg-secondary/80 disabled:opacity-50"
+              >
+                <Play className="w-3.5 h-3.5" /> Run on Current Data
+              </button>
+            </div>
+          </div>
+
+          {lastSynthesis ? (
+            <div className="module-card p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                  <Brain className="w-4 h-4 text-primary" /> AI Agent Synthesis & Phase Prediction
+                </h3>
+                <span className="text-[10px] text-muted-foreground font-mono">cross-module · live</span>
+              </div>
+              <div className="prose prose-sm max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-li:text-foreground prose-td:text-foreground prose-th:text-foreground max-h-[600px] overflow-y-auto">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{lastSynthesis}</ReactMarkdown>
+              </div>
+            </div>
+          ) : (
+            <div className="module-card p-6 text-center text-sm text-muted-foreground">
+              No prediction yet. Add data, run a pipeline, or describe a scenario above to generate the AI Agent's next-phase prediction.
+            </div>
+          )}
         </div>
       )}
 

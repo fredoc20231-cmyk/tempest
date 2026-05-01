@@ -82,7 +82,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { module } = await req.json();
+    const { module, scenario, dataSignature } = await req.json();
     if (!module || !MODULE_PROMPTS[module]) {
       return new Response(JSON.stringify({ error: "Invalid module" }), {
         status: 400,
@@ -152,7 +152,9 @@ serve(async (req) => {
         model: "google/gemini-3-flash-preview",
         messages: [
           { role: "system", content: "You are a biomedical data analysis engine. Return ONLY valid JSON, no markdown fences, no extra text." },
-          { role: "user", content: MODULE_PROMPTS[module] + trainingEnrichment },
+          { role: "user", content: MODULE_PROMPTS[module] + trainingEnrichment +
+            (scenario ? `\n\nUSER SCENARIO OVERRIDE — Apply the framework to this case and adapt all metrics/narrative accordingly:\n${scenario}\n\nIf the scenario describes a non-HGSOC cancer (e.g., neuroblastoma, melanoma, glioblastoma, breast, pancreatic), translate the temporal staging and biological events to that disease while preserving the analytical framework. Predict the next likely phase of evolution.` : "") +
+            (dataSignature ? `\n\nCURRENT DATA STATE SIGNATURE (use this to keep results consistent with the active dataset and to vary metrics when the data state changes): ${dataSignature}` : "") },
         ],
         tools: [
           {
