@@ -80,6 +80,7 @@ const DataSourcesPanel = () => {
       setPreviewData(data);
       if (saveToDb) await refreshDatasets();
       toast.success(`Fetched ${data.record_count} records from ${data.source}`);
+      if (saveToDb) triggerAutoPipeline();
     } catch (err: any) {
       console.error(err);
       toast.error(err.message || "Failed to fetch data");
