@@ -25,26 +25,53 @@ interface SidebarProps {
   onNavigate: (module: Module) => void;
 }
 
-const modules = [
-  // ── Getting Started ──
-  { id: "home" as Module, label: "Home", icon: Home },
-  { id: "datasources" as Module, label: "Data Sources", desc: "Upload & Public DB", icon: Database },
-  { id: "overview" as Module, label: "Overview", desc: "Dashboard", icon: LayoutDashboard },
-  // ── Decomposition & Feature Extraction ──
-  { id: "motf" as Module, label: "MOTF", desc: "Tucker Decomposition", icon: Dna },
-  // ── Survival & Clonal Architecture ──
-  { id: "gbsc" as Module, label: "GBSC", desc: "Survival Analysis", icon: Activity },
-  { id: "bctn" as Module, label: "BCTN", desc: "Clonal Dynamics", icon: FlaskConical },
-  // ── Immune & Risk Landscape ──
-  { id: "cnis" as Module, label: "CNIS", desc: "Neoantigen Intel", icon: Shield },
-  { id: "msrs" as Module, label: "MSRS", desc: "Risk Scoring", icon: BarChart3 },
-  // ── Predictive Modeling ──
-  { id: "trajectory" as Module, label: "Trajectory", desc: "Bifurcation Prediction", icon: GitBranch },
-  { id: "tti" as Module, label: "TTI Platform", desc: "Topological Transition Index", icon: Hexagon },
-  // ── Intelligence & Output ──
-  { id: "chat" as Module, label: "AI Agent", desc: "NL Search", icon: MessageSquare },
-  { id: "report" as Module, label: "Analysis Report", desc: "Full Report", icon: FileText },
-  { id: "article" as Module, label: "Article", desc: "Scientific Paper", icon: BookOpen },
+type ModuleItem = { id: Module; label: string; desc?: string; icon: typeof Home; step?: number };
+type Section = { section: string; items: ModuleItem[] };
+
+const sections: Section[] = [
+  {
+    section: "1 · Getting Started",
+    items: [
+      { id: "home", label: "Home", icon: Home },
+      { id: "datasources", label: "Data Sources", desc: "Upload & Public DB", icon: Database, step: 1 },
+      { id: "overview", label: "Overview", desc: "Dashboard", icon: LayoutDashboard, step: 2 },
+    ],
+  },
+  {
+    section: "2 · Decomposition",
+    items: [
+      { id: "motf", label: "MOTF", desc: "Tucker Decomposition", icon: Dna, step: 3 },
+    ],
+  },
+  {
+    section: "3 · Survival & Clonal",
+    items: [
+      { id: "gbsc", label: "GBSC", desc: "Survival Analysis", icon: Activity, step: 4 },
+      { id: "bctn", label: "BCTN", desc: "Clonal Dynamics", icon: FlaskConical, step: 5 },
+    ],
+  },
+  {
+    section: "4 · Immune & Risk",
+    items: [
+      { id: "cnis", label: "CNIS", desc: "Neoantigen Intel", icon: Shield, step: 6 },
+      { id: "msrs", label: "MSRS", desc: "Risk Scoring", icon: BarChart3, step: 7 },
+    ],
+  },
+  {
+    section: "5 · Predictive Modeling",
+    items: [
+      { id: "trajectory", label: "Trajectory", desc: "Bifurcation Prediction", icon: GitBranch, step: 8 },
+      { id: "tti", label: "TTI Platform", desc: "Topological Transition Index", icon: Hexagon, step: 9 },
+    ],
+  },
+  {
+    section: "6 · Intelligence & Output",
+    items: [
+      { id: "chat", label: "AI Agent", desc: "NL Search", icon: MessageSquare, step: 10 },
+      { id: "report", label: "Analysis Report", desc: "Full Report", icon: FileText, step: 11 },
+      { id: "article", label: "Article", desc: "Scientific Paper", icon: BookOpen, step: 12 },
+    ],
+  },
 ];
 
 const Sidebar = ({ active, onNavigate }: SidebarProps) => {
