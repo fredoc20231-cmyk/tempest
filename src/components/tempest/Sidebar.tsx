@@ -99,35 +99,51 @@ const Sidebar = ({ active, onNavigate }: SidebarProps) => {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 py-4 px-2 space-y-1 overflow-hidden">
-        {modules.map((mod) => {
-          const isActive = active === mod.id;
-          return (
-            <button
-              key={mod.id}
-              onClick={() => onNavigate(mod.id)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-left transition-all duration-300 ease-in-out group relative ${
-                isActive
-                  ? "bg-primary/15 text-primary shadow-sm"
-                  : "text-sidebar-foreground hover:bg-primary/10 hover:text-primary hover:translate-x-1 hover:shadow-sm"
-              }`}
-            >
-              {isActive && (
-                <motion.div
-                  layoutId="sidebar-indicator"
-                  className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-primary rounded-r"
-                />
-              )}
-              <mod.icon className={`w-4 h-4 flex-shrink-0 transition-all duration-300 ${isActive ? "text-primary" : "text-muted-foreground group-hover:text-primary group-hover:scale-110"}`} />
-              {!collapsed && (
-                <div className="overflow-hidden">
-                  <span className="text-sm font-medium block">{mod.label}</span>
-                  {mod.desc && <span className="text-[10px] text-muted-foreground block transition-colors duration-300 group-hover:text-primary/60">{mod.desc}</span>}
-                </div>
-              )}
-            </button>
-          );
-        })}
+      <nav className="flex-1 py-3 px-2 space-y-3 overflow-y-auto">
+        {sections.map((sec) => (
+          <div key={sec.section} className="space-y-1">
+            {!collapsed && (
+              <div className="px-3 pt-1 pb-1 text-[9px] font-mono uppercase tracking-wider text-muted-foreground/70">
+                {sec.section}
+              </div>
+            )}
+            {sec.items.map((mod) => {
+              const isActive = active === mod.id;
+              return (
+                <button
+                  key={mod.id}
+                  onClick={() => onNavigate(mod.id)}
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-left transition-all duration-300 ease-in-out group relative ${
+                    isActive
+                      ? "bg-primary/15 text-primary shadow-sm"
+                      : "text-sidebar-foreground hover:bg-primary/10 hover:text-primary hover:translate-x-1 hover:shadow-sm"
+                  }`}
+                >
+                  {isActive && (
+                    <motion.div
+                      layoutId="sidebar-indicator"
+                      className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-primary rounded-r"
+                    />
+                  )}
+                  <mod.icon className={`w-4 h-4 flex-shrink-0 transition-all duration-300 ${isActive ? "text-primary" : "text-muted-foreground group-hover:text-primary group-hover:scale-110"}`} />
+                  {!collapsed && (
+                    <div className="overflow-hidden flex-1 flex items-center justify-between gap-2">
+                      <div className="overflow-hidden">
+                        <span className="text-sm font-medium block">{mod.label}</span>
+                        {mod.desc && <span className="text-[10px] text-muted-foreground block transition-colors duration-300 group-hover:text-primary/60">{mod.desc}</span>}
+                      </div>
+                      {mod.step !== undefined && (
+                        <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded ${isActive ? "bg-primary/20 text-primary" : "bg-muted/40 text-muted-foreground"}`}>
+                          {String(mod.step).padStart(2, "0")}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        ))}
       </nav>
 
       {/* Collapse toggle */}
