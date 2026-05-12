@@ -25,26 +25,53 @@ interface SidebarProps {
   onNavigate: (module: Module) => void;
 }
 
-const modules = [
-  // ── Getting Started ──
-  { id: "home" as Module, label: "Home", icon: Home },
-  { id: "datasources" as Module, label: "Data Sources", desc: "Upload & Public DB", icon: Database },
-  { id: "overview" as Module, label: "Overview", desc: "Dashboard", icon: LayoutDashboard },
-  // ── Decomposition & Feature Extraction ──
-  { id: "motf" as Module, label: "MOTF", desc: "Tucker Decomposition", icon: Dna },
-  // ── Survival & Clonal Architecture ──
-  { id: "gbsc" as Module, label: "GBSC", desc: "Survival Analysis", icon: Activity },
-  { id: "bctn" as Module, label: "BCTN", desc: "Clonal Dynamics", icon: FlaskConical },
-  // ── Immune & Risk Landscape ──
-  { id: "cnis" as Module, label: "CNIS", desc: "Neoantigen Intel", icon: Shield },
-  { id: "msrs" as Module, label: "MSRS", desc: "Risk Scoring", icon: BarChart3 },
-  // ── Predictive Modeling ──
-  { id: "trajectory" as Module, label: "Trajectory", desc: "Bifurcation Prediction", icon: GitBranch },
-  { id: "tti" as Module, label: "TTI Platform", desc: "Topological Transition Index", icon: Hexagon },
-  // ── Intelligence & Output ──
-  { id: "chat" as Module, label: "AI Agent", desc: "NL Search", icon: MessageSquare },
-  { id: "report" as Module, label: "Analysis Report", desc: "Full Report", icon: FileText },
-  { id: "article" as Module, label: "Article", desc: "Scientific Paper", icon: BookOpen },
+type ModuleItem = { id: Module; label: string; desc?: string; icon: typeof Home; step?: number };
+type Section = { section: string; items: ModuleItem[] };
+
+const sections: Section[] = [
+  {
+    section: "1 · Getting Started",
+    items: [
+      { id: "home", label: "Home", icon: Home },
+      { id: "datasources", label: "Data Sources", desc: "Upload & Public DB", icon: Database, step: 1 },
+      { id: "overview", label: "Overview", desc: "Dashboard", icon: LayoutDashboard, step: 2 },
+    ],
+  },
+  {
+    section: "2 · Decomposition",
+    items: [
+      { id: "motf", label: "MOTF", desc: "Tucker Decomposition", icon: Dna, step: 3 },
+    ],
+  },
+  {
+    section: "3 · Survival & Clonal",
+    items: [
+      { id: "gbsc", label: "GBSC", desc: "Survival Analysis", icon: Activity, step: 4 },
+      { id: "bctn", label: "BCTN", desc: "Clonal Dynamics", icon: FlaskConical, step: 5 },
+    ],
+  },
+  {
+    section: "4 · Immune & Risk",
+    items: [
+      { id: "cnis", label: "CNIS", desc: "Neoantigen Intel", icon: Shield, step: 6 },
+      { id: "msrs", label: "MSRS", desc: "Risk Scoring", icon: BarChart3, step: 7 },
+    ],
+  },
+  {
+    section: "5 · Predictive Modeling",
+    items: [
+      { id: "trajectory", label: "Trajectory", desc: "Bifurcation Prediction", icon: GitBranch, step: 8 },
+      { id: "tti", label: "TTI Platform", desc: "Topological Transition Index", icon: Hexagon, step: 9 },
+    ],
+  },
+  {
+    section: "6 · Intelligence & Output",
+    items: [
+      { id: "chat", label: "AI Agent", desc: "NL Search", icon: MessageSquare, step: 10 },
+      { id: "report", label: "Analysis Report", desc: "Full Report", icon: FileText, step: 11 },
+      { id: "article", label: "Article", desc: "Scientific Paper", icon: BookOpen, step: 12 },
+    ],
+  },
 ];
 
 const Sidebar = ({ active, onNavigate }: SidebarProps) => {
@@ -72,35 +99,51 @@ const Sidebar = ({ active, onNavigate }: SidebarProps) => {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 py-4 px-2 space-y-1 overflow-hidden">
-        {modules.map((mod) => {
-          const isActive = active === mod.id;
-          return (
-            <button
-              key={mod.id}
-              onClick={() => onNavigate(mod.id)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-left transition-all duration-300 ease-in-out group relative ${
-                isActive
-                  ? "bg-primary/15 text-primary shadow-sm"
-                  : "text-sidebar-foreground hover:bg-primary/10 hover:text-primary hover:translate-x-1 hover:shadow-sm"
-              }`}
-            >
-              {isActive && (
-                <motion.div
-                  layoutId="sidebar-indicator"
-                  className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-primary rounded-r"
-                />
-              )}
-              <mod.icon className={`w-4 h-4 flex-shrink-0 transition-all duration-300 ${isActive ? "text-primary" : "text-muted-foreground group-hover:text-primary group-hover:scale-110"}`} />
-              {!collapsed && (
-                <div className="overflow-hidden">
-                  <span className="text-sm font-medium block">{mod.label}</span>
-                  {mod.desc && <span className="text-[10px] text-muted-foreground block transition-colors duration-300 group-hover:text-primary/60">{mod.desc}</span>}
-                </div>
-              )}
-            </button>
-          );
-        })}
+      <nav className="flex-1 py-3 px-2 space-y-3 overflow-y-auto">
+        {sections.map((sec) => (
+          <div key={sec.section} className="space-y-1">
+            {!collapsed && (
+              <div className="px-3 pt-1 pb-1 text-[9px] font-mono uppercase tracking-wider text-muted-foreground/70">
+                {sec.section}
+              </div>
+            )}
+            {sec.items.map((mod) => {
+              const isActive = active === mod.id;
+              return (
+                <button
+                  key={mod.id}
+                  onClick={() => onNavigate(mod.id)}
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-left transition-all duration-300 ease-in-out group relative ${
+                    isActive
+                      ? "bg-primary/15 text-primary shadow-sm"
+                      : "text-sidebar-foreground hover:bg-primary/10 hover:text-primary hover:translate-x-1 hover:shadow-sm"
+                  }`}
+                >
+                  {isActive && (
+                    <motion.div
+                      layoutId="sidebar-indicator"
+                      className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-primary rounded-r"
+                    />
+                  )}
+                  <mod.icon className={`w-4 h-4 flex-shrink-0 transition-all duration-300 ${isActive ? "text-primary" : "text-muted-foreground group-hover:text-primary group-hover:scale-110"}`} />
+                  {!collapsed && (
+                    <div className="overflow-hidden flex-1 flex items-center justify-between gap-2">
+                      <div className="overflow-hidden">
+                        <span className="text-sm font-medium block">{mod.label}</span>
+                        {mod.desc && <span className="text-[10px] text-muted-foreground block transition-colors duration-300 group-hover:text-primary/60">{mod.desc}</span>}
+                      </div>
+                      {mod.step !== undefined && (
+                        <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded ${isActive ? "bg-primary/20 text-primary" : "bg-muted/40 text-muted-foreground"}`}>
+                          {String(mod.step).padStart(2, "0")}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        ))}
       </nav>
 
       {/* Collapse toggle */}
