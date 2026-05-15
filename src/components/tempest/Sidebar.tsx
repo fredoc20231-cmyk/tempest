@@ -30,46 +30,51 @@ type Section = { section: string; items: ModuleItem[] };
 
 const sections: Section[] = [
   {
-    section: "1 · Getting Started",
+    section: "1 · Start",
     items: [
       { id: "home", label: "Home", icon: Home },
       { id: "datasources", label: "Data Sources", desc: "Upload & Public DB", icon: Database, step: 1 },
-      { id: "overview", label: "Overview", desc: "Dashboard", icon: LayoutDashboard, step: 2 },
     ],
   },
   {
     section: "2 · Decomposition",
     items: [
-      { id: "motf", label: "MOTF", desc: "Tucker Decomposition", icon: Dna, step: 3 },
+      { id: "motf", label: "MOTF", desc: "Tucker Decomposition", icon: Dna, step: 2 },
     ],
   },
   {
     section: "3 · Survival & Clonal",
     items: [
-      { id: "gbsc", label: "GBSC", desc: "Survival Analysis", icon: Activity, step: 4 },
-      { id: "bctn", label: "BCTN", desc: "Clonal Dynamics", icon: FlaskConical, step: 5 },
+      { id: "gbsc", label: "GBSC", desc: "Survival Analysis", icon: Activity, step: 3 },
+      { id: "bctn", label: "BCTN", desc: "Clonal Dynamics", icon: FlaskConical, step: 4 },
     ],
   },
   {
     section: "4 · Immune & Risk",
     items: [
-      { id: "cnis", label: "CNIS", desc: "Neoantigen Intel", icon: Shield, step: 6 },
-      { id: "msrs", label: "MSRS", desc: "Risk Scoring", icon: BarChart3, step: 7 },
+      { id: "cnis", label: "CNIS", desc: "Neoantigen Intel", icon: Shield, step: 5 },
+      { id: "msrs", label: "MSRS", desc: "Risk Scoring", icon: BarChart3, step: 6 },
     ],
   },
   {
     section: "5 · Predictive Modeling",
     items: [
-      { id: "trajectory", label: "Trajectory", desc: "Bifurcation Prediction", icon: GitBranch, step: 8 },
-      { id: "tti", label: "TTI Platform", desc: "Topological Transition Index", icon: Hexagon, step: 9 },
+      { id: "trajectory", label: "Trajectory", desc: "Bifurcation Prediction", icon: GitBranch, step: 7 },
+      { id: "tti", label: "TTI Platform", desc: "Topological Transition Index", icon: Hexagon, step: 8 },
     ],
   },
   {
-    section: "6 · Intelligence & Output",
+    section: "6 · Synthesis & Output",
     items: [
-      { id: "chat", label: "AI Agent", desc: "NL Search", icon: MessageSquare, step: 10 },
-      { id: "report", label: "Analysis Report", desc: "Full Report", icon: FileText, step: 11 },
-      { id: "article", label: "Article", desc: "Scientific Paper", icon: BookOpen, step: 12 },
+      { id: "overview", label: "Results Dashboard", desc: "Integrated Findings", icon: LayoutDashboard, step: 9 },
+      { id: "report", label: "Analysis Report", desc: "Full Report", icon: FileText, step: 10 },
+      { id: "article", label: "Article", desc: "Scientific Paper", icon: BookOpen, step: 11 },
+    ],
+  },
+  {
+    section: "7 · Assistant",
+    items: [
+      { id: "chat", label: "AI Agent", desc: "NL Search & Q&A", icon: MessageSquare, step: 12 },
     ],
   },
 ];
