@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Bot, User, Loader2, Database, Search, ArrowRight, Dna, Upload, Paperclip, X, FileText } from "lucide-react";
+import { Send, Bot, User, Loader2, Database, Search, ArrowRight, Dna, Upload, Paperclip, X, FileText, RotateCcw } from "lucide-react";
 import CohortUploader from "./CohortUploader";
 import { supabase } from "@/integrations/supabase/client";
 import { useTempest } from "@/contexts/TempestContext";
