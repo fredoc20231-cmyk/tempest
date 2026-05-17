@@ -303,14 +303,44 @@ const ChatPanel = ({ onNavigate, onCohortLoaded }: ChatPanelProps) => {
     setInput(q);
   };
 
+  const handleReset = async () => {
+    if (loading) return;
+    if (!confirm("Reset the conversation? Your uploaded datasets and learned context will be preserved — only the chat history will be cleared.")) return;
+    try {
+      await supabase.from("chat_messages").delete().not("id", "is", null);
+    } catch (e) {
+      console.error("Failed to clear chat history", e);
+    }
+    setMessages([
+      {
+        id: "welcome",
+        role: "assistant",
+        content: "Conversation reset. My learned context (uploaded datasets, training references, prior analysis results) is preserved, so I can give you a sharper answer this round.\n\nWhat would you like to ask?",
+      },
+    ]);
+    setAttachedFiles([]);
+    setInput("");
+  };
+
   return (
     <div className="flex flex-col h-full">
-      <div className="px-6 py-4 border-b border-border">
-        <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-          <Bot className="w-5 h-5 text-primary" />
-          TEMPEST AI Agent
-        </h2>
-        <p className="text-xs text-muted-foreground mt-1">Lovable AI-powered biomedical search & MOTF pipeline orchestration</p>
+      <div className="px-6 py-4 border-b border-border flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <Bot className="w-5 h-5 text-primary" />
+            TEMPEST AI Agent
+          </h2>
+          <p className="text-xs text-muted-foreground mt-1">Lovable AI-powered biomedical search & MOTF pipeline orchestration</p>
+        </div>
+        <button
+          onClick={handleReset}
+          disabled={loading}
+          title="Reset conversation (keeps learned context)"
+          className="flex items-center gap-1.5 text-xs font-mono px-3 py-1.5 rounded-md border border-border text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors disabled:opacity-50"
+        >
+          <RotateCcw className="w-3.5 h-3.5" />
+          Reset chat
+        </button>
       </div>
 
       <div className="px-6 py-3 border-b border-border flex gap-2 flex-wrap items-center">
