@@ -4,6 +4,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Download, FileText, CheckCircle2, AlertTriangle, Clock, ArrowRight, Dna, Activity, FlaskConical, Shield, BarChart3, Lightbulb, GitBranch } from "lucide-react";
 import { downloadHtmlReport } from "./utils/downloadUtils";
+import { downloadReproBundle } from "@/lib/export/reproducibilityReport";
+import { DISCLAIMER_FTTI, DISCLAIMER_SCOPE, TEMPEST_VERSION } from "@/lib/scopeConfig";
 
 const moduleOrder = ["motf", "gbsc", "bctn", "cnis", "msrs", "trajectory"] as const;
 
@@ -101,22 +103,47 @@ const ReportPanel = () => {
             </p>
           )}
         </div>
-        <button
-          onClick={() => {
-            const moduleInfo: Record<string, any> = {};
-            const results: Record<string, any> = {};
-            const moduleConfig: Record<string, any> = {};
-            moduleOrder.forEach((m) => {
-              moduleInfo[m] = moduleMeta[m];
-              const metrics = getMetrics(m);
-              if (metrics) results[m] = metrics;
-            });
-            downloadHtmlReport(moduleInfo, results, moduleConfig);
-          }}
-          className="flex items-center gap-2 px-4 py-2 text-xs font-mono bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
-        >
-          <Download className="w-4 h-4" /> Export HTML
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => {
+              const moduleInfo: Record<string, any> = {};
+              const results: Record<string, any> = {};
+              const moduleConfig: Record<string, any> = {};
+              moduleOrder.forEach((m) => {
+                moduleInfo[m] = moduleMeta[m];
+                const metrics = getMetrics(m);
+                if (metrics) results[m] = metrics;
+              });
+              downloadHtmlReport(moduleInfo, results, moduleConfig);
+            }}
+            className="flex items-center gap-2 px-4 py-2 text-xs font-mono bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+          >
+            <Download className="w-4 h-4" /> Export HTML
+          </button>
+          <button
+            onClick={() =>
+              downloadReproBundle({
+                seed: 42,
+                kNN: 12,
+                nullReps: 50,
+                bsReps: 50,
+                topologyPrimary: "VR",
+                cohortName: cohorts[0]?.name,
+                cohortSource: cohorts[0] ? "USER-UPLOADED" : "DEMO/SYNTHETIC",
+                nPerCondition: cohorts[0]?.samples,
+                validityWarning: cohorts[0] && cohorts[0].samples < 25 ? `n=${cohorts[0].samples} < 25` : undefined,
+                modules: moduleOrder.map((m) => ({
+                  module: m,
+                  evidenceType: m === "trajectory" ? "longitudinal-trajectory" : "endpoint-comparison",
+                  provenance: analysisResults[m] ? "COMPUTED" : "PENDING VERIFICATION",
+                })),
+              })
+            }
+            className="flex items-center gap-2 px-4 py-2 text-xs font-mono border border-border rounded-md hover:bg-muted transition-colors"
+          >
+            <Download className="w-4 h-4" /> Methods + Repro
+          </button>
+        </div>
       </div>
 
       {/* Executive Summary */}
