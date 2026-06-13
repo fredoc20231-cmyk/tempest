@@ -219,7 +219,31 @@ const ReportPanel = () => {
           >
             <Download className="w-4 h-4" /> Export CSV
           </button>
-        </div>
+          <button
+            onClick={() => {
+              const cohort = cohorts[0] as any;
+              const allComplete = completedModules.length === moduleOrder.length;
+              const gate = evaluatePublicationGate({
+                dataset_accession: cohort?.accession ?? cohort?.dataset_accession ?? null,
+                data_source: cohort?.source ?? cohort?.data_source ?? null,
+                primary_data_available: cohort?.primary_data_available === true,
+                code_available: cohort?.code_available === true,
+                computation_status: allComplete ? "COMPLETE" : "PENDING",
+              });
+              if (!gate.publicationReady) {
+                toast({
+                  title: "Publication-ready export blocked",
+                  description: `${gate.draftWatermark} Blockers: ${gate.blockers.join("; ")}`,
+                  variant: "destructive",
+                });
+                return;
+              }
+              toast({ title: "Publication-ready", description: "All metadata complete. Use Export HTML / CSV / Methods to build the bundle." });
+            }}
+            className="flex items-center gap-2 px-4 py-2 text-xs font-mono border border-border rounded-md hover:bg-muted transition-colors"
+          >
+            <Download className="w-4 h-4" /> Publication-ready
+          </button>
       </div>
 
       {/* Scope disclaimer */}
