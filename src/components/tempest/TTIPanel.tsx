@@ -1042,16 +1042,20 @@ function ResultsTab({ results }: { results: TTIResult[] }) {
   useEffect(() => {
     if (!result) return;
     const { tti, z, raw, p } = result;
+    const fp = result.fTTI_primary ?? tti;
+    const zLVR = result.z.zL_VR ?? 0;
+    const pLVR = result.p.pL_VR ?? 1;
     setAiQ(
-      `TTI analysis — ${result.sourceName}\n\nResults:\n` +
-      `• TTI = ${tti.toFixed(3)}  95% CI [${result.tti_ci[0]?.toFixed(2)}, ${result.tti_ci[1]?.toFixed(2)}]\n` +
-      `• z(L) = ${z.zL.toFixed(2)}  p = ${p.pL.toFixed(3)}  [H1 loop mass, β₁ = ${raw.beta1}]\n` +
+      `TTI analysis — ${result.sourceName}\n\nResults (primary = VR-PH):\n` +
+      `• fTTI primary (VR-PH) = ${fp.toFixed(3)}  95% CI [${result.tti_ci[0]?.toFixed(2)}, ${result.tti_ci[1]?.toFixed(2)}]\n` +
+      `• z(L^VR) = ${zLVR.toFixed(2)}  p = ${pLVR.toFixed(3)}  [H1 total persistence, bars=${raw.vrBars ?? "—"}]\n` +
       `• z(B) = ${z.zB.toFixed(2)}  p = ${p.pB.toFixed(3)}  [F = ${raw.F.toFixed(4)}, D = ${raw.D.toFixed(4)}]\n` +
       `• z(N) = ${z.zN.toFixed(2)}  p = ${p.pN.toFixed(3)}  [φ = ${raw.phi.toFixed(5)}, N = ${raw.N.toFixed(3)}]\n` +
-      `• Phase transition: ${result.phaseTransition ? "YES (TTI ≥ 6.0)" : "NO"}\n` +
+      `• Legacy z(L^GCT) = ${z.zL.toFixed(2)} (approximation, not primary)\n` +
+      `• Phase transition: ${(fp >= 6.0) ? "YES (fTTI ≥ 6.0)" : "NO"}\n` +
       `• Graph: ${raw.edges} edges, ${raw.comps} components, β₁=${raw.beta1}\n` +
       `${result.genePanel ? `• Genes: ${result.genePanel.join(", ")}\n` : ""}` +
-      `\nInterpret the biological significance in the context of cancer regulatory state transitions.`,
+      `\nInterpret the biological significance in the context of cancer regulatory state transitions. Frame as endpoint state separation unless longitudinal evidence is present.`,
     );
     setAiR(""); setAiErr("");
   }, [result]);
