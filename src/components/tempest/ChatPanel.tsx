@@ -121,22 +121,33 @@ const ChatPanel = ({ onNavigate, onCohortLoaded }: ChatPanelProps) => {
 
     const newFiles: AttachedFile[] = [];
     for (const file of Array.from(files)) {
-      const ext = "." + file.name.split(".").pop()?.toLowerCase();
-      if (!SUPPORTED_TEXT_EXTENSIONS.includes(ext)) {
-        alert(`Unsupported file type: ${ext}. Supported: ${SUPPORTED_TEXT_EXTENSIONS.join(", ")}`);
+      const ext = getExtension(file.name);
+      if (!SUPPORTED_EXTENSIONS.includes(ext)) {
+        alert(`Unsupported file type: ${ext || "(none)"}.\n\nSupported: ${SUPPORTED_EXTENSIONS.join(", ")}`);
         continue;
       }
       try {
-        const text = await file.text();
-        const truncated = text.length > MAX_FILE_CHARS;
-        newFiles.push({
-          name: file.name,
-          content: truncated ? text.slice(0, MAX_FILE_CHARS) : text,
-          size: file.size,
-          truncated,
-        });
-      } catch {
-        alert(`Failed to read file: ${file.name}`);
+        const parsed = await parseFile(file, MAX_FILE_CHARS);
+        newFiles.push(parsed);
+        // Persist to platform knowledge so the AI synthesis and other modules can use it.
+        try {
+          await supabase.from("datasets").insert({
+            name: file.name,
+            source: "user-upload",
+            source_id: `chat-${Date.now()}-${file.name}`,
+            category: "user-upload",
+            description: `User-uploaded ${parsed.kind.toUpperCase()} (${(file.size / 1024).toFixed(1)} KB${parsed.truncated ? ", truncated" : ""})`,
+            data: { content: parsed.content, kind: parsed.kind, truncated: parsed.truncated },
+            record_count: parsed.content.length,
+            metadata: { mime: file.type || null, original_size: file.size },
+            is_training: true,
+          });
+        } catch (persistErr) {
+          console.warn("Failed to persist uploaded file to datasets table:", persistErr);
+        }
+      } catch (err: any) {
+        console.error(err);
+        alert(`Failed to parse ${file.name}: ${err?.message || err}`);
       }
     }
     setAttachedFiles((prev) => [...prev, ...newFiles]);
