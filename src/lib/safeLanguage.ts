@@ -27,7 +27,7 @@ export function safeLanguage(input: SafeLanguageInput): SafeLanguageResult {
   if (mode === "endpoint") {
     return {
       label: "state separation",
-      sentence: "This quantifies established state separation, not transition prediction.",
+      sentence: "This quantifies established state separation between groups; no temporal claim is made.",
       predictionAllowed: false,
     };
   }
