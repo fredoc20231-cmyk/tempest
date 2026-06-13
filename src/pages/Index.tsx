@@ -10,6 +10,8 @@ import DataSourcesPanel from "@/components/tempest/DataSourcesPanel";
 import TrajectoryPanel from "@/components/tempest/TrajectoryPanel";
 import TTIPanel from "@/components/tempest/TTIPanel";
 import ArticlePanel from "@/components/tempest/ArticlePanel";
+import ImmuneRiskPanel from "@/components/tempest/ImmuneRiskPanel";
+import PredictivePanel from "@/components/tempest/PredictivePanel";
 import { TempestProvider } from "@/contexts/TempestContext";
 
 const Index = () => {
