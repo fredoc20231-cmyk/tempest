@@ -3,6 +3,7 @@
  * All math runs in-browser on actual data — zero mocks.
  * kNN, union-find H0, graph conductance, H1 graph approximation, jitter null, bootstrap.
  */
+import { computeVR_H1_persistence } from "./topology/persistentHomology";
 
 /* ── PRNG ── */
 export function makePRNG(seed: number) {
@@ -195,12 +196,18 @@ export function subsampleData(X: number[][], S_mask: boolean[], R_mask: boolean[
 
 /* ── TTI Result Type ── */
 export interface TTIResult {
+  /** Legacy composite (zL_GCT + zB + zN), retained for back-compat. */
   tti: number;
   tti_ci: [number, number];
-  z: { zL: number; zB: number; zN: number };
-  p: { pL: number; pB: number; pN: number };
-  raw: { L: number; B: number; F: number; D: number; phi: number; N: number; h1Thresh: number; beta1: number; edges: number; comps: number };
-  null: { nullL: number[]; nullB: number[]; nullN: number[] };
+  /** Primary composite using VR persistent homology: zB + zL_VR + zN. */
+  fTTI_primary: number;
+  /** Secondary composite using graph-cycle-topology channel: zB + zL_GCT + zN. */
+  fTTI_GCT: number;
+  topology_primary: "VR" | "GCT";
+  z: { zL: number; zB: number; zN: number; zL_VR: number; zL_GCT: number };
+  p: { pL: number; pB: number; pN: number; pL_VR: number };
+  raw: { L: number; B: number; F: number; D: number; phi: number; N: number; h1Thresh: number; beta1: number; edges: number; comps: number; L_VR: number; vrBars: number };
+  null: { nullL: number[]; nullB: number[]; nullN: number[]; nullL_VR: number[] };
   h0: { eps: number[]; beta0: number[]; F: number };
   pcaResult: { scores: number[][]; varExp: number[] };
   S_mask: boolean[];
@@ -253,12 +260,17 @@ export async function computeTTI(
   }
   const h1Thresh = h1Probes.reduce((s, v) => s + v, 0) / h1Probes.length;
 
-  onProgress?.("H1 loop mass β₁…", 52);
+  onProgress?.("H1 loop mass β₁ (GCT channel)…", 50);
   await new Promise(r => setTimeout(r, 10));
   const { L, beta1, edges, comps } = computeH1(indices, distances, n, h1Thresh);
 
+  onProgress?.("VR persistent homology — H1 total persistence (primary channel)…", 54);
+  await new Promise(r => setTimeout(r, 10));
+  const vr = computeVR_H1_persistence(indices, distances, n);
+  const L_VR = vr.L_VR;
+
   onProgress?.(`Null distribution (${nullReps} jitter permutations)…`, 56);
-  const nullL: number[] = [], nullB: number[] = [], nullN: number[] = [];
+  const nullL: number[] = [], nullB: number[] = [], nullN: number[] = [], nullL_VR: number[] = [];
   for (let r = 0; r < nullReps; r++) {
     if (r % 10 === 0) {
       onProgress?.(`Null permutation ${r + 1}/${nullReps}…`, 56 + (r / nullReps) * 22);
@@ -273,6 +285,7 @@ export async function computeTTI(
     nullN.push(-Math.log(phin + 1e-12));
     const { L: Ln } = computeH1(ni, nd, n, h1Thresh);
     nullL.push(Ln);
+    nullL_VR.push(computeVR_H1_persistence(ni, nd, n).L_VR);
   }
 
   const mean = (arr: number[]) => arr.reduce((s, v) => s + v, 0) / arr.length;
@@ -284,12 +297,17 @@ export async function computeTTI(
   const pVal = (v: number, arr: number[]) => Math.max(1 / arr.length, arr.filter(x => x >= v).length / arr.length);
 
   const zL = zScore(L, nullL), zB = zScore(B, nullB), zN = zScore(N, nullN);
+  const zL_VR = zScore(L_VR, nullL_VR);
   const pL = pVal(L, nullL), pB = pVal(B, nullB), pN = pVal(N, nullN);
-  const tti = zL + zB + zN;
+  const pL_VR = pVal(L_VR, nullL_VR);
+  const fTTI_GCT = zL + zB + zN;
+  const fTTI_primary = zL_VR + zB + zN;
+  const tti = fTTI_GCT; // back-compat alias
 
   onProgress?.(`Bootstrap CI (${bsReps} resamples)…`, 80);
   await new Promise(r => setTimeout(r, 10));
-  const muL = mean(nullL), sdL = sd(nullL), muB = mean(nullB), sdB = sd(nullB), muN = mean(nullN), sdN = sd(nullN);
+  const muL_VR = mean(nullL_VR), sdL_VR = sd(nullL_VR);
+  const muB = mean(nullB), sdB = sd(nullB), muN = mean(nullN), sdN = sd(nullN);
   const bsTTI: number[] = [];
   const mSize = Math.max(10, Math.floor(bsFrac * n));
   const rand = makePRNG(seed + 30000);
@@ -306,8 +324,8 @@ export async function computeTTI(
     const Db2 = computeDispersion(Xb, ib);
     const phib = computeConductance(ib, db, Sb, Rb, Xb.length);
     const Nb = -Math.log(phib + 1e-12);
-    const { L: Lb } = computeH1(ib, db, Xb.length, h1Thresh);
-    bsTTI.push((Lb - muL) / sdL + (h0b.F + Db2 - muB) / sdB + (Nb - muN) / sdN);
+    const L_VR_b = computeVR_H1_persistence(ib, db, Xb.length).L_VR;
+    bsTTI.push((L_VR_b - muL_VR) / sdL_VR + (h0b.F + Db2 - muB) / sdB + (Nb - muN) / sdN);
   }
   bsTTI.sort((a, b) => a - b);
   const ci: [number, number] = bsTTI.length >= 10
@@ -320,11 +338,13 @@ export async function computeTTI(
 
   return {
     tti, tti_ci: ci,
-    z: { zL, zB, zN }, p: { pL, pB, pN },
-    raw: { L, B, F: h0.F, D: Ddisp, phi, N, h1Thresh, beta1, edges, comps },
-    null: { nullL, nullB, nullN },
+    fTTI_primary, fTTI_GCT, topology_primary: "VR",
+    z: { zL, zB, zN, zL_VR, zL_GCT: zL },
+    p: { pL, pB, pN, pL_VR },
+    raw: { L, B, F: h0.F, D: Ddisp, phi, N, h1Thresh, beta1, edges, comps, L_VR, vrBars: vr.numBars },
+    null: { nullL, nullB, nullN, nullL_VR },
     h0, pcaResult, S_mask, R_mask, n,
-    phaseTransition: tti >= 6.0,
+    phaseTransition: fTTI_primary >= 6.0,
   };
 }
 
