@@ -1691,6 +1691,123 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
       </p>
 
       {/* ══════════════════════════════════════════════════════════
+          6.X PATH TO NATURE-LEVEL EVIDENCE (Reviewer-anticipation block)
+      ══════════════════════════════════════════════════════════ */}
+      <h3 className="text-base font-bold text-foreground mt-8 mb-3 font-serif">
+        6.5 — From Composite Score to Universal Law: A Critical Self-Assessment
+      </h3>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        We acknowledge that in its present form TEMPEST establishes a <em>retrospective</em> dynamical
+        framework rather than a fully validated <em>predictive</em> law of cancer state transitions. To meet
+        the evidentiary bar required for a general theory of resistance-as-phase-transition, five gaps must
+        be closed. This section enumerates them as a falsifiable, pre-registered research programme rather
+        than a list of caveats.
+      </p>
+
+      <h4 className="text-xs font-semibold text-foreground mt-4 mb-2 font-mono">
+        6.5.1 — Prospective Forecasting Protocol (G1)
+      </h4>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        The D0–D122 GEM series is currently used in-sample. We will repeat the analysis under a strict
+        <em> walk-forward </em> protocol: train the bifurcation detector on D0–D88 only, then issue
+        sealed predictions for the bifurcation day, the resistant-attractor identity, and the IC<sub>50</sub>
+        shift magnitude <em>before</em> the D99/D109/D116 omics are unblinded. Success criteria are
+        pre-registered: predicted bifurcation day within ±7 days, attractor identity F1 ≥ 0.8, IC<sub>50</sub>
+        fold-change predicted within 0.5 log<sub>2</sub> units. Failure on any criterion falsifies the
+        forecasting claim and will be reported.
+      </p>
+
+      <h4 className="text-xs font-semibold text-foreground mt-4 mb-2 font-mono">
+        6.5.2 — Expanded Calibration Cohort: 50–100 Independent Transitions (G2)
+      </h4>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        The current f<sub>TTI</sub> ≥ 6.0 threshold is anchored on seven calibration comparisons.
+        We are extending the benchmark to ≥80 independent transition pairs across eight tumour contexts:
+        BRAF-resistant melanoma (Tirosh, Riaz cohorts), TMZ-resistant glioma (TCGA-GBM longitudinal),
+        AML relapse (BeatAML, TARGET-AML), endocrine-resistant ER+ breast cancer (METABRIC, POETIC),
+        ADRN↔MES neuroblastoma (Boeva, Westermann), NEPC lineage switching (Beltran, SU2C-PCF),
+        EGFRi-resistant NSCLC (Hata, Bivona), and platinum-resistant HGSOC (TCGA-OV, AOCS). For each
+        cohort we will report AUROC, AUPRC, sensitivity, specificity, and the recalibrated universal
+        threshold with 95% bootstrap CI.
+      </p>
+
+      <h4 className="text-xs font-semibold text-foreground mt-4 mb-2 font-mono">
+        6.5.3 — Benchmark Against State-of-the-Art Trajectory Methods (G3)
+      </h4>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        Beyond DA-distance, λ<sub>2</sub>, and EMT-score, we will benchmark f<sub>TTI</sub> against the
+        full canon of trajectory and state-transition methods: Waddington-OT, PHATE, Palantir, Diffusion
+        Pseudotime (DPT), Monocle3, scVelo, CellRank 2, MELD, TopOMetry, and a reference persistent-homology
+        pipeline (Ripser++ on the same Vietoris-Rips filtrations). For each method we will compute the
+        same transition-detection AUROC on the expanded 80-pair benchmark, and report effect-size
+        differences with paired DeLong tests. We will publish a public leaderboard and release all
+        prediction matrices so other groups can re-rank methods as new data arrive.
+      </p>
+
+      <h4 className="text-xs font-semibold text-foreground mt-4 mb-2 font-mono">
+        6.5.4 — Replacing the GCT Approximation with True Persistent Homology (G4)
+      </h4>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        The Graph-Cycle Topology (GCT) channel is documented as an approximation to persistent homology.
+        We are implementing a full PH pipeline (Ripser++ / GUDHI) producing H<sub>0</sub>–H<sub>2</sub>
+        persistence diagrams, persistence landscapes, and bottleneck/Wasserstein distances between
+        consecutive timepoints. We will report (i) the rank correlation between GCT and bottleneck
+        distance across all calibration pairs, (ii) the AUROC of PH-only vs GCT-only vs combined f<sub>TTI</sub>,
+        and (iii) a decision rule: if PH dominates GCT by ΔAUC &gt; 0.02 we replace GCT in the released
+        platform; if not, we retain GCT as a documented O(n²) surrogate for PH's O(n<sup>2.37</sup>)
+        cost and publish the equivalence proof.
+      </p>
+
+      <h4 className="text-xs font-semibold text-foreground mt-4 mb-2 font-mono">
+        6.5.5 — From Transition Scoring to Critical Transition Theory (G5)
+      </h4>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        The deepest scientific upgrade is conceptual: TEMPEST currently <em>measures</em> transition
+        magnitude; the goal is to demonstrate that resistance becomes <em>mathematically inevitable</em>
+        before it is phenotypically observable. We are augmenting the EWS module with the full critical-slowing-down
+        battery from dynamical-systems theory: lag-1 autocorrelation (AR1), variance inflation, return-rate
+        from perturbation, spectral density reddening, skewness/kurtosis drift, and spectral-gap collapse
+        (Δλ<sub>2</sub>/dt → 0). The pre-registered hypothesis is that the D52–D88 window — currently classified
+        as ‘pre-bifurcation stable’ — already carries detectable EWS signatures at significance p &lt; 0.01
+        against a stationary null. If confirmed, the manuscript reframes from a scoring paper to a
+        mechanistic claim about universal early warnings in cancer.
+      </p>
+
+      <h4 className="text-xs font-semibold text-foreground mt-4 mb-2 font-mono">
+        6.5.6 — The Universal Transition Law (Pre-Registered Hypothesis)
+      </h4>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        Combining G2 + G4 + G5, we pre-register the following falsifiable conjecture:
+      </p>
+      <p className="text-sm text-foreground leading-relaxed mb-3 pl-6 border-l-2 border-primary/40 italic font-mono">
+        Across solid and liquid tumours, the composite quantity{" "}
+        <span className="not-italic">Ψ = Δλ<sub>2</sub> + Δβ<sub>1</sub> + ΔB</span> approaches a
+        cancer-invariant critical value Ψ* ≈ 6.0 ± 0.5 within 14 days preceding the emergence of clinically
+        detectable resistance, independent of tumour lineage, driver mutation, or therapeutic class.
+      </p>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        The conjecture is falsified if, across the 80-pair benchmark, the cross-cancer coefficient of
+        variation of Ψ* exceeds 25%, or if any single tumour context yields a Ψ* &gt; 2σ outside the pooled
+        estimate. We commit to publishing the result regardless of direction; a falsification would itself
+        constrain the universality of phase-transition models of resistance and is, in our view, a
+        publication-worthy outcome.
+      </p>
+
+      <h4 className="text-xs font-semibold text-foreground mt-4 mb-2 font-mono">
+        6.5.7 — Honest Positioning
+      </h4>
+      <p className="text-sm text-foreground leading-relaxed mb-4">
+        Until G1–G5 are completed and reported, we position TEMPEST as a <em>reproducible, mechanistically
+        grounded composite framework for retrospective detection of regulatory phase transitions in
+        longitudinal multi-omic cancer data</em> — appropriate for methods-oriented venues — rather than
+        as a validated predictive law of cancer evolution. The roadmap above is the explicit work plan to
+        promote the framework to the latter status, and its prospective milestones are tracked inside the
+        platform's <code>pipeline_runs</code> table so that every checkpoint is auditable.
+      </p>
+
+
+
+      {/* ══════════════════════════════════════════════════════════
           7. CONCLUSIONS
       ══════════════════════════════════════════════════════════ */}
       <SectionHeading id="conclusions" number="7" title="Conclusions" />
