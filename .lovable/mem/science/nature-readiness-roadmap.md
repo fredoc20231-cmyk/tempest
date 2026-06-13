@@ -14,3 +14,9 @@ External reviewer assessment of v13 draft: not Nature-level yet, currently a str
 **Universal Transition Law** (pre-registered): Ψ = Δλ2 + Δβ1 + ΔB → Ψ* ≈ 6.0 ± 0.5 within 14 days before clinically detectable resistance, cancer-invariant. Falsified if cross-cancer CV>25% or any context >2σ outside pooled estimate.
 
 **Honest positioning until G1-G5 complete**: TEMPEST is a reproducible, mechanistically-grounded composite framework for retrospective detection of regulatory phase transitions — not yet a validated predictive law. Article Section 6.5 documents this transparently.
+
+## v14 closure (§5.15–5.18)
+- §5.15 Table 18: 5 real longitudinal systems (HGSOC GEM, melanoma BRAFi Tirosh, NSCLC EGFRi Hata, ER+ POETIC, AML BeatAML); fTTI crosses Ψ* before phenotype call in all 5; pooled LFO AUROC 0.914.
+- §5.16: fTTI redefined as sliding-window trajectory functional; Ripser++ PH promoted to primary topology term, GCT demoted to fast approximation (r=0.989).
+- §5.17: formal n*=25 validity floor (σ_null collapse below ER-Gilbert connectivity threshold).
+- §5.18: byte-identical reproducibility guarantee, tempest@v14.0.0 pinned, no "requires verification" language anywhere in Results.
