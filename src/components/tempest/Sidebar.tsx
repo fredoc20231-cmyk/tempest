@@ -111,7 +111,7 @@ const Sidebar = ({ active, onNavigate }: SidebarProps) => {
               </div>
             )}
             {sec.items.map((mod) => {
-              const isActive = active === mod.id;
+              const isActive = active === mod.id || groupedModules[active] === mod.id;
               return (
                 <button
                   key={mod.id}
