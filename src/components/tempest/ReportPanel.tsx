@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useState } from "react";
 import { useTempest } from "@/contexts/TempestContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -6,8 +7,41 @@ import { Download, FileText, CheckCircle2, AlertTriangle, Clock, ArrowRight, Dna
 import { downloadHtmlReport } from "./utils/downloadUtils";
 import { downloadReproBundle } from "@/lib/export/reproducibilityReport";
 import { DISCLAIMER_FTTI, DISCLAIMER_SCOPE, TEMPEST_VERSION } from "@/lib/scopeConfig";
+import { EvidenceBadge, type EvidenceType } from "./EvidenceBadge";
 
 const moduleOrder = ["motf", "gbsc", "bctn", "cnis", "msrs", "trajectory"] as const;
+
+const moduleEvidence: Record<string, EvidenceType> = {
+  motf: "longitudinal-trajectory",
+  gbsc: "endpoint-comparison",
+  bctn: "longitudinal-trajectory",
+  cnis: "endpoint-comparison",
+  msrs: "longitudinal-trajectory",
+  trajectory: "longitudinal-trajectory",
+};
+
+const reviewerSafeFor = (e: EvidenceType): string =>
+  e === "endpoint-comparison"
+    ? "This quantifies established state separation, not transition prediction."
+    : e === "longitudinal-trajectory"
+    ? "Retrospective trajectory evidence; not prospective prediction."
+    : e === "prospective-prediction"
+    ? "Reserved: only valid with user-supplied time-course outcome labels."
+    : "Synthetic ground truth; method validation only.";
+
+function downloadCsv(filename: string, rows: (string | number | null | undefined)[][]) {
+  const csv = rows
+    .map((r) => r.map((c) => {
+      const s = c == null ? "" : String(c);
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    }).join(","))
+    .join("\n");
+  const a = document.createElement("a");
+  a.download = filename;
+  a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
 
 const moduleMeta: Record<string, { title: string; icon: any; purpose: string }> = {
   motf: { title: "MOTF — Multi-Omic Tensor Factorization", icon: Dna, purpose: "Decomposes multi-omic data into latent factors that capture cross-modal variance and correlate with disease stage." },
