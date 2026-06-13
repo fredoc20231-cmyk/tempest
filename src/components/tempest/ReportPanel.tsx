@@ -74,6 +74,18 @@ const nextSteps = [
 
 const ReportPanel = () => {
   const { pipelineRuns, analysisResults, cohorts, isLoading } = useTempest();
+  const [topology, setTopology] = useState<"VR" | "GCT">("VR");
+
+  const getFTTI = (mod: string): { primary: number | null; gct: number | null; zL_VR: number | null; zL_GCT: number | null } => {
+    const r = (analysisResults[mod]?.results as any) || {};
+    const metadata = (analysisResults[mod] as any)?.metadata || {};
+    return {
+      primary: r.fTTI_primary ?? metadata.fTTI_primary ?? r.tti_score ?? metadata.tti_score ?? null,
+      gct: r.fTTI_GCT ?? metadata.fTTI_GCT ?? null,
+      zL_VR: r.z?.zL_VR ?? metadata.zL_VR ?? null,
+      zL_GCT: r.z?.zL ?? metadata.zL_GCT ?? null,
+    };
+  };
 
   const completedModules = moduleOrder.filter((m) => {
     const run = pipelineRuns.find((r) => r.module === m);
