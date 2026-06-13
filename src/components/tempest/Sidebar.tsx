@@ -95,7 +95,8 @@ const Sidebar = ({ active, onNavigate }: SidebarProps) => {
           {!collapsed && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <span className="font-mono text-sm font-semibold text-sidebar-foreground tracking-wider">TEMPEST</span>
-              <span className="block text-[10px] text-muted-foreground font-mono">v2.1.0</span>
+              <span className="block text-[10px] text-muted-foreground font-mono">v14 · research</span>
+              <span className="block text-[9px] text-muted-foreground/80 leading-tight mt-0.5 max-w-[180px]">State-separation &amp; transition-dynamics</span>
             </motion.div>
           )}
         </div>

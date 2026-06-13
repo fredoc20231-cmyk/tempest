@@ -1,13 +1,15 @@
 import { useState } from "react";
-import { FlaskConical, Shield, BarChart3 } from "lucide-react";
+import { FlaskConical, Shield, BarChart3, Syringe } from "lucide-react";
 import ModulePanel from "./ModulePanel";
+import NeoantigenPanel from "./NeoantigenPanel";
 import type { CohortPayload } from "./ChatPanel";
 
-type Sub = "bctn" | "cnis" | "msrs";
+type Sub = "bctn" | "cnis" | "msrs" | "neoantigen";
 
 const tabs: { id: Sub; label: string; desc: string; icon: typeof Shield }[] = [
   { id: "bctn", label: "BCTN", desc: "Clonal Dynamics", icon: FlaskConical },
   { id: "cnis", label: "CNIS", desc: "Neoantigen Intel", icon: Shield },
+  { id: "neoantigen", label: "Tiering", desc: "Safeguarded Tiers", icon: Syringe },
   { id: "msrs", label: "MSRS", desc: "Risk Scoring", icon: BarChart3 },
 ];
 
@@ -16,7 +18,7 @@ const ImmuneRiskPanel = ({ cohort }: { cohort?: CohortPayload | null }) => {
   return (
     <div className="flex flex-col">
       <div className="border-b border-border bg-card/40 px-6 pt-4">
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 flex-wrap">
           {tabs.map((t) => {
             const isActive = active === t.id;
             return (
@@ -37,7 +39,7 @@ const ImmuneRiskPanel = ({ cohort }: { cohort?: CohortPayload | null }) => {
           })}
         </div>
       </div>
-      <ModulePanel key={active} module={active} cohort={cohort} />
+      {active === "neoantigen" ? <NeoantigenPanel /> : <ModulePanel key={active} module={active} cohort={cohort} />}
     </div>
   );
 };
