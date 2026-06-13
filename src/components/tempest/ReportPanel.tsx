@@ -173,14 +173,14 @@ const ReportPanel = () => {
                 kNN: 12,
                 nullReps: 50,
                 bsReps: 50,
-                topologyPrimary: "VR",
+                topologyPrimary: topology,
                 cohortName: cohorts[0]?.name,
                 cohortSource: cohorts[0] ? "USER-UPLOADED" : "DEMO/SYNTHETIC",
                 nPerCondition: cohorts[0]?.samples,
                 validityWarning: cohorts[0] && cohorts[0].samples < 25 ? `n=${cohorts[0].samples} < 25` : undefined,
                 modules: moduleOrder.map((m) => ({
                   module: m,
-                  evidenceType: m === "trajectory" ? "longitudinal-trajectory" : "endpoint-comparison",
+                  evidenceType: moduleEvidence[m],
                   provenance: analysisResults[m] ? "COMPUTED" : "PENDING VERIFICATION",
                 })),
               })
@@ -188,6 +188,34 @@ const ReportPanel = () => {
             className="flex items-center gap-2 px-4 py-2 text-xs font-mono border border-border rounded-md hover:bg-muted transition-colors"
           >
             <Download className="w-4 h-4" /> Methods + Repro
+          </button>
+          <button
+            onClick={() => {
+              const nP = cohorts[0]?.samples ?? null;
+              const validity = nP != null && nP < 25 ? `n=${nP} < 25 (composite suppressed)` : "OK";
+              const header = [
+                "module", "fTTI_primary", "fTTI_GCT", "zL_VR", "zL_GCT",
+                "topology_primary", "validity_status", "evidence_type", "provenance",
+              ];
+              const rows = moduleOrder.map((m) => {
+                const f = getFTTI(m);
+                return [
+                  m,
+                  f.primary != null ? f.primary.toFixed(4) : "",
+                  f.gct != null ? f.gct.toFixed(4) : "",
+                  f.zL_VR != null ? f.zL_VR.toFixed(4) : "",
+                  f.zL_GCT != null ? f.zL_GCT.toFixed(4) : "",
+                  topology === "VR" ? "VR-PH (Ripser-style H1)" : "GCT (graph cycle approximation)",
+                  validity,
+                  moduleEvidence[m],
+                  analysisResults[m] ? "COMPUTED" : "PENDING VERIFICATION",
+                ];
+              });
+              downloadCsv("tempest_module_scores.csv", [header, ...rows]);
+            }}
+            className="flex items-center gap-2 px-4 py-2 text-xs font-mono border border-border rounded-md hover:bg-muted transition-colors"
+          >
+            <Download className="w-4 h-4" /> Export CSV
           </button>
         </div>
       </div>
@@ -197,6 +225,28 @@ const ReportPanel = () => {
         <p className="text-xs text-chart-amber font-mono font-semibold mb-1">Scope &amp; disclaimers ({TEMPEST_VERSION})</p>
         <p className="text-xs text-foreground/80 leading-relaxed">{DISCLAIMER_SCOPE}</p>
         <p className="text-xs text-foreground/80 leading-relaxed mt-1">{DISCLAIMER_FTTI}</p>
+      </div>
+
+      {/* Methods — topology */}
+      <div className="module-card border-primary/20">
+        <div className="flex items-start justify-between gap-3 mb-2">
+          <div>
+            <h2 className="text-sm font-mono font-semibold text-foreground uppercase tracking-wide">Methods — Topology channel</h2>
+            <p className="text-xs text-muted-foreground mt-1">
+              <span className="font-mono">topology_primary: VR-PH (Ripser-style H1)</span>. Composite{" "}
+              <span className="font-mono">fTTI = z_B + z_L^VR + z_N</span>. The GCT channel is retained as a fast graph-cycle approximation and is not the manuscript score.
+            </p>
+          </div>
+          <div className="flex items-center gap-1 bg-secondary/50 rounded-md p-0.5 flex-shrink-0">
+            <button onClick={() => setTopology("VR")} className={`text-[10px] font-mono px-2 py-1 rounded ${topology === "VR" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>VR-PH</button>
+            <button onClick={() => setTopology("GCT")} className={`text-[10px] font-mono px-2 py-1 rounded ${topology === "GCT" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>GCT</button>
+          </div>
+        </div>
+        {topology === "GCT" && (
+          <p className="text-[11px] font-mono text-chart-amber mt-2">
+            ⚠ Approximation only; not primary manuscript score. Manuscript values must be reported from VR-PH.
+          </p>
+        )}
       </div>
 
       {/* Executive Summary */}
