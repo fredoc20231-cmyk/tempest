@@ -321,13 +321,18 @@ const ReportPanel = () => {
               animate={{ opacity: 1, y: 0 }}
               className={`module-card ${isFailed ? "border-destructive/30" : isComplete ? "border-chart-emerald/20" : ""}`}
             >
-              <div className="flex items-center gap-3 mb-3">
+              <div className="flex items-center gap-3 mb-3 flex-wrap">
                 {statusIcon(mod)}
                 <meta.icon className="w-5 h-5 text-primary" />
                 <h3 className="text-sm font-mono font-semibold text-foreground">{meta.title}</h3>
+                <EvidenceBadge type={moduleEvidence[mod]} />
               </div>
 
-              <p className="text-xs text-muted-foreground mb-3">{meta.purpose}</p>
+              <p className="text-xs text-muted-foreground mb-2">{meta.purpose}</p>
+
+              <p className="text-[11px] font-mono text-muted-foreground bg-secondary/30 border-l-2 border-chart-cyan/40 px-3 py-1 rounded-sm mb-3">
+                {reviewerSafeFor(moduleEvidence[mod])}
+              </p>
 
               {/* Interpretation */}
               <div className="bg-secondary/50 rounded-md p-3 mb-3">
