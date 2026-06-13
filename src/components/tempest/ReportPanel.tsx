@@ -8,6 +8,8 @@ import { downloadHtmlReport } from "./utils/downloadUtils";
 import { downloadReproBundle } from "@/lib/export/reproducibilityReport";
 import { DISCLAIMER_FTTI, DISCLAIMER_SCOPE, TEMPEST_VERSION } from "@/lib/scopeConfig";
 import { EvidenceBadge, type EvidenceType } from "./EvidenceBadge";
+import { evaluatePublicationGate } from "@/lib/export/publicationGate";
+import { toast } from "@/hooks/use-toast";
 
 const moduleOrder = ["motf", "gbsc", "bctn", "cnis", "msrs", "trajectory"] as const;
 
