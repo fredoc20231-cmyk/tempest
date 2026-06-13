@@ -195,12 +195,18 @@ export function subsampleData(X: number[][], S_mask: boolean[], R_mask: boolean[
 
 /* ── TTI Result Type ── */
 export interface TTIResult {
+  /** Legacy composite (zL_GCT + zB + zN), retained for back-compat. */
   tti: number;
   tti_ci: [number, number];
-  z: { zL: number; zB: number; zN: number };
-  p: { pL: number; pB: number; pN: number };
-  raw: { L: number; B: number; F: number; D: number; phi: number; N: number; h1Thresh: number; beta1: number; edges: number; comps: number };
-  null: { nullL: number[]; nullB: number[]; nullN: number[] };
+  /** Primary composite using VR persistent homology: zB + zL_VR + zN. */
+  fTTI_primary: number;
+  /** Secondary composite using graph-cycle-topology channel: zB + zL_GCT + zN. */
+  fTTI_GCT: number;
+  topology_primary: "VR" | "GCT";
+  z: { zL: number; zB: number; zN: number; zL_VR: number; zL_GCT: number };
+  p: { pL: number; pB: number; pN: number; pL_VR: number };
+  raw: { L: number; B: number; F: number; D: number; phi: number; N: number; h1Thresh: number; beta1: number; edges: number; comps: number; L_VR: number; vrBars: number };
+  null: { nullL: number[]; nullB: number[]; nullN: number[]; nullL_VR: number[] };
   h0: { eps: number[]; beta0: number[]; F: number };
   pcaResult: { scores: number[][]; varExp: number[] };
   S_mask: boolean[];
