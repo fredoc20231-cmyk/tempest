@@ -10,6 +10,8 @@ import DataSourcesPanel from "@/components/tempest/DataSourcesPanel";
 import TrajectoryPanel from "@/components/tempest/TrajectoryPanel";
 import TTIPanel from "@/components/tempest/TTIPanel";
 import ArticlePanel from "@/components/tempest/ArticlePanel";
+import ImmuneRiskPanel from "@/components/tempest/ImmuneRiskPanel";
+import PredictivePanel from "@/components/tempest/PredictivePanel";
 import { TempestProvider } from "@/contexts/TempestContext";
 
 const Index = () => {
@@ -32,6 +34,10 @@ const Index = () => {
         return <TrajectoryPanel />;
       case "tti":
         return <TTIPanel />;
+      case "immune":
+        return <ImmuneRiskPanel cohort={cohort} />;
+      case "predict":
+        return <PredictivePanel />;
       case "article":
         return <ArticlePanel onNavigate={(m) => setActive(m as Module)} />;
       default:
