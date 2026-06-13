@@ -73,7 +73,7 @@ const ChatPanel = ({ onNavigate, onCohortLoaded }: ChatPanelProps) => {
     {
       id: "welcome",
       role: "assistant",
-      content: "Welcome to the TEMPEST AI Agent. I have access to the HGSOC GEM longitudinal dataset (8 timepoints, D0–D122) with RNA-seq, WES, spatial transcriptomics, and neoantigen data.\n\nYou can **upload files** (CSV, TSV, TXT, VCF, MAF, FASTA, JSON, etc.) and I'll analyze them in the context of tumor evolution and cancer progression.\n\nAsk me to load cohorts into the MOTF pipeline, run survival staging, or explore the neoantigen landscape.",
+      content: "Welcome to the TEMPEST AI Agent. I have access to the HGSOC GEM longitudinal dataset (8 timepoints, D0–D122) with RNA-seq, WES, spatial transcriptomics, and neoantigen data.\n\nYou can **upload files in any common format** — PDF, DOCX, DOC, RTF, HTML, TXT, CSV, TSV, JSON, VCF, MAF, FASTA, and more. I'll extract the text, analyze it in the context of tumor evolution, and add it to the platform's knowledge base so other modules (and the cross-module synthesis) can use it.\n\nAsk me to load cohorts into the MOTF pipeline, run survival staging, or explore the neoantigen landscape.",
     },
   ]);
   const [input, setInput] = useState("");
