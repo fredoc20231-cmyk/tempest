@@ -55,7 +55,8 @@ function stripAction(text: string): string {
   return text.replace(/ACTION:\s*\{[^}]+\}/, "").trim();
 }
 
-const SUPPORTED_TEXT_EXTENSIONS = [".csv", ".tsv", ".txt", ".json", ".md", ".xml", ".yaml", ".yml", ".vcf", ".bed", ".gff", ".gtf", ".fasta", ".fa", ".fastq", ".fq", ".sam", ".maf"];
+import { parseFile, SUPPORTED_EXTENSIONS, getExtension } from "@/lib/fileParsers";
+
 const MAX_FILE_CHARS = 50000;
 
 interface AttachedFile {
@@ -63,6 +64,7 @@ interface AttachedFile {
   content: string;
   size: number;
   truncated: boolean;
+  kind: string;
 }
 
 const ChatPanel = ({ onNavigate, onCohortLoaded }: ChatPanelProps) => {
@@ -71,7 +73,7 @@ const ChatPanel = ({ onNavigate, onCohortLoaded }: ChatPanelProps) => {
     {
       id: "welcome",
       role: "assistant",
-      content: "Welcome to the TEMPEST AI Agent. I have access to the HGSOC GEM longitudinal dataset (8 timepoints, D0–D122) with RNA-seq, WES, spatial transcriptomics, and neoantigen data.\n\nYou can **upload files** (CSV, TSV, TXT, VCF, MAF, FASTA, JSON, etc.) and I'll analyze them in the context of tumor evolution and cancer progression.\n\nAsk me to load cohorts into the MOTF pipeline, run survival staging, or explore the neoantigen landscape.",
+      content: "Welcome to the TEMPEST AI Agent. I have access to the HGSOC GEM longitudinal dataset (8 timepoints, D0–D122) with RNA-seq, WES, spatial transcriptomics, and neoantigen data.\n\nYou can **upload files in any common format** — PDF, DOCX, DOC, RTF, HTML, TXT, CSV, TSV, JSON, VCF, MAF, FASTA, and more. I'll extract the text, analyze it in the context of tumor evolution, and add it to the platform's knowledge base so other modules (and the cross-module synthesis) can use it.\n\nAsk me to load cohorts into the MOTF pipeline, run survival staging, or explore the neoantigen landscape.",
     },
   ]);
   const [input, setInput] = useState("");
@@ -119,22 +121,33 @@ const ChatPanel = ({ onNavigate, onCohortLoaded }: ChatPanelProps) => {
 
     const newFiles: AttachedFile[] = [];
     for (const file of Array.from(files)) {
-      const ext = "." + file.name.split(".").pop()?.toLowerCase();
-      if (!SUPPORTED_TEXT_EXTENSIONS.includes(ext)) {
-        alert(`Unsupported file type: ${ext}. Supported: ${SUPPORTED_TEXT_EXTENSIONS.join(", ")}`);
+      const ext = getExtension(file.name);
+      if (!SUPPORTED_EXTENSIONS.includes(ext)) {
+        alert(`Unsupported file type: ${ext || "(none)"}.\n\nSupported: ${SUPPORTED_EXTENSIONS.join(", ")}`);
         continue;
       }
       try {
-        const text = await file.text();
-        const truncated = text.length > MAX_FILE_CHARS;
-        newFiles.push({
-          name: file.name,
-          content: truncated ? text.slice(0, MAX_FILE_CHARS) : text,
-          size: file.size,
-          truncated,
-        });
-      } catch {
-        alert(`Failed to read file: ${file.name}`);
+        const parsed = await parseFile(file, MAX_FILE_CHARS);
+        newFiles.push(parsed);
+        // Persist to platform knowledge so the AI synthesis and other modules can use it.
+        try {
+          await supabase.from("datasets").insert({
+            name: file.name,
+            source: "user-upload",
+            source_id: `chat-${Date.now()}-${file.name}`,
+            category: "user-upload",
+            description: `User-uploaded ${parsed.kind.toUpperCase()} (${(file.size / 1024).toFixed(1)} KB${parsed.truncated ? ", truncated" : ""})`,
+            data: { content: parsed.content, kind: parsed.kind, truncated: parsed.truncated },
+            record_count: parsed.content.length,
+            metadata: { mime: file.type || null, original_size: file.size },
+            is_training: true,
+          });
+        } catch (persistErr) {
+          console.warn("Failed to persist uploaded file to datasets table:", persistErr);
+        }
+      } catch (err: any) {
+        console.error(err);
+        alert(`Failed to parse ${file.name}: ${err?.message || err}`);
       }
     }
     setAttachedFiles((prev) => [...prev, ...newFiles]);
@@ -456,14 +469,14 @@ const ChatPanel = ({ onNavigate, onCohortLoaded }: ChatPanelProps) => {
             ref={fileInputRef}
             type="file"
             multiple
-            accept=".csv,.tsv,.txt,.json,.md,.xml,.yaml,.yml,.vcf,.bed,.gff,.gtf,.fasta,.fa,.fastq,.fq,.sam,.maf"
+            accept={SUPPORTED_EXTENSIONS.join(",")}
             onChange={handleFileSelect}
             className="hidden"
           />
           <button
             onClick={() => fileInputRef.current?.click()}
             className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors flex-shrink-0"
-            title="Attach file (CSV, TSV, VCF, MAF, FASTA, etc.)"
+            title={`Attach file — PDF, DOCX, DOC, RTF, HTML, TXT, CSV, JSON, VCF, MAF, FASTA, etc. (${SUPPORTED_EXTENSIONS.length} formats)`}
           >
             <Paperclip className="w-4 h-4" />
           </button>
