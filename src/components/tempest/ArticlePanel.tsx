@@ -70,6 +70,40 @@ const StatusBadge = ({ status }: { status: string }) => {
 };
 
 const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
+  const { pipelineRuns, analysisResults, cohorts } = useTempest();
+  const [synthesis, setSynthesis] = useState<LiveSynthesis | null>(null);
+  const [datasetCount, setDatasetCount] = useState<{ total: number; training: number; sources: string[] }>({ total: 0, training: 0, sources: [] });
+
+  useEffect(() => {
+    (async () => {
+      const { data: synth } = await supabase
+        .from("analysis_results")
+        .select("created_at, results")
+        .eq("module", "synthesis")
+        .order("created_at", { ascending: false })
+        .limit(1);
+      if (synth && synth[0]) {
+        const r: any = synth[0].results || {};
+        setSynthesis({
+          created_at: synth[0].created_at,
+          narrative: r.narrative || "",
+          scenario: r.scenario || null,
+          source_count: r.source_count || 0,
+          training_count: r.training_count || 0,
+        });
+      }
+      const { data: ds } = await supabase.from("datasets").select("source, is_training");
+      if (ds) {
+        const sources = Array.from(new Set(ds.map((d: any) => d.source))).slice(0, 12);
+        setDatasetCount({ total: ds.length, training: ds.filter((d: any) => d.is_training).length, sources });
+      }
+    })();
+  }, []);
+
+  const completedModules = pipelineRuns.filter((r) => r.status === "complete");
+  const moduleResultCount = Object.values(analysisResults).filter(Boolean).length;
+  const generatedAt = new Date().toISOString().slice(0, 19).replace("T", " ") + " UTC";
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
