@@ -146,15 +146,22 @@ const ReportPanel = () => {
         </div>
       </div>
 
+      {/* Scope disclaimer */}
+      <div className="module-card border-chart-amber/30 bg-chart-amber/5">
+        <p className="text-xs text-chart-amber font-mono font-semibold mb-1">Scope &amp; disclaimers ({TEMPEST_VERSION})</p>
+        <p className="text-xs text-foreground/80 leading-relaxed">{DISCLAIMER_SCOPE}</p>
+        <p className="text-xs text-foreground/80 leading-relaxed mt-1">{DISCLAIMER_FTTI}</p>
+      </div>
+
       {/* Executive Summary */}
       <div className="module-card border-primary/20">
         <h2 className="text-sm font-mono font-semibold text-foreground uppercase tracking-wide mb-3">Executive Summary</h2>
         <p className="text-sm text-muted-foreground leading-relaxed">
-          This report summarizes the TEMPEST multi-omic analysis pipeline across {moduleOrder.length} modules.{" "}
+          This report summarizes the TEMPEST state-separation and transition-dynamics analysis across {moduleOrder.length} modules.{" "}
           <span className="text-chart-emerald font-mono">{completedModules.length} completed</span>
           {failedModules.length > 0 && <>, <span className="text-destructive font-mono">{failedModules.length} failed</span></>}
           {pendingModules.length > 0 && <>, <span className="text-muted-foreground font-mono">{pendingModules.length} pending</span></>}
-          . The pipeline integrates tensor factorization, stage classification, clonal trajectory analysis, neoantigen intelligence, and multi-scale risk stratification to provide a comprehensive tumor evolution profile.
+          . All evidence is endpoint or longitudinal; no prospective prediction is claimed.
         </p>
       </div>
 
