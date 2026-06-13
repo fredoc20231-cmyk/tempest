@@ -39,9 +39,9 @@ export function buildMethodsSummary(p: ReproParams): string {
 ${DISCLAIMER_SCOPE}
 
 ## Topology
-- Primary channel: ${p.topologyPrimary ?? "VR"} persistent homology (H1 total persistence).
-- Secondary channel: GCT (graph-cycle count, fast approximation).
-- Composite score: fTTI = z_B + z_L^VR + z_N.
+- Primary channel: ${p.topologyPrimary === "GCT" ? "GCT (graph cycle approximation) — WARNING: approximation only; not primary manuscript score." : "VR-PH (Ripser-style H1, total persistence)."}
+- Secondary channel: ${p.topologyPrimary === "GCT" ? "VR-PH (Ripser-style H1)" : "GCT (graph cycle approximation)"}.
+- Composite score: fTTI_primary = z_B + z_L^VR + z_N. Legacy composite fTTI_GCT = z_B + z_L^GCT + z_N is retained for back-compat only.
 
 ## Parameters
 - kNN: ${p.kNN ?? 12}

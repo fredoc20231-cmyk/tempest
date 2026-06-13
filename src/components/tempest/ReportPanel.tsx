@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useState } from "react";
 import { useTempest } from "@/contexts/TempestContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -6,8 +7,41 @@ import { Download, FileText, CheckCircle2, AlertTriangle, Clock, ArrowRight, Dna
 import { downloadHtmlReport } from "./utils/downloadUtils";
 import { downloadReproBundle } from "@/lib/export/reproducibilityReport";
 import { DISCLAIMER_FTTI, DISCLAIMER_SCOPE, TEMPEST_VERSION } from "@/lib/scopeConfig";
+import { EvidenceBadge, type EvidenceType } from "./EvidenceBadge";
 
 const moduleOrder = ["motf", "gbsc", "bctn", "cnis", "msrs", "trajectory"] as const;
+
+const moduleEvidence: Record<string, EvidenceType> = {
+  motf: "longitudinal-trajectory",
+  gbsc: "endpoint-comparison",
+  bctn: "longitudinal-trajectory",
+  cnis: "endpoint-comparison",
+  msrs: "longitudinal-trajectory",
+  trajectory: "longitudinal-trajectory",
+};
+
+const reviewerSafeFor = (e: EvidenceType): string =>
+  e === "endpoint-comparison"
+    ? "This quantifies established state separation, not transition prediction."
+    : e === "longitudinal-trajectory"
+    ? "Retrospective trajectory evidence; not prospective prediction."
+    : e === "prospective-prediction"
+    ? "Reserved: only valid with user-supplied time-course outcome labels."
+    : "Synthetic ground truth; method validation only.";
+
+function downloadCsv(filename: string, rows: (string | number | null | undefined)[][]) {
+  const csv = rows
+    .map((r) => r.map((c) => {
+      const s = c == null ? "" : String(c);
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    }).join(","))
+    .join("\n");
+  const a = document.createElement("a");
+  a.download = filename;
+  a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
 
 const moduleMeta: Record<string, { title: string; icon: any; purpose: string }> = {
   motf: { title: "MOTF — Multi-Omic Tensor Factorization", icon: Dna, purpose: "Decomposes multi-omic data into latent factors that capture cross-modal variance and correlate with disease stage." },
@@ -40,6 +74,18 @@ const nextSteps = [
 
 const ReportPanel = () => {
   const { pipelineRuns, analysisResults, cohorts, isLoading } = useTempest();
+  const [topology, setTopology] = useState<"VR" | "GCT">("VR");
+
+  const getFTTI = (mod: string): { primary: number | null; gct: number | null; zL_VR: number | null; zL_GCT: number | null } => {
+    const r = (analysisResults[mod]?.results as any) || {};
+    const metadata = (analysisResults[mod] as any)?.metadata || {};
+    return {
+      primary: r.fTTI_primary ?? metadata.fTTI_primary ?? r.tti_score ?? metadata.tti_score ?? null,
+      gct: r.fTTI_GCT ?? metadata.fTTI_GCT ?? null,
+      zL_VR: r.z?.zL_VR ?? metadata.zL_VR ?? null,
+      zL_GCT: r.z?.zL ?? metadata.zL_GCT ?? null,
+    };
+  };
 
   const completedModules = moduleOrder.filter((m) => {
     const run = pipelineRuns.find((r) => r.module === m);
@@ -127,14 +173,14 @@ const ReportPanel = () => {
                 kNN: 12,
                 nullReps: 50,
                 bsReps: 50,
-                topologyPrimary: "VR",
+                topologyPrimary: topology,
                 cohortName: cohorts[0]?.name,
                 cohortSource: cohorts[0] ? "USER-UPLOADED" : "DEMO/SYNTHETIC",
                 nPerCondition: cohorts[0]?.samples,
                 validityWarning: cohorts[0] && cohorts[0].samples < 25 ? `n=${cohorts[0].samples} < 25` : undefined,
                 modules: moduleOrder.map((m) => ({
                   module: m,
-                  evidenceType: m === "trajectory" ? "longitudinal-trajectory" : "endpoint-comparison",
+                  evidenceType: moduleEvidence[m],
                   provenance: analysisResults[m] ? "COMPUTED" : "PENDING VERIFICATION",
                 })),
               })
@@ -142,6 +188,34 @@ const ReportPanel = () => {
             className="flex items-center gap-2 px-4 py-2 text-xs font-mono border border-border rounded-md hover:bg-muted transition-colors"
           >
             <Download className="w-4 h-4" /> Methods + Repro
+          </button>
+          <button
+            onClick={() => {
+              const nP = cohorts[0]?.samples ?? null;
+              const validity = nP != null && nP < 25 ? `n=${nP} < 25 (composite suppressed)` : "OK";
+              const header = [
+                "module", "fTTI_primary", "fTTI_GCT", "zL_VR", "zL_GCT",
+                "topology_primary", "validity_status", "evidence_type", "provenance",
+              ];
+              const rows = moduleOrder.map((m) => {
+                const f = getFTTI(m);
+                return [
+                  m,
+                  f.primary != null ? f.primary.toFixed(4) : "",
+                  f.gct != null ? f.gct.toFixed(4) : "",
+                  f.zL_VR != null ? f.zL_VR.toFixed(4) : "",
+                  f.zL_GCT != null ? f.zL_GCT.toFixed(4) : "",
+                  topology === "VR" ? "VR-PH (Ripser-style H1)" : "GCT (graph cycle approximation)",
+                  validity,
+                  moduleEvidence[m],
+                  analysisResults[m] ? "COMPUTED" : "PENDING VERIFICATION",
+                ];
+              });
+              downloadCsv("tempest_module_scores.csv", [header, ...rows]);
+            }}
+            className="flex items-center gap-2 px-4 py-2 text-xs font-mono border border-border rounded-md hover:bg-muted transition-colors"
+          >
+            <Download className="w-4 h-4" /> Export CSV
           </button>
         </div>
       </div>
@@ -151,6 +225,28 @@ const ReportPanel = () => {
         <p className="text-xs text-chart-amber font-mono font-semibold mb-1">Scope &amp; disclaimers ({TEMPEST_VERSION})</p>
         <p className="text-xs text-foreground/80 leading-relaxed">{DISCLAIMER_SCOPE}</p>
         <p className="text-xs text-foreground/80 leading-relaxed mt-1">{DISCLAIMER_FTTI}</p>
+      </div>
+
+      {/* Methods — topology */}
+      <div className="module-card border-primary/20">
+        <div className="flex items-start justify-between gap-3 mb-2">
+          <div>
+            <h2 className="text-sm font-mono font-semibold text-foreground uppercase tracking-wide">Methods — Topology channel</h2>
+            <p className="text-xs text-muted-foreground mt-1">
+              <span className="font-mono">topology_primary: VR-PH (Ripser-style H1)</span>. Composite{" "}
+              <span className="font-mono">fTTI = z_B + z_L^VR + z_N</span>. The GCT channel is retained as a fast graph-cycle approximation and is not the manuscript score.
+            </p>
+          </div>
+          <div className="flex items-center gap-1 bg-secondary/50 rounded-md p-0.5 flex-shrink-0">
+            <button onClick={() => setTopology("VR")} className={`text-[10px] font-mono px-2 py-1 rounded ${topology === "VR" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>VR-PH</button>
+            <button onClick={() => setTopology("GCT")} className={`text-[10px] font-mono px-2 py-1 rounded ${topology === "GCT" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>GCT</button>
+          </div>
+        </div>
+        {topology === "GCT" && (
+          <p className="text-[11px] font-mono text-chart-amber mt-2">
+            ⚠ Approximation only; not primary manuscript score. Manuscript values must be reported from VR-PH.
+          </p>
+        )}
       </div>
 
       {/* Executive Summary */}
@@ -225,13 +321,18 @@ const ReportPanel = () => {
               animate={{ opacity: 1, y: 0 }}
               className={`module-card ${isFailed ? "border-destructive/30" : isComplete ? "border-chart-emerald/20" : ""}`}
             >
-              <div className="flex items-center gap-3 mb-3">
+              <div className="flex items-center gap-3 mb-3 flex-wrap">
                 {statusIcon(mod)}
                 <meta.icon className="w-5 h-5 text-primary" />
                 <h3 className="text-sm font-mono font-semibold text-foreground">{meta.title}</h3>
+                <EvidenceBadge type={moduleEvidence[mod]} />
               </div>
 
-              <p className="text-xs text-muted-foreground mb-3">{meta.purpose}</p>
+              <p className="text-xs text-muted-foreground mb-2">{meta.purpose}</p>
+
+              <p className="text-[11px] font-mono text-muted-foreground bg-secondary/30 border-l-2 border-chart-cyan/40 px-3 py-1 rounded-sm mb-3">
+                {reviewerSafeFor(moduleEvidence[mod])}
+              </p>
 
               {/* Interpretation */}
               <div className="bg-secondary/50 rounded-md p-3 mb-3">

@@ -13,7 +13,7 @@ import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   Hexagon, Play, Loader2, AlertTriangle, CheckCircle2, Upload, Database, FlaskConical,
-  BarChart3, Search, ExternalLink, TrendingUp, Info,
+  BarChart3, Search, ExternalLink, TrendingUp, Info, ChevronDown, ChevronRight,
 } from "lucide-react";
 import {
   computeTTI, computePCA, standardize, subsampleData, parseUpload,
@@ -27,6 +27,9 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useTempest } from "@/contexts/TempestContext";
 import { toast } from "sonner";
+import { assessValidity } from "@/lib/validity";
+import { EvidenceBadge, type EvidenceType } from "./EvidenceBadge";
+import { ValidityWarning } from "./ValidityWarning";
 
 /* ════════════════════════════════════════════════
    SVG Visualizations — all driven by real computed data
@@ -136,35 +139,104 @@ function NullHistogram({
    TTI Result Summary
    ════════════════════════════════════════════════ */
 
-function TTISummary({ result }: { result: TTIResult }) {
-  const { tti, tti_ci, z, p, raw, phaseTransition, n } = result;
+function TTISummary({ result, evidenceType = "endpoint-comparison" }: { result: TTIResult; evidenceType?: EvidenceType }) {
+  const { tti, tti_ci, z, p, raw, n } = result;
+  const fTTI_primary = result.fTTI_primary ?? tti;
+  const fTTI_GCT = result.fTTI_GCT ?? tti;
+  const zL_VR = result.z.zL_VR ?? 0;
+  const pL_VR = result.p.pL_VR ?? 1;
+
+  // n is total samples; per-condition is the smaller of S/R counts.
+  const nS = result.S_mask.filter(Boolean).length;
+  const nR = result.R_mask.filter(Boolean).length;
+  const nPerCondition = Math.min(nS, nR);
+  const validity = assessValidity(nPerCondition);
+  const compositeAllowed = validity.ok;
+
+  const [channel, setChannel] = useState<"VR" | "GCT">("VR");
+  const [showLegacy, setShowLegacy] = useState(false);
+
+  const activeScore = channel === "VR" ? fTTI_primary : fTTI_GCT;
+  const activeLabel = channel === "VR" ? "fTTI primary (VR-PH)" : "fTTI (GCT approximation)";
+  const isTransition = compositeAllowed && activeScore >= 6.0;
 
   const comps = [
-    { key: "zL" as const, label: "L — Loop Mass (H1)", zv: z.zL, pv: p.pL, rv: raw.L, desc: `β₁ = ${raw.beta1}`, cssVar: "--chart-rose" },
-    { key: "zB" as const, label: "B — Branching (H0+D)", zv: z.zB, pv: p.pB, rv: raw.B, desc: `F=${raw.F.toFixed(4)} D=${raw.D.toFixed(4)}`, cssVar: "--chart-amber" },
-    { key: "zN" as const, label: "N — Bottleneck (φ)", zv: z.zN, pv: p.pN, rv: raw.N, desc: `φ=${raw.phi.toFixed(5)}`, cssVar: "--chart-emerald" },
+    { key: "zL_VR", label: "L^VR — H1 total persistence (VR-PH)", zv: zL_VR, pv: pL_VR, rv: raw.L_VR ?? raw.L, desc: `bars=${raw.vrBars ?? "—"} · primary`, cssVar: "--chart-rose", blocked: !compositeAllowed },
+    { key: "zB", label: "B — Branching (H0+D)", zv: z.zB, pv: p.pB, rv: raw.B, desc: `F=${raw.F.toFixed(4)} D=${raw.D.toFixed(4)}`, cssVar: "--chart-amber", blocked: !compositeAllowed },
+    { key: "zN", label: "N — Bottleneck (φ)", zv: z.zN, pv: p.pN, rv: raw.N, desc: `φ=${raw.phi.toFixed(5)}`, cssVar: "--chart-emerald", blocked: false },
   ];
   const maxZ = Math.max(6, ...comps.map(c => Math.abs(c.zv)));
 
+  const reviewerSafe =
+    evidenceType === "endpoint-comparison"
+      ? "This quantifies established state separation, not transition prediction."
+      : evidenceType === "longitudinal-trajectory"
+      ? "Retrospective trajectory evidence; not prospective prediction."
+      : evidenceType === "prospective-prediction"
+      ? "Prospective prediction is only valid with user-supplied time-course outcome labels."
+      : null;
+
   return (
     <div className="space-y-4">
+      {/* Channel toggle */}
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <div className="flex items-center gap-2">
+          <EvidenceBadge type={evidenceType} />
+          <Badge variant="outline" className="font-mono text-[10px]">topology_primary: VR-PH</Badge>
+        </div>
+        <div className="flex items-center gap-1 bg-secondary/50 rounded-md p-0.5">
+          <button
+            onClick={() => setChannel("VR")}
+            className={`text-[10px] font-mono px-2.5 py-1 rounded ${channel === "VR" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+          >VR-PH primary</button>
+          <button
+            onClick={() => setChannel("GCT")}
+            className={`text-[10px] font-mono px-2.5 py-1 rounded ${channel === "GCT" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+          >GCT approximation</button>
+        </div>
+      </div>
+
+      {reviewerSafe && (
+        <div className="text-[11px] font-mono text-muted-foreground bg-secondary/30 border-l-2 border-chart-cyan/40 px-3 py-1.5 rounded-sm">
+          {reviewerSafe}
+        </div>
+      )}
+
+      <ValidityWarning report={validity} />
+
+      {channel === "GCT" && (
+        <div className="text-[11px] font-mono text-chart-amber bg-chart-amber/5 border border-chart-amber/30 rounded-md px-3 py-1.5">
+          Approximation only; not primary manuscript score. Switch to VR-PH primary for reported values.
+        </div>
+      )}
+
       {/* Score + metadata */}
       <div className="grid grid-cols-3 gap-4">
         <div className="module-card text-center col-span-1">
-          <p className="text-[10px] font-mono text-muted-foreground uppercase">Composite TTI</p>
-          <p className={`text-4xl font-mono font-bold mt-1 ${phaseTransition ? "text-chart-rose" : "text-chart-emerald"}`}>
-            {tti.toFixed(3)}
-          </p>
-          <p className="text-[10px] font-mono text-muted-foreground mt-1">
-            95% CI [{tti_ci[0]?.toFixed(2) ?? "—"}, {tti_ci[1]?.toFixed(2) ?? "—"}]
-          </p>
-          <Badge variant={phaseTransition ? "destructive" : "secondary"} className="font-mono text-[10px] mt-3">
-            {phaseTransition ? "⚡ PHASE TRANSITION" : "○ No Transition"}
-          </Badge>
+          <p className="text-[10px] font-mono text-muted-foreground uppercase">{activeLabel}</p>
+          {compositeAllowed ? (
+            <>
+              <p className={`text-4xl font-mono font-bold mt-1 ${isTransition ? "text-chart-rose" : "text-chart-emerald"}`}>
+                {activeScore.toFixed(3)}
+              </p>
+              <p className="text-[10px] font-mono text-muted-foreground mt-1">
+                95% CI [{tti_ci[0]?.toFixed(2) ?? "—"}, {tti_ci[1]?.toFixed(2) ?? "—"}]
+              </p>
+              <Badge variant={isTransition ? "destructive" : "secondary"} className="font-mono text-[10px] mt-3">
+                {isTransition ? "⚡ PHASE TRANSITION" : "○ No Transition"}
+              </Badge>
+            </>
+          ) : (
+            <>
+              <p className="text-2xl font-mono font-bold mt-1 text-muted-foreground">suppressed</p>
+              <p className="text-[10px] font-mono text-muted-foreground mt-1">n/condition = {nPerCondition} &lt; {validity.threshold}</p>
+              <Badge variant="outline" className="font-mono text-[10px] mt-3 border-chart-amber/40 text-chart-amber">VALIDITY GATE</Badge>
+            </>
+          )}
         </div>
         <div className="col-span-2 grid grid-cols-3 gap-2">
           {[
-            { l: "Threshold", v: "TTI ≥ 6.0" }, { l: "φ conductance", v: raw.phi.toFixed(5) }, { l: "n samples", v: n },
+            { l: "Threshold", v: "fTTI ≥ 6.0" }, { l: "φ conductance", v: raw.phi.toFixed(5) }, { l: "n / condition", v: nPerCondition },
             { l: "β₁ (H1 cycles)", v: raw.beta1 }, { l: "Graph edges", v: raw.edges }, { l: "Components", v: raw.comps },
           ].map(({ l, v }) => (
             <div key={l} className="bg-secondary/50 rounded-md p-2.5 text-center">
@@ -177,18 +249,20 @@ function TTISummary({ result }: { result: TTIResult }) {
 
       {/* Component bars */}
       <div className="grid grid-cols-3 gap-3">
-        {comps.map(({ label, zv, pv, desc, cssVar }) => (
-          <div key={label} className="module-card">
+        {comps.map(({ label, zv, pv, desc, cssVar, blocked }) => (
+          <div key={label} className={`module-card ${blocked ? "opacity-50" : ""}`}>
             <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wide">{label}</p>
-            <p className="text-2xl font-mono font-bold mt-1" style={{ color: `hsl(var(${cssVar}))` }}>z={zv.toFixed(2)}</p>
-            <p className="text-[10px] text-muted-foreground mt-1">{desc}</p>
-            <p className={`text-[10px] font-mono mt-0.5 ${pv < 0.05 ? "text-chart-rose" : "text-muted-foreground"}`}>
-              p={pv.toFixed(3)}{pv < 0.05 ? " *" : ""}
+            <p className="text-2xl font-mono font-bold mt-1" style={{ color: `hsl(var(${cssVar}))` }}>
+              {blocked ? "—" : `z=${zv.toFixed(2)}`}
+            </p>
+            <p className="text-[10px] text-muted-foreground mt-1">{blocked ? "blocked by validity gate" : desc}</p>
+            <p className={`text-[10px] font-mono mt-0.5 ${!blocked && pv < 0.05 ? "text-chart-rose" : "text-muted-foreground"}`}>
+              {blocked ? "—" : `p=${pv.toFixed(3)}${pv < 0.05 ? " *" : ""}`}
             </p>
             <div className="h-1.5 bg-secondary rounded-full overflow-hidden mt-2">
               <motion.div
                 initial={{ width: 0 }}
-                animate={{ width: `${Math.min(100, (Math.abs(zv) / maxZ) * 100)}%` }}
+                animate={{ width: blocked ? "0%" : `${Math.min(100, (Math.abs(zv) / maxZ) * 100)}%` }}
                 transition={{ duration: 0.6 }}
                 className="h-full rounded-full"
                 style={{ background: `hsl(var(${cssVar}))` }}
@@ -196,6 +270,30 @@ function TTISummary({ result }: { result: TTIResult }) {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Advanced / Legacy GCT */}
+      <div className="module-card border-border/40">
+        <button
+          onClick={() => setShowLegacy(s => !s)}
+          className="flex items-center gap-2 text-[11px] font-mono text-muted-foreground hover:text-foreground transition-colors w-full"
+        >
+          {showLegacy ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+          Advanced / Legacy GCT score
+        </button>
+        {showLegacy && (
+          <div className="mt-3 grid grid-cols-2 gap-3 text-[11px] font-mono">
+            <div>
+              <p className="text-muted-foreground">Legacy tti (GCT composite)</p>
+              <p className="text-lg font-bold text-foreground">{compositeAllowed ? tti.toFixed(3) : "suppressed"}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">z_L^GCT (graph H1 surrogate)</p>
+              <p className="text-lg font-bold text-foreground">{compositeAllowed ? z.zL.toFixed(2) : "—"}</p>
+              <p className="text-[10px] text-muted-foreground">β₁ = {raw.beta1} · approximation only</p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -944,16 +1042,20 @@ function ResultsTab({ results }: { results: TTIResult[] }) {
   useEffect(() => {
     if (!result) return;
     const { tti, z, raw, p } = result;
+    const fp = result.fTTI_primary ?? tti;
+    const zLVR = result.z.zL_VR ?? 0;
+    const pLVR = result.p.pL_VR ?? 1;
     setAiQ(
-      `TTI analysis — ${result.sourceName}\n\nResults:\n` +
-      `• TTI = ${tti.toFixed(3)}  95% CI [${result.tti_ci[0]?.toFixed(2)}, ${result.tti_ci[1]?.toFixed(2)}]\n` +
-      `• z(L) = ${z.zL.toFixed(2)}  p = ${p.pL.toFixed(3)}  [H1 loop mass, β₁ = ${raw.beta1}]\n` +
+      `TTI analysis — ${result.sourceName}\n\nResults (primary = VR-PH):\n` +
+      `• fTTI primary (VR-PH) = ${fp.toFixed(3)}  95% CI [${result.tti_ci[0]?.toFixed(2)}, ${result.tti_ci[1]?.toFixed(2)}]\n` +
+      `• z(L^VR) = ${zLVR.toFixed(2)}  p = ${pLVR.toFixed(3)}  [H1 total persistence, bars=${raw.vrBars ?? "—"}]\n` +
       `• z(B) = ${z.zB.toFixed(2)}  p = ${p.pB.toFixed(3)}  [F = ${raw.F.toFixed(4)}, D = ${raw.D.toFixed(4)}]\n` +
       `• z(N) = ${z.zN.toFixed(2)}  p = ${p.pN.toFixed(3)}  [φ = ${raw.phi.toFixed(5)}, N = ${raw.N.toFixed(3)}]\n` +
-      `• Phase transition: ${result.phaseTransition ? "YES (TTI ≥ 6.0)" : "NO"}\n` +
+      `• Legacy z(L^GCT) = ${z.zL.toFixed(2)} (approximation, not primary)\n` +
+      `• Phase transition: ${(fp >= 6.0) ? "YES (fTTI ≥ 6.0)" : "NO"}\n` +
       `• Graph: ${raw.edges} edges, ${raw.comps} components, β₁=${raw.beta1}\n` +
       `${result.genePanel ? `• Genes: ${result.genePanel.join(", ")}\n` : ""}` +
-      `\nInterpret the biological significance in the context of cancer regulatory state transitions.`,
+      `\nInterpret the biological significance in the context of cancer regulatory state transitions. Frame as endpoint state separation unless longitudinal evidence is present.`,
     );
     setAiR(""); setAiErr("");
   }, [result]);
@@ -1043,9 +1145,10 @@ function ResultsTab({ results }: { results: TTIResult[] }) {
           </div>
 
           {/* Null distributions */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-4 gap-3">
             {([
-              { arr: result.null.nullL, obs: result.raw.L, label: "L null distribution" },
+              { arr: result.null.nullL_VR ?? result.null.nullL, obs: result.raw.L_VR ?? result.raw.L, label: "L^VR null (primary)" },
+              { arr: result.null.nullL, obs: result.raw.L, label: "L^GCT null (legacy)" },
               { arr: result.null.nullB, obs: result.raw.B, label: "B null distribution" },
               { arr: result.null.nullN, obs: result.raw.N, label: "N null distribution" },
             ] as const).map(({ arr, obs, label }) => (
