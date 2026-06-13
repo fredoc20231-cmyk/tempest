@@ -18,7 +18,7 @@ import {
   BookOpen,
 } from "lucide-react";
 
-type Module = "home" | "overview" | "motf" | "gbsc" | "bctn" | "cnis" | "msrs" | "trajectory" | "tti" | "chat" | "report" | "datasources" | "article";
+type Module = "home" | "overview" | "motf" | "gbsc" | "bctn" | "cnis" | "msrs" | "trajectory" | "tti" | "immune" | "predict" | "chat" | "report" | "datasources" | "article";
 
 interface SidebarProps {
   active: Module;
@@ -37,47 +37,45 @@ const sections: Section[] = [
     ],
   },
   {
-    section: "2 · Decomposition",
+    section: "2 · Decomposition & Staging",
     items: [
       { id: "motf", label: "MOTF", desc: "Tucker Decomposition", icon: Dna, step: 2 },
-    ],
-  },
-  {
-    section: "3 · Survival & Clonal",
-    items: [
       { id: "gbsc", label: "GBSC", desc: "Survival Analysis", icon: Activity, step: 3 },
-      { id: "bctn", label: "BCTN", desc: "Clonal Dynamics", icon: FlaskConical, step: 4 },
     ],
   },
   {
-    section: "4 · Immune & Risk",
+    section: "3 · Immune & Risk",
     items: [
-      { id: "cnis", label: "CNIS", desc: "Neoantigen Intel", icon: Shield, step: 5 },
-      { id: "msrs", label: "MSRS", desc: "Risk Scoring", icon: BarChart3, step: 6 },
+      { id: "immune", label: "Immune & Risk", desc: "BCTN · CNIS · MSRS", icon: Shield, step: 4 },
     ],
   },
   {
-    section: "5 · Predictive Modeling",
+    section: "4 · Predictive Modeling",
     items: [
-      { id: "trajectory", label: "Trajectory", desc: "Bifurcation Prediction", icon: GitBranch, step: 7 },
-      { id: "tti", label: "TTI Platform", desc: "Topological Transition Index", icon: Hexagon, step: 8 },
+      { id: "predict", label: "Predictive", desc: "Trajectory · TTI", icon: Hexagon, step: 5 },
     ],
   },
   {
-    section: "6 · Synthesis & Output",
+    section: "5 · Synthesis & Output",
     items: [
-      { id: "overview", label: "Results Dashboard", desc: "Integrated Findings", icon: LayoutDashboard, step: 9 },
-      { id: "report", label: "Analysis Report", desc: "Full Report", icon: FileText, step: 10 },
-      { id: "article", label: "Article", desc: "Scientific Paper", icon: BookOpen, step: 11 },
+      { id: "overview", label: "Results Dashboard", desc: "Integrated Findings", icon: LayoutDashboard, step: 6 },
+      { id: "report", label: "Analysis Report", desc: "Full Report", icon: FileText, step: 7 },
+      { id: "article", label: "Article", desc: "Scientific Paper", icon: BookOpen, step: 8 },
     ],
   },
   {
-    section: "7 · Assistant",
+    section: "6 · Assistant",
     items: [
-      { id: "chat", label: "AI Agent", desc: "NL Search & Q&A", icon: MessageSquare, step: 12 },
+      { id: "chat", label: "AI Agent", desc: "NL Search & Q&A", icon: MessageSquare, step: 9 },
     ],
   },
 ];
+
+// Track grouped sub-modules so active highlighting works when nested
+const groupedModules: Record<string, Module> = {
+  bctn: "immune", cnis: "immune", msrs: "immune",
+  trajectory: "predict", tti: "predict",
+};
 
 const Sidebar = ({ active, onNavigate }: SidebarProps) => {
   const [collapsed, setCollapsed] = useState(false);
