@@ -4,6 +4,9 @@ import AnalysisSummaryFooter from "./AnalysisSummaryFooter";
 import { moduleSummaries } from "./moduleSummaries";
 import { GitBranch, Play, Loader2, Download, FileText, RefreshCw, RotateCcw, Info, Bot, X, ChevronDown, ChevronUp, Shield } from "lucide-react";
 import BifurcationChart from "./charts/BifurcationChart";
+import LongitudinalGEMChart from "./charts/LongitudinalGEMChart";
+import { EvidenceBadge } from "./EvidenceBadge";
+import { ProvenanceBadge } from "./ProvenanceBadge";
 import { downloadChartAsPng, downloadTableAsCsv, downloadHtmlReport } from "./utils/downloadUtils";
 import { useTempest } from "@/contexts/TempestContext";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -231,6 +234,17 @@ const TrajectoryPanel = () => {
             <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-[hsl(38,100%,55%)] inline-block" /> Entropy S(t)</span>
             <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-[hsl(160,84%,45%)] inline-block" /> Barrier U(x)</span>
           </div>
+        </div>
+
+        <div className="module-card">
+          <div className="flex items-start justify-between mb-3">
+            <h3 className="text-xs font-mono text-muted-foreground uppercase tracking-wide">Longitudinal GEM — fTTI · φ · JSD over time</h3>
+            <div className="flex gap-1.5">
+              <EvidenceBadge type="longitudinal-trajectory" />
+              <ProvenanceBadge value="DEMO/SYNTHETIC" />
+            </div>
+          </div>
+          <LongitudinalGEMChart />
         </div>
 
         <div className="module-card">
