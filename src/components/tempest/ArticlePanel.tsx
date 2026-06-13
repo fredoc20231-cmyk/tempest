@@ -1,11 +1,22 @@
 import { motion } from "framer-motion";
-import { BookOpen, ArrowRight } from "lucide-react";
+import { useEffect, useState } from "react";
+import { BookOpen, ArrowRight, Database, Activity } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { useTempest } from "@/contexts/TempestContext";
+import { supabase } from "@/integrations/supabase/client";
 import type { Module } from "./Sidebar";
 
 interface ArticlePanelProps {
   onNavigate: (module: Module) => void;
+}
+
+interface LiveSynthesis {
+  created_at: string;
+  narrative: string;
+  scenario: string | null;
+  source_count: number;
+  training_count: number;
 }
 
 const ModuleLink = ({ module, label, onNavigate }: { module: Module; label: string; onNavigate: (m: Module) => void }) => (
