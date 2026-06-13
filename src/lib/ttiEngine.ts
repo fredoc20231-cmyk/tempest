@@ -3,6 +3,7 @@
  * All math runs in-browser on actual data — zero mocks.
  * kNN, union-find H0, graph conductance, H1 graph approximation, jitter null, bootstrap.
  */
+import { computeVR_H1_persistence } from "./topology/persistentHomology";
 
 /* ── PRNG ── */
 export function makePRNG(seed: number) {
