@@ -469,14 +469,14 @@ const ChatPanel = ({ onNavigate, onCohortLoaded }: ChatPanelProps) => {
             ref={fileInputRef}
             type="file"
             multiple
-            accept=".csv,.tsv,.txt,.json,.md,.xml,.yaml,.yml,.vcf,.bed,.gff,.gtf,.fasta,.fa,.fastq,.fq,.sam,.maf"
+            accept={SUPPORTED_EXTENSIONS.join(",")}
             onChange={handleFileSelect}
             className="hidden"
           />
           <button
             onClick={() => fileInputRef.current?.click()}
             className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors flex-shrink-0"
-            title="Attach file (CSV, TSV, VCF, MAF, FASTA, etc.)"
+            title={`Attach file — PDF, DOCX, DOC, RTF, HTML, TXT, CSV, JSON, VCF, MAF, FASTA, etc. (${SUPPORTED_EXTENSIONS.length} formats)`}
           >
             <Paperclip className="w-4 h-4" />
           </button>
