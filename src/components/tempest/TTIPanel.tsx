@@ -1145,9 +1145,10 @@ function ResultsTab({ results }: { results: TTIResult[] }) {
           </div>
 
           {/* Null distributions */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-4 gap-3">
             {([
-              { arr: result.null.nullL, obs: result.raw.L, label: "L null distribution" },
+              { arr: result.null.nullL_VR ?? result.null.nullL, obs: result.raw.L_VR ?? result.raw.L, label: "L^VR null (primary)" },
+              { arr: result.null.nullL, obs: result.raw.L, label: "L^GCT null (legacy)" },
               { arr: result.null.nullB, obs: result.raw.B, label: "B null distribution" },
               { arr: result.null.nullN, obs: result.raw.N, label: "N null distribution" },
             ] as const).map(({ arr, obs, label }) => (
