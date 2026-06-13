@@ -13,7 +13,7 @@ import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   Hexagon, Play, Loader2, AlertTriangle, CheckCircle2, Upload, Database, FlaskConical,
-  BarChart3, Search, ExternalLink, TrendingUp, Info,
+  BarChart3, Search, ExternalLink, TrendingUp, Info, ChevronDown, ChevronRight,
 } from "lucide-react";
 import {
   computeTTI, computePCA, standardize, subsampleData, parseUpload,
@@ -27,6 +27,9 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useTempest } from "@/contexts/TempestContext";
 import { toast } from "sonner";
+import { assessValidity } from "@/lib/validity";
+import { EvidenceBadge, type EvidenceType } from "./EvidenceBadge";
+import { ValidityWarning } from "./ValidityWarning";
 
 /* ════════════════════════════════════════════════
    SVG Visualizations — all driven by real computed data
