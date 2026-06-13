@@ -773,67 +773,86 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
         cisplatin resistance involves a conserved epigenetic phase transition rather than model-specific artefacts.
       </p>
 
-      {/* 5.6 Neoantigen Master Catalog */}
-      <SubHeading number="5.6" title="Database-Validated Neoantigen Landscape" />
+      {/* 5.6 Neoantigen Master Catalog — v2 (March 2026 redo) */}
+      <SubHeading number="5.6" title="Database-Validated Neoantigen Landscape (v2 — March 2026 redo)" />
       <p className="text-sm text-foreground leading-relaxed mb-3">
-        Comprehensive analysis identified <strong>4,499 neoantigen candidates</strong> (11 mutation-derived + 4,488
-        fusion-derived) across the D0–D122 longitudinal series. COSMIC v98 cross-validation confirmed 4 of 6
-        target genes as established cancer drivers. Eight candidates were validated for immediate experimental testing.
+        The neoantigen pipeline was re-executed on an upgraded platform integrating somatic VCFs (Mutect2 + Strelka2,
+        intersected with matched-normal subtraction and dbSNP filtering), Arriba 2.5.1 fusion calls across all
+        timepoints, and NetMHCpan-4.1 sliding-window predictions for H-2-Kb and H-2-Db. The redo replaces the prior
+        17-candidate catalog with a tighter, expression- and germline-controlled set of <strong>10 somatic SNV
+        candidates (VCF01–VCF10)</strong> + <strong>6 fusion/legacy candidates (N001–N006)</strong>, of which
+        <strong> 2 reach Tier 1</strong> (Amz1 p.Glu78Gln, Csprs p.Gln208Arg). Two prior candidates were dropped to
+        Tier 5/germline-risk (Rbm26 rs3404794430; Meis1 rs239018671), and one new high-confidence structural event was
+        promoted (<strong>Sat2::Trp53</strong>, D122, classified as a TSG-disruption marker rather than a neoantigen).
       </p>
 
-      <h4 className="text-xs font-semibold text-foreground mt-4 mb-2 font-mono">Table 4 — Mutation-Derived Neoantigens: Master Catalog (March 2026)</h4>
+      <h4 className="text-xs font-semibold text-foreground mt-4 mb-2 font-mono">Table 4 — Neoantigen Master Table v2 (16 candidates, ranked by overall best %Rank)</h4>
       <p className="text-sm text-muted-foreground mb-2">
-        ★ = frameshift sequence resolved via codon-frame analysis. All ★ sequences require RT-PCR + Sanger confirmation.
+        Source: <code>neoantigen_master_table.csv</code> (v2). Strong = %Rank ≤ 0.5; Weak = 0.5–2.0; Non-binder &gt; 2.0
+        (NetMHCpan-4.1). Expression confirmed against per-timepoint RNA-seq VCF intersection.
       </p>
       <div className="overflow-x-auto mb-3">
         <table className="w-full border-collapse text-sm font-mono">
           <thead className="bg-secondary">
             <tr>
+              <ThCell>ID</ThCell>
               <ThCell>Gene</ThCell>
               <ThCell>Mutation</ThCell>
-              <ThCell>Peptide</ThCell>
-              <ThCell>H-2-Db %Rank</ThCell>
-              <ThCell>Temporal</ThCell>
-              <ThCell>Clonality</ThCell>
-              <ThCell>TPS</ThCell>
+              <ThCell>Best Peptide</ThCell>
+              <ThCell>Allele</ThCell>
+              <ThCell>%Rank</ThCell>
+              <ThCell>Binding</ThCell>
+              <ThCell>Expression</ThCell>
+              <ThCell>n-TP</ThCell>
               <ThCell>Tier</ThCell>
-              <ThCell>Action</ThCell>
             </tr>
           </thead>
           <tbody>
             {[
-              { gene: "Meis1", mut: "F378→X ★", peptide: "TFFFSTMVLF", db: "23.1%", temp: "D20, D122", clon: "Clonal >80%", tps: "65", tier: "TIER 1", action: "Ready after RT-PCR" },
-              { gene: "Zkscan7", mut: "K404→N", peptide: "HTQENPYECC", db: "10.4%", temp: "D20, D122", clon: "Clonal >80%", tps: "70", tier: "TIER 1", action: "Ready to synthesise" },
-              { gene: "Ubtd2", mut: "E107→D", peptide: "GALTDCYDEL", db: "0.743% WB", temp: "D52", clon: "Subclonal ~35%", tps: "65", tier: "TIER 1", action: "Ready to synthesise" },
-              { gene: "Rbm26", mut: "S990→FX ★", peptide: "FFFFFSTVFP", db: "56.4%", temp: "D21/52/99/109", clon: "Clonal >80%", tps: "65", tier: "TIER 1", action: "Ready after RT-PCR" },
-              { gene: "Slfn8", mut: "I791→N", peptide: "EDMVNYVADK", db: "60.6%", temp: "D52, D99×2", clon: "Subclonal ~45%", tps: "55", tier: "TIER 2", action: "Ready to synthesise" },
-              { gene: "Tm2d2", mut: "I135→X ★", peptide: "QTDLSTFFFF", db: "8.3%", temp: "D52", clon: "Subclonal ~30%", tps: "55", tier: "TIER 2", action: "Ready after RT-PCR" },
-              { gene: "Novel (Unann.)", mut: "N22→D", peptide: "YMKVDIAYAI", db: "3.451% ⚠↑", temp: "D52, D99", clon: "Subclonal ~40%", tps: "60", tier: "TIER 2", action: "Verify binding first" },
-              { gene: "Stxbp3", mut: "del→X ★", peptide: "LFFFSTPYVH", db: "58.9%", temp: "D99", clon: "Subclonal ~25%", tps: "50", tier: "TIER 2", action: "Ready after RT-PCR" },
-              { gene: "Kcnk7", mut: "P335→PX ★", peptide: "RVGGPSTREA", db: "35.4%", temp: "D20", clon: "Subclonal ~20%", tps: "40", tier: "TIER 3", action: "Deprioritise" },
-              { gene: "Glp2r", mut: "G459→AX ★", peptide: "LQSSANSSSH", db: "43.9% ⚠↑", temp: "D52", clon: "Subclonal ~15%", tps: "35", tier: "TIER 3", action: "Deprioritise" },
-              { gene: "Neb", mut: "F36→FX ★", peptide: "CFFFFSTHNF", db: "46.0%", temp: "D52", clon: "Subclonal ~20%", tps: "35", tier: "TIER 3", action: "Deprioritise" },
+              { id: "VCF10", gene: "Csprs", mut: "p.Gln208Arg", pep: "AGHFNKSNI", allele: "H-2-Db", rank: "0.27", bind: "Strong", expr: "no_expressed_vcf", n: "2", tier: "TIER 1" },
+              { id: "VCF01", gene: "Amz1", mut: "p.Glu78Gln", pep: "FQTFHASL", allele: "H-2-Kb", rank: "0.47", bind: "Strong", expr: "confirmed (D20)", n: "7", tier: "TIER 1" },
+              { id: "N007*", gene: "Rbm26", mut: "p.Ser990PhefsTer51", pep: "KPIANMSAV", allele: "H-2-Db", rank: "0.49", bind: "Strong (germline)", expr: "germline_risk", n: "5", tier: "EXCLUDED" },
+              { id: "N005", gene: "Ubtd2", mut: "p.Glu107Asp", pep: "GALTDCYDEL", allele: "H-2-Db", rank: "0.57", bind: "Weak", expr: "no_expressed_vcf", n: "1", tier: "TIER 4" },
+              { id: "VCF06", gene: "Rrs1", mut: "p.Arg234Cys", pep: "SVGCFQERL", allele: "H-2-Kb", rank: "0.65", bind: "Weak", expr: "confirmed (D21)", n: "1", tier: "TIER 2" },
+              { id: "VCF05", gene: "Rrs1", mut: "p.Ser231Leu", pep: "VGRFQERL", allele: "H-2-Kb", rank: "0.79", bind: "Weak", expr: "confirmed (D21)", n: "1", tier: "TIER 2" },
+              { id: "VCF04", gene: "Speer4a", mut: "p.Phe140Leu", pep: "KEKNFYRNL", allele: "H-2-Kb", rank: "1.3", bind: "Weak", expr: "confirmed (D21)", n: "1", tier: "TIER 2" },
+              { id: "VCF09", gene: "Tent4b", mut: "p.Thr484Met", pep: "RIIRVTDEV", allele: "H-2-Db", rank: "1.5", bind: "Weak", expr: "no_expressed_vcf", n: "4", tier: "TIER 3" },
+              { id: "VCF07", gene: "Rrs1", mut: "p.Gly249Cys", pep: "KKRKFQPL", allele: "H-2-Kb", rank: "2.4", bind: "Non-binder", expr: "confirmed (D21)", n: "1", tier: "TIER 2" },
+              { id: "VCF02", gene: "Tmem176b", mut: "p.Ala21Val", pep: "SVHISIHI", allele: "H-2-Kb", rank: "2.4", bind: "Non-binder", expr: "confirmed (D20+D21)", n: "3", tier: "TIER 1" },
+              { id: "N004", gene: "Bcl6 intragenic", mut: "Fusion junction", pep: "TAAAGCAAA", allele: "H-2-Db", rank: "5.4", bind: "Non-binder", expr: "fusion_D122", n: "1", tier: "TIER 3" },
+              { id: "VCF08", gene: "Rrs1", mut: "p.Ala350Gly", pep: "KKHSWPSAL", allele: "H-2-Kb", rank: "6.1", bind: "Non-binder", expr: "confirmed (D21)", n: "1", tier: "TIER 2" },
+              { id: "N003", gene: "Gm54455::Fam13b", mut: "Fusion junction", pep: "CAAGATTAA", allele: "H-2-Db", rank: "11.0", bind: "Non-binder", expr: "fusion_D122", n: "1", tier: "TIER 3" },
+              { id: "N001", gene: "Rpf1::Uox", mut: "Fusion junction", pep: "AACCTCCTT", allele: "H-2-Db", rank: "13.0", bind: "Non-binder", expr: "fusion_D20", n: "1", tier: "TIER 2" },
+              { id: "VCF03", gene: "Amer1", mut: "p.Glu409dup", pep: "ELLEDEEEV", allele: "H-2-Db", rank: "18.0", bind: "Non-binder", expr: "confirmed (D20+D21)", n: "4", tier: "TIER 2" },
+              { id: "N002", gene: "Erdr1x::Gm28301", mut: "Fusion junction", pep: "GACTCCACA", allele: "H-2-Db", rank: "24.0", bind: "Non-binder", expr: "fusion_D52→D122", n: "4", tier: "TIER 2" },
+              { id: "N006*", gene: "Meis1", mut: "rs239018671", pep: "—", allele: "—", rank: "—", bind: "Excluded", expr: "germline_risk", n: "0", tier: "EXCLUDED" },
             ].map((d, i) => (
-              <tr key={d.gene + d.mut} className={i % 2 === 0 ? "bg-secondary/30" : ""}>
+              <tr key={d.id} className={i % 2 === 0 ? "bg-secondary/30" : ""}>
+                <TdCell className="font-bold">{d.id}</TdCell>
                 <TdCell className="text-foreground font-semibold">{d.gene}</TdCell>
                 <TdCell className="text-muted-foreground text-xs">{d.mut}</TdCell>
-                <TdCell className="text-accent"><code>{d.peptide}</code></TdCell>
-                <TdCell>{d.db}</TdCell>
-                <TdCell className="text-muted-foreground">{d.temp}</TdCell>
-                <TdCell className="text-xs">{d.clon}</TdCell>
-                <TdCell className="font-bold">{d.tps}</TdCell>
+                <TdCell className="text-accent"><code>{d.pep}</code></TdCell>
+                <TdCell className="text-xs">{d.allele}</TdCell>
+                <TdCell className="font-bold">{d.rank}</TdCell>
+                <TdCell className="text-xs">{d.bind}</TdCell>
+                <TdCell className="text-xs text-muted-foreground">{d.expr}</TdCell>
+                <TdCell className="text-xs">{d.n}</TdCell>
                 <TdCell><TierBadge tier={d.tier} /></TdCell>
-                <TdCell className="text-xs text-muted-foreground">{d.action}</TdCell>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      <p className="text-sm text-muted-foreground mb-3 italic">
+        * N006 and N007 are excluded as germline-risk (dbSNP rs239018671, rs3404794430). All four Rrs1 variants
+        (VCF05–VCF08) require Sanger confirmation against tail-DNA before any downstream synthesis — they overlap
+        known SNP positions despite being called somatic in the matched-tumor pipeline.
+      </p>
 
-      <h4 className="text-xs font-semibold text-foreground mt-4 mb-2 font-mono">Table 5 — Fusion-Derived Neoantigens (Arriba 2.5.1 Breakpoint Analysis)</h4>
+      <h4 className="text-xs font-semibold text-foreground mt-4 mb-2 font-mono">Table 5 — Filtered Fusion Landscape (Arriba 2.5.1, all timepoints, v2)</h4>
       <p className="text-sm text-muted-foreground mb-2">
-        All junction peptides computationally derived. Mandatory pre-synthesis: RT-PCR → Sanger → H-2-Db IP + LC-MS/MS.
-        Adgrf1::Adgrf5 = CONSTITUTIONAL EXCLUDE (present in D0 matched normal). Trp53::Sat2 = DRIVER EXCLUDE.
+        Source: <code>filtered_fusions_all_timepoints.csv</code>. 25 fusions retained after artifact/ribosomal filtering
+        from an initial 4,488 raw calls. Priority rank 0 = newly promoted; 8 = artifact risk (excluded from synthesis).
       </p>
       <div className="overflow-x-auto mb-3">
         <table className="w-full border-collapse text-sm font-mono">
@@ -841,89 +860,106 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
             <tr>
               <ThCell>Fusion</ThCell>
               <ThCell>Type</ThCell>
-              <ThCell>Junction Peptide</ThCell>
-              <ThCell>H-2-Db</ThCell>
-              <ThCell>H-2-Kb</ThCell>
-              <ThCell>Stage</ThCell>
-              <ThCell>Split Reads</ThCell>
-              <ThCell>TPS</ThCell>
-              <ThCell>Tier</ThCell>
+              <ThCell>Classification</ThCell>
+              <ThCell>n-TP</ThCell>
+              <ThCell>Peak Reads</ThCell>
+              <ThCell>Peak Sample</ThCell>
+              <ThCell>Frame</ThCell>
+              <ThCell>Conf.</ThCell>
             </tr>
           </thead>
           <tbody>
             {[
-              { fusion: "Mfhas1::Tns3", type: "Intrachrom del", junc: "HAFPgDDPI", db: "0.133% SB", kb: "0.21%", stage: "D109–D122", reads: "~18", tps: "95", tier: "TIER 1" },
-              { fusion: "Camk1d::Arid1a", type: "Translocation", junc: "AVLRnhpvqwi", db: "0.519% WB", kb: "0.87%", stage: "D52", reads: "~32", tps: "80", tier: "TIER 1" },
-              { fusion: "Fxr1::Zfp704", type: "Translocation (IF)", junc: "AFYKNSMKV", db: "1.329% WB", kb: "1.385% WB", stage: "D99–D122", reads: "~28", tps: "65", tier: "TIER 1" },
-              { fusion: "Nsd3::Kat6a", type: "Translocation", junc: "GKSLAQYLL", db: "2.870%", kb: "ND", stage: "D88–D99", reads: "~15", tps: "60", tier: "TIER 2" },
-              { fusion: "Ly6c1::Ly6a", type: "Read-through", junc: "TCYSQAAGTF", db: "4.210%", kb: "ND", stage: "D52–D122", reads: ">59", tps: "45", tier: "TIER 2" },
-              { fusion: "Meox2::Itsn1", type: "Translocation", junc: "dKSEVNSKPRK", db: "5.120%", kb: "ND", stage: "D99", reads: "~12", tps: "50", tier: "TIER 2" },
+              { f: "Sat2::Trp53", t: "del/read-through", c: "PRIORITY_NEW", n: "1", r: "30", s: "D122", fr: "—", co: "high" },
+              { f: "Rpf1::Uox", t: "del/read-through", c: "EARLY_VALIDATED", n: "1", r: "75", s: "D20", fr: "—", co: "high" },
+              { f: "Erdr1x::Gm28301", t: "translocation X→Y", c: "RECURRENT_VALIDATED", n: "4", r: "92", s: "D122", fr: "—", co: "high" },
+              { f: "Fam13b::Gm54455", t: "del/read-through", c: "LATE_VALIDATED", n: "1", r: "31", s: "D122", fr: "—", co: "high" },
+              { f: "Bcl6::Bcl6", t: "intragenic del", c: "LATE_VALIDATED", n: "1", r: "13", s: "D122", fr: "—", co: "high" },
+              { f: "Slfn8::Slfn9", t: "del/read-through", c: "HIGH_CONF_SINGLE", n: "1", r: "11", s: "D52", fr: "—", co: "high" },
+              { f: "Itsn1::Meox2", t: "translocation", c: "HIGH_CONF_SINGLE", n: "1", r: "5", s: "D99", fr: "out-of-frame", co: "high" },
+              { f: "Prcc::Rfx5", t: "duplication 5'-5'", c: "HIGH_CONF_SINGLE", n: "1", r: "3", s: "D99", fr: "out-of-frame", co: "high" },
+              { f: "Fxr1::Zfp704", t: "inversion", c: "MEDIUM_CONF_SINGLE", n: "1", r: "3", s: "D99", fr: "in-frame", co: "medium" },
             ].map((d, i) => (
-              <tr key={d.fusion} className={i % 2 === 0 ? "bg-secondary/30" : ""}>
-                <TdCell className="text-foreground font-semibold">{d.fusion}</TdCell>
-                <TdCell className="text-xs text-muted-foreground">{d.type}</TdCell>
-                <TdCell className="text-accent"><code>{d.junc}</code></TdCell>
-                <TdCell>{d.db}</TdCell>
-                <TdCell>{d.kb}</TdCell>
-                <TdCell className="text-muted-foreground">{d.stage}</TdCell>
-                <TdCell className="text-xs">{d.reads}</TdCell>
-                <TdCell className="font-bold">{d.tps}</TdCell>
-                <TdCell><TierBadge tier={d.tier} /></TdCell>
+              <tr key={d.f} className={i % 2 === 0 ? "bg-secondary/30" : ""}>
+                <TdCell className="text-foreground font-semibold">{d.f}</TdCell>
+                <TdCell className="text-xs text-muted-foreground">{d.t}</TdCell>
+                <TdCell className="text-xs"><span className="px-1.5 py-0.5 rounded bg-accent/10 text-accent">{d.c}</span></TdCell>
+                <TdCell className="text-xs">{d.n}</TdCell>
+                <TdCell className="font-bold">{d.r}</TdCell>
+                <TdCell className="text-muted-foreground text-xs">{d.s}</TdCell>
+                <TdCell className="text-xs">{d.fr}</TdCell>
+                <TdCell className="text-xs">{d.co}</TdCell>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        The recurrent <strong>Erdr1x::Gm28301</strong> X→Y translocation accumulates monotonically from D52 (6 reads) →
+        D88 (9) → D99 (16) → D122 (92), the strongest dose–time signal in the dataset and a candidate driver of late
+        clonal dominance. <strong>Sat2::Trp53</strong> (D122, 30 reads) is interpreted as a TSG-disruption marker
+        rather than a neoantigen — Western blot for p53 protein loss is recommended over peptide synthesis.
+        All fusion junction peptides remained non-binders by NetMHCpan (best %Rank 5.4 for Bcl6 intragenic on H-2-Db),
+        consistent with the broader literature that short junction frames rarely satisfy MHC-I anchor requirements.
+      </p>
 
-      <h4 className="text-xs font-semibold text-foreground mt-4 mb-2 font-mono">Table 6 — Peptide Synthesis Order Tracker (Validation-Gated)</h4>
+      <h4 className="text-xs font-semibold text-foreground mt-4 mb-2 font-mono">Table 6 — Primer Evaluation &amp; Validation Roadmap (v2)</h4>
+      <p className="text-sm text-muted-foreground mb-2">
+        Source: <code>primer_evaluation_table.csv</code> + <code>validation_roadmap_table.csv</code>. 8-week wet-lab
+        plan gated on germline QC (Sanger) → expression (RT-PCR/RNA-seq) → peptide synthesis → ELISpot → tetramer →
+        in vivo challenge.
+      </p>
       <div className="overflow-x-auto mb-3">
         <table className="w-full border-collapse text-sm font-mono">
           <thead className="bg-secondary">
             <tr>
-              <ThCell>#</ThCell>
-              <ThCell>Gene</ThCell>
-              <ThCell>Peptide</ThCell>
-              <ThCell>Source</ThCell>
-              <ThCell>%Rank</ThCell>
-              <ThCell>Pre-Synthesis Gate</ThCell>
-              <ThCell>Status</ThCell>
+              <ThCell>Wk</ThCell>
+              <ThCell>Phase</ThCell>
+              <ThCell>Task</ThCell>
+              <ThCell>Candidates</ThCell>
+              <ThCell>Decision Gate</ThCell>
+              <ThCell>Priority</ThCell>
             </tr>
           </thead>
           <tbody>
             {[
-              { n: "1", gene: "Ubtd2", pep: "GALTDCYDEL", src: "Missense", rank: "0.743 WB", gate: "BAM VAF ≥0.05 only", status: "PENDING" },
-              { n: "2", gene: "Zkscan7", pep: "HTQENPYECC", src: "Missense", rank: "10.4%", gate: "BAM VAF ≥0.05 only", status: "PENDING" },
-              { n: "3", gene: "Slfn8", pep: "EDMVNYVADK", src: "Missense", rank: "60.6%", gate: "BAM VAF ≥0.05 (×3)", status: "PENDING" },
-              { n: "4", gene: "Meis1 ★", pep: "TFFFSTMVLF", src: "Frameshift", rank: "23.1%", gate: "RT-PCR + Sanger frame", status: "NOT STARTED" },
-              { n: "5", gene: "Rbm26 ★", pep: "FFFFFSTVFP", src: "Frameshift", rank: "56.4%", gate: "RT-PCR + Sanger ST frame", status: "NOT STARTED" },
-              { n: "6", gene: "Mfhas1::Tns3", pep: "HAFPgDDPI", src: "Fusion", rank: "0.133 SB", gate: "RT-PCR → Sanger → H-2-Db MS", status: "NOT STARTED" },
-              { n: "7", gene: "Camk1d::Arid1a", pep: "AVLRnhpvqwi", src: "Fusion", rank: "0.519 WB", gate: "RT-PCR → Sanger → MS (MHC-I/II)", status: "NOT STARTED" },
-              { n: "8", gene: "Fxr1::Zfp704", pep: "AFYKNSMKV", src: "Fusion (IF)", rank: "1.329 WB", gate: "RT-PCR → Sanger → H-2-Kb MS", status: "NOT STARTED" },
+              { w: "1", p: "Germline QC", t: "Sanger Rrs1 (VCF05–08) on tail DNA", c: "VCF05–08", g: "germline → exclude", pr: "CRITICAL" },
+              { w: "1", p: "Germline QC", t: "Sanger Amz1 E78Q + Csprs Q208R", c: "VCF01, VCF10", g: "somatic → synthesize", pr: "HIGH" },
+              { w: "2", p: "Expression", t: "RT-PCR Rpf1::Uox (P001/P002) on D20 cDNA", c: "N001", g: "300–400 bp band", pr: "HIGH" },
+              { w: "2", p: "Expression", t: "RT-PCR Erdr1x::Gm28301 (P005/P006, 5% DMSO)", c: "N002", g: "350–450 bp + Sanger", pr: "HIGH" },
+              { w: "2", p: "Expression", t: "RT-PCR Trp53::Sat2 (design P011)", c: "Sat2::Trp53", g: "band + p53 Western", pr: "HIGH" },
+              { w: "3", p: "Expression", t: "qRT-PCR Amz1/Csprs/Tmem176b/Tent4b", c: "VCF01,02,09,10", g: "TPM > 1", pr: "HIGH" },
+              { w: "4", p: "Synthesis", t: "Top MHC-I binders (8–11-mers)", c: "FQTFHASL, AGHFNKSNI, VGRFQERL, SVGCFQERL", g: "HPLC > 95%", pr: "HIGH" },
+              { w: "5", p: "Immunogenicity", t: "ELISpot IFN-γ on C57BL/6 splenocytes", c: "Confirmed peptides", g: "> 50 SFU/10⁶", pr: "HIGH" },
+              { w: "6", p: "Immunogenicity", t: "H-2Kb/Db tetramer staining", c: "ELISpot positives", g: "tetramer⁺ > 0.1%", pr: "HIGH" },
+              { w: "7", p: "Functional", t: "Peptide vaccination + tumor challenge", c: "Top 2–3", g: "growth delay/rejection", pr: "MEDIUM" },
+              { w: "8", p: "p53 Pathway", t: "Western blot p53 on D99/D122 lysates", c: "Sat2::Trp53", g: "p53 loss confirms TSG event", pr: "HIGH" },
             ].map((d, i) => (
-              <tr key={d.gene} className={i % 2 === 0 ? "bg-secondary/30" : ""}>
-                <TdCell className="font-bold">{d.n}</TdCell>
-                <TdCell className="text-foreground font-semibold">{d.gene}</TdCell>
-                <TdCell className="text-accent"><code>{d.pep}</code></TdCell>
-                <TdCell className="text-xs text-muted-foreground">{d.src}</TdCell>
-                <TdCell>{d.rank}</TdCell>
-                <TdCell className="text-xs text-muted-foreground">{d.gate}</TdCell>
-                <TdCell><span className={`text-xs px-1.5 py-0.5 rounded ${d.status === "PENDING" ? "bg-chart-amber/10 text-chart-amber" : "bg-destructive/10 text-destructive"}`}>{d.status}</span></TdCell>
+              <tr key={d.w + d.t} className={i % 2 === 0 ? "bg-secondary/30" : ""}>
+                <TdCell className="font-bold">{d.w}</TdCell>
+                <TdCell className="text-xs"><span className="px-1.5 py-0.5 rounded bg-secondary text-foreground">{d.p}</span></TdCell>
+                <TdCell className="text-xs text-foreground">{d.t}</TdCell>
+                <TdCell className="text-xs text-accent font-semibold">{d.c}</TdCell>
+                <TdCell className="text-xs text-muted-foreground">{d.g}</TdCell>
+                <TdCell className="text-xs"><span className={`px-1.5 py-0.5 rounded ${d.pr === "CRITICAL" ? "bg-destructive/10 text-destructive" : d.pr === "HIGH" ? "bg-chart-amber/10 text-chart-amber" : "bg-muted text-muted-foreground"}`}>{d.pr}</span></TdCell>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      <p className="text-sm text-muted-foreground mb-3 italic">
-        Gate colour key: GREEN = BAM confirmation only (fastest path). YELLOW = RT-PCR + Sanger required. RED = full RT-PCR + MS validation.
-        All peptides: ≥95% HPLC purity, TFA-free, lyophilised, 1 mg minimum.
-      </p>
 
       <p className="text-sm text-foreground leading-relaxed mb-3">
-        Fusion neoantigen diversity peaks at D88 (104 events, 52 high-confidence) coinciding with the bifurcation
-        window, then consolidates to 32 events (6 high-confidence) by D122. The master catalog identifies
-        <strong> 17 unique neoantigen candidates</strong>: 7 Tier 1 (TPS 65–95), 7 Tier 2 (TPS 45–60), and 3 Tier 3
-        (TPS 35–40, deprioritised).
+        The v2 redo materially tightens the neoantigen claim: only <strong>two candidates clear the
+        ≤ 0.5 %Rank strong-binder threshold</strong> after germline filtering — Amz1 p.Glu78Gln (H-2-Kb,
+        IC₅₀ 396 nM, present in 7/8 timepoints with confirmed D20 RNA expression) and Csprs p.Gln208Arg
+        (H-2-Db, IC₅₀ 1098 nM, 2 timepoints). All four Rrs1 variants and the previously prioritized Rbm26
+        frameshift collapse to germline-risk pending Sanger confirmation. Of 25 high-confidence fusions, none
+        produce a binder under NetMHCpan-4.1 (best %Rank 5.4), so fusion targets are now repurposed as
+        transcript-level biomarkers (RT-PCR) and, for Sat2::Trp53, as a TSG-disruption marker validated by p53
+        Western. The full per-peptide prediction matrices (1,020 VCF rows + 690 fusion-window rows) are
+        persisted to the platform knowledge base and surfaced to the AI agent for cross-module synthesis.
       </p>
+
 
       {/* 5.7 NAD+ */}
       <SubHeading number="5.7" title="NAD⁺ Metabolic Immune Suppression Axis" />
