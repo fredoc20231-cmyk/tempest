@@ -34,6 +34,10 @@ const Index = () => {
         return <TrajectoryPanel />;
       case "tti":
         return <TTIPanel />;
+      case "immune":
+        return <ImmuneRiskPanel cohort={cohort} />;
+      case "predict":
+        return <PredictivePanel />;
       case "article":
         return <ArticlePanel onNavigate={(m) => setActive(m as Module)} />;
       default:
