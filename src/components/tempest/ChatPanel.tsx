@@ -55,7 +55,8 @@ function stripAction(text: string): string {
   return text.replace(/ACTION:\s*\{[^}]+\}/, "").trim();
 }
 
-const SUPPORTED_TEXT_EXTENSIONS = [".csv", ".tsv", ".txt", ".json", ".md", ".xml", ".yaml", ".yml", ".vcf", ".bed", ".gff", ".gtf", ".fasta", ".fa", ".fastq", ".fq", ".sam", ".maf"];
+import { parseFile, SUPPORTED_EXTENSIONS, getExtension } from "@/lib/fileParsers";
+
 const MAX_FILE_CHARS = 50000;
 
 interface AttachedFile {
@@ -63,6 +64,7 @@ interface AttachedFile {
   content: string;
   size: number;
   truncated: boolean;
+  kind: string;
 }
 
 const ChatPanel = ({ onNavigate, onCohortLoaded }: ChatPanelProps) => {
