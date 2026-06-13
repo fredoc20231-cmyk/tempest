@@ -1392,6 +1392,156 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
       </p>
 
       {/* ══════════════════════════════════════════════════════════
+          5.9 LIVE PLATFORM EXECUTION EVIDENCE (auto-bound to DB)
+      ══════════════════════════════════════════════════════════ */}
+      <SubHeading number="5.9" title="Live Platform Execution Evidence (Auto-Generated from Pipeline Database)" />
+      <div className="my-3 bg-secondary/40 border-l-2 border-primary rounded-md px-4 py-2 text-xs text-muted-foreground font-mono flex items-center gap-2">
+        <Database className="w-3.5 h-3.5 text-primary" />
+        Data in §5.9 is queried at render time from the TEMPEST results database (<code>pipeline_runs</code>, <code>analysis_results</code>, <code>datasets</code>). Values are not hand-entered; they update when the pipeline is re-executed. Snapshot: <strong className="text-foreground">{generatedAt}</strong>.
+      </div>
+
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        To support reproducibility claims and avoid the manuscript-versus-implementation drift common in computational
+        oncology preprints, the TEMPEST platform writes every module execution to a persistent results database. The
+        following subsections summarise the live state of that database at the time this article was rendered. Readers
+        running the platform locally will see different numbers; the structure and the binding logic are invariant.
+      </p>
+
+      <h4 className="text-xs font-semibold text-foreground mt-4 mb-2 font-mono">Table 13 — Pipeline Execution Log (live, from <code>pipeline_runs</code>)</h4>
+      <div className="overflow-x-auto mb-3">
+        <table className="w-full border-collapse text-sm font-mono">
+          <thead className="bg-secondary">
+            <tr>
+              <ThCell>Module</ThCell>
+              <ThCell>Status</ThCell>
+              <ThCell>Progress</ThCell>
+              <ThCell>Started</ThCell>
+              <ThCell>Completed</ThCell>
+              <ThCell>Result Object</ThCell>
+            </tr>
+          </thead>
+          <tbody>
+            {(pipelineRuns.length > 0 ? pipelineRuns : [{ id: "—", module: "—", status: "no runs yet", progress: 0, started_at: null, completed_at: null }]).map((r, i) => (
+              <tr key={r.id} className={i % 2 === 0 ? "bg-secondary/30" : ""}>
+                <TdCell className="text-foreground font-semibold uppercase">{r.module}</TdCell>
+                <TdCell className={r.status === "complete" ? "text-accent" : r.status === "failed" ? "text-destructive" : "text-muted-foreground"}>{r.status}</TdCell>
+                <TdCell>{r.progress}%</TdCell>
+                <TdCell className="text-xs text-muted-foreground">{r.started_at ? new Date(r.started_at).toISOString().slice(0, 19).replace("T", " ") : "—"}</TdCell>
+                <TdCell className="text-xs text-muted-foreground">{r.completed_at ? new Date(r.completed_at).toISOString().slice(0, 19).replace("T", " ") : "—"}</TdCell>
+                <TdCell className="text-xs">{analysisResults[r.module] ? <span className="text-accent">present</span> : <span className="text-muted-foreground">—</span>}</TdCell>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        At render time, <strong>{completedModules.length}</strong> of {pipelineRuns.length || 7} modules report
+        <code> status = "complete"</code> and <strong>{moduleResultCount}</strong> persisted result object(s) are
+        attached. Active cohort:{" "}
+        {cohorts[0] ? (
+          <span className="text-foreground">
+            <code>{cohorts[0].name}</code> — {cohorts[0].samples} samples
+            {cohorts[0].tensor_shape ? ` · tensor ${cohorts[0].tensor_shape}` : ""}
+            {cohorts[0].latent_factors ? ` · ${cohorts[0].latent_factors} latent factors` : ""}
+            {cohorts[0].variance_explained ? ` · VE = ${cohorts[0].variance_explained}` : ""}
+          </span>
+        ) : (
+          <span className="text-muted-foreground">no cohort registered</span>
+        )}
+        . Auditors can verify these values directly via the{" "}
+        <ModuleLink module={"report" as Module} label="Analysis Report panel" onNavigate={onNavigate} />.
+      </p>
+
+      <h4 className="text-xs font-semibold text-foreground mt-6 mb-2 font-mono">Table 14 — Knowledge-Base Provenance (live, from <code>datasets</code>)</h4>
+      <div className="overflow-x-auto mb-3">
+        <table className="w-full border-collapse text-sm font-mono">
+          <thead className="bg-secondary">
+            <tr>
+              <ThCell>Field</ThCell>
+              <ThCell>Value at Render Time</ThCell>
+            </tr>
+          </thead>
+          <tbody>
+            <tr className="bg-secondary/30">
+              <TdCell className="text-foreground">Total datasets ingested</TdCell>
+              <TdCell className="text-accent font-bold">{datasetCount.total}</TdCell>
+            </tr>
+            <tr>
+              <TdCell className="text-foreground">Flagged for AI training context (<code>is_training = true</code>)</TdCell>
+              <TdCell className="text-accent font-bold">{datasetCount.training}</TdCell>
+            </tr>
+            <tr className="bg-secondary/30">
+              <TdCell className="text-foreground">Distinct public sources represented</TdCell>
+              <TdCell className="text-xs text-muted-foreground">{datasetCount.sources.length > 0 ? datasetCount.sources.join(", ") : "—"}</TdCell>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        The training-flag mechanism allows the AI Agent (see §5.10) to compose its cross-module synthesis using only
+        provenance-tagged datasets, separating <em>reference biology</em> (training-flagged) from <em>synthetic or
+        simulated</em> inputs (unflagged). This separation is enforced at the database layer, not at the prompt layer,
+        and is therefore robust to prompt-injection edge cases.
+      </p>
+
+      {/* 5.10 — AI agent live synthesis */}
+      <SubHeading number="5.10" title="Cross-Module AI Synthesis (Latest from synthesize-prediction Edge Function)" />
+      <div className="my-3 bg-secondary/40 border-l-2 border-accent rounded-md px-4 py-2 text-xs text-muted-foreground font-mono flex items-center gap-2">
+        <Activity className="w-3.5 h-3.5 text-accent" />
+        Content below is the most recent <code>module = "synthesis"</code> record produced by the{" "}
+        <code>synthesize-prediction</code> edge function (Gemini 3 Flash via Lovable AI Gateway). Truncated to 1,800 characters for print.
+      </div>
+      {synthesis ? (
+        <>
+          <p className="text-sm text-foreground leading-relaxed mb-2">
+            <strong>Run timestamp:</strong>{" "}
+            <code className="text-xs">{new Date(synthesis.created_at).toISOString().slice(0, 19).replace("T", " ")} UTC</code>
+            {" · "}<strong>Sources in context:</strong> {synthesis.source_count}
+            {" · "}<strong>Training-flagged:</strong> {synthesis.training_count}
+            {synthesis.scenario && (
+              <>
+                {" · "}<strong>User scenario:</strong>{" "}
+                <span className="italic text-muted-foreground">{synthesis.scenario.slice(0, 160)}{synthesis.scenario.length > 160 ? "…" : ""}</span>
+              </>
+            )}
+          </p>
+          <div className="bg-card border border-border rounded-md p-4 text-xs text-foreground leading-relaxed whitespace-pre-wrap font-mono max-h-96 overflow-y-auto mb-3">
+            {synthesis.narrative.slice(0, 1800)}
+            {synthesis.narrative.length > 1800 && "\n\n[…truncated. Full text available via the Results Dashboard.]"}
+          </div>
+          <p className="text-sm text-foreground leading-relaxed mb-3">
+            This synthesis is generated <em>de novo</em> at each pipeline run by an instruction-tuned LLM operating
+            strictly on the persisted module outputs above. It is included here as Extended Data, not as a substitute
+            for the human-authored Discussion (§6), to demonstrate that the cross-module narrative the platform produces
+            agrees with the conclusions defended in this manuscript. Reviewers can re-run the synthesis from the{" "}
+            <ModuleLink module={"chat" as Module} label="AI Agent" onNavigate={onNavigate} /> panel and obtain a fresh
+            comparison.
+          </p>
+        </>
+      ) : (
+        <div className="bg-card border border-dashed border-border rounded-md p-4 text-xs text-muted-foreground italic mb-3">
+          No cross-module synthesis has been generated yet for this deployment. Run the full pipeline from the{" "}
+          <button className="underline text-primary" onClick={() => onNavigate("chat" as Module)}>AI Agent</button>{" "}
+          panel to populate this table. Until then, §5.10 is intentionally empty rather than back-filled with example
+          text — consistent with the no-fabrication policy adopted for this manuscript.
+        </div>
+      )}
+
+      <h4 className="text-xs font-semibold text-foreground mt-6 mb-2 font-mono">5.11 — Reproducibility Contract</h4>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        The combination of (i) database-bound pipeline log (Table 13), (ii) provenance-tagged knowledge base (Table 14),
+        and (iii) timestamped AI synthesis (§5.10) constitutes the platform's <em>reproducibility contract</em>: any
+        third party who installs TEMPEST, ingests the GEM HGSOC longitudinal dataset (GSE149145 plus accompanying WES
+        and ATAC tracks), and re-executes the pipeline will obtain a results database whose schema is identical to the
+        one queried above. Numeric agreement is expected to within Monte-Carlo seed variance for the stochastic
+        components (BCTN DPMM, bootstrap CIs, simulated null distributions) and to be exact for the deterministic
+        components (MOTF wNTD with fixed rank, TTI engine, fTTI z-scoring). Any divergence beyond those bounds should
+        be reported as an issue against the platform repository rather than reconciled in subsequent manuscript revisions.
+      </p>
+
+
+
+      {/* ══════════════════════════════════════════════════════════
           6. DISCUSSION
       ══════════════════════════════════════════════════════════ */}
       <SectionHeading id="discussion" number="6" title="Discussion" />
