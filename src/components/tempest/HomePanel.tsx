@@ -144,15 +144,18 @@ const HomePanel = ({ onNavigate }: HomePanelProps) => {
       {/* Hero */}
       <motion.div variants={item} className="text-center pt-8 pb-4">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-mono mb-6">
-          <Dna className="w-3.5 h-3.5" /> Precision Oncology Platform
+          <Dna className="w-3.5 h-3.5" /> Research framework — not a clinical tool
         </div>
         <h1 className="text-4xl font-semibold text-foreground tracking-tight leading-tight">
-          Tumor Evolution Mapping Platform<br />
-          <span className="text-primary">for Ensemble Statistical Tracking</span>
+          State-separation &amp;<br />
+          <span className="text-primary">transition-dynamics framework</span>
         </h1>
         <p className="text-muted-foreground mt-4 max-w-2xl mx-auto leading-relaxed">
-          Start by bringing your own cohort or selecting a public dataset. TEMPEST runs QC, then dispatches MOTF, GBSC, Immune & Risk, and Predictive modules end-to-end.
+          Bring your own cohort or select a public dataset. TEMPEST runs QC then dispatches MOTF, GBSC, Immune &amp; Risk, and Predictive modules end-to-end. All outputs are retrospective; no prospective prediction or clinical use is claimed.
         </p>
+        <div className="mt-4 inline-block border border-chart-amber/40 bg-chart-amber/5 rounded-md px-3 py-1.5 text-[11px] text-chart-amber font-mono">
+          fTTI threshold is proof-of-concept only; not validated for clinical stratification.
+        </div>
       </motion.div>
 
       {/* Get Started — two paths */}
