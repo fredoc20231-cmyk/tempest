@@ -88,7 +88,11 @@ const CHIP_KEYS = ["chip", "h3k", "histone"];
 function findColumn(columns: string[], keys: string[]): string | null {
   for (const c of columns) {
     const k = lc(c);
-    if (keys.some((kw) => k === lc(kw) || k.includes(lc(kw)))) return c;
+    for (const kw of keys) {
+      const kwLc = lc(kw);
+      // Short keywords must be exact; long keywords may match as substring.
+      if (kwLc.length < 4 ? k === kwLc : k === kwLc || k.includes(kwLc)) return c;
+    }
   }
   return null;
 }
