@@ -9,6 +9,7 @@ import { downloadReproBundle } from "@/lib/export/reproducibilityReport";
 import { DISCLAIMER_FTTI, DISCLAIMER_SCOPE, TEMPEST_VERSION } from "@/lib/scopeConfig";
 import { EvidenceBadge, type EvidenceType } from "./EvidenceBadge";
 import { evaluatePublicationGate } from "@/lib/export/publicationGate";
+import { evaluateExportSafety, DRAFT_AUDIT_WATERMARK } from "@/lib/audit/claimAudit";
 import { toast } from "@/hooks/use-toast";
 
 const moduleOrder = ["motf", "gbsc", "bctn", "cnis", "msrs", "trajectory"] as const;
@@ -230,15 +231,30 @@ const ReportPanel = () => {
                 code_available: cohort?.code_available === true,
                 computation_status: allComplete ? "COMPLETE" : "PENDING",
               });
-              if (!gate.publicationReady) {
+              // Audit all narrative text + interpretations under the dominant evidence context.
+              const corpus = [
+                ...moduleOrder.map((m) => `${moduleMeta[m]?.purpose ?? ""} ${getInterpretation(m) ?? ""}`),
+                ...nextSteps,
+              ].join("\n");
+              const audit = evaluateExportSafety(corpus, {
+                evidence_type: "longitudinal",
+                lead_time: null,
+                longitudinal_data: true,
+                immunogenicity_validated: false,
+              });
+              const blockers = [...gate.blockers];
+              if (!audit.publicationReady) {
+                blockers.push(`claim-audit: ${audit.audit.blockingPhrases.join(", ") || "auto-replaceable phrases present"}`);
+              }
+              if (blockers.length > 0) {
                 toast({
                   title: "Publication-ready export blocked",
-                  description: `${gate.draftWatermark} Blockers: ${gate.blockers.join("; ")}`,
+                  description: `${DRAFT_AUDIT_WATERMARK} Blockers: ${blockers.join("; ")}`,
                   variant: "destructive",
                 });
                 return;
               }
-              toast({ title: "Publication-ready", description: "All metadata complete. Use Export HTML / CSV / Methods to build the bundle." });
+              toast({ title: "Publication-ready", description: "Metadata complete and claim audit clean. Use Export HTML / CSV / Methods to build the bundle." });
             }}
             className="flex items-center gap-2 px-4 py-2 text-xs font-mono border border-border rounded-md hover:bg-muted transition-colors"
           >
