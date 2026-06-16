@@ -18,7 +18,7 @@ import {
   BookOpen,
 } from "lucide-react";
 
-type Module = "home" | "overview" | "motf" | "gbsc" | "bctn" | "cnis" | "msrs" | "trajectory" | "tti" | "immune" | "predict" | "chat" | "report" | "datasources" | "article";
+type Module = "home" | "overview" | "motf" | "gbsc" | "bctn" | "cnis" | "msrs" | "trajectory" | "tti" | "immune" | "predict" | "chat" | "report" | "datasources" | "article" | "claimaudit";
 
 interface SidebarProps {
   active: Module;
@@ -60,13 +60,14 @@ const sections: Section[] = [
     items: [
       { id: "overview", label: "Results Dashboard", desc: "Integrated Findings", icon: LayoutDashboard, step: 6 },
       { id: "report", label: "Analysis Report", desc: "Full Report", icon: FileText, step: 7 },
-      { id: "article", label: "Article", desc: "Scientific Paper", icon: BookOpen, step: 8 },
+      { id: "claimaudit", label: "Claim Audit", desc: "Phrase scan & gate", icon: Shield, step: 8 },
+      { id: "article", label: "Article", desc: "Scientific Paper", icon: BookOpen, step: 9 },
     ],
   },
   {
     section: "6 · Assistant",
     items: [
-      { id: "chat", label: "AI Agent", desc: "NL Search & Q&A", icon: MessageSquare, step: 9 },
+      { id: "chat", label: "AI Agent", desc: "NL Search & Q&A", icon: MessageSquare, step: 10 },
     ],
   },
 ];

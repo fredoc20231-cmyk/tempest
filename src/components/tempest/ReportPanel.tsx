@@ -9,6 +9,7 @@ import { downloadReproBundle } from "@/lib/export/reproducibilityReport";
 import { DISCLAIMER_FTTI, DISCLAIMER_SCOPE, TEMPEST_VERSION } from "@/lib/scopeConfig";
 import { EvidenceBadge, type EvidenceType } from "./EvidenceBadge";
 import { evaluatePublicationGate } from "@/lib/export/publicationGate";
+import { evaluateExportSafety, DRAFT_AUDIT_WATERMARK } from "@/lib/audit/claimAudit";
 import { toast } from "@/hooks/use-toast";
 
 const moduleOrder = ["motf", "gbsc", "bctn", "cnis", "msrs", "trajectory"] as const;
@@ -230,15 +231,30 @@ const ReportPanel = () => {
                 code_available: cohort?.code_available === true,
                 computation_status: allComplete ? "COMPLETE" : "PENDING",
               });
-              if (!gate.publicationReady) {
+              // Audit all narrative text + interpretations under the dominant evidence context.
+              const corpus = [
+                ...moduleOrder.map((m) => `${moduleMeta[m]?.purpose ?? ""} ${getInterpretation(m) ?? ""}`),
+                ...nextSteps,
+              ].join("\n");
+              const audit = evaluateExportSafety(corpus, {
+                evidence_type: "longitudinal",
+                lead_time: null,
+                longitudinal_data: true,
+                immunogenicity_validated: false,
+              });
+              const blockers = [...gate.blockers];
+              if (!audit.publicationReady) {
+                blockers.push(`claim-audit: ${audit.audit.blockingPhrases.join(", ") || "auto-replaceable phrases present"}`);
+              }
+              if (blockers.length > 0) {
                 toast({
                   title: "Publication-ready export blocked",
-                  description: `${gate.draftWatermark} Blockers: ${gate.blockers.join("; ")}`,
+                  description: `${DRAFT_AUDIT_WATERMARK} Blockers: ${blockers.join("; ")}`,
                   variant: "destructive",
                 });
                 return;
               }
-              toast({ title: "Publication-ready", description: "All metadata complete. Use Export HTML / CSV / Methods to build the bundle." });
+              toast({ title: "Publication-ready", description: "Metadata complete and claim audit clean. Use Export HTML / CSV / Methods to build the bundle." });
             }}
             className="flex items-center gap-2 px-4 py-2 text-xs font-mono border border-border rounded-md hover:bg-muted transition-colors"
           >
@@ -417,7 +433,66 @@ const ReportPanel = () => {
         </div>
       </div>
 
-      {/* Footer */}
+      {/* Appendix — Reproducibility & Claim Audit */}
+      {(() => {
+        const cohort = cohorts[0] as any;
+        const allComplete = completedModules.length === moduleOrder.length;
+        const gate = evaluatePublicationGate({
+          dataset_accession: cohort?.accession ?? cohort?.dataset_accession ?? null,
+          data_source: cohort?.source ?? cohort?.data_source ?? null,
+          primary_data_available: cohort?.primary_data_available === true,
+          code_available: cohort?.code_available === true,
+          computation_status: allComplete ? "COMPLETE" : "PENDING",
+        });
+        const corpus = [
+          ...moduleOrder.map((m) => `${moduleMeta[m]?.purpose ?? ""} ${getInterpretation(m) ?? ""}`),
+          ...nextSteps,
+        ].join("\n");
+        const audit = evaluateExportSafety(corpus, {
+          evidence_type: "longitudinal",
+          lead_time: null,
+          longitudinal_data: true,
+          immunogenicity_validated: false,
+        });
+        const nP = cohorts[0]?.samples ?? null;
+        const validity = nP != null && nP < 25 ? `INSUFFICIENT (n=${nP} < 25)` : "OK";
+        const rows: [string, string][] = [
+          ["Evidence type", "longitudinal-trajectory (endpoint per-module)"],
+          ["Provenance", cohort ? "USER-UPLOADED" : "DEMO/SYNTHETIC"],
+          ["Validity status", validity],
+          ["Topology primary", topology === "VR" ? "VR-PH (Ripser-style H1)" : "GCT (approximation)"],
+          ["Threshold status", "proof-of-concept; not validated for clinical stratification"],
+          ["Missing metadata", gate.blockers.length ? gate.blockers.join("; ") : "—"],
+          [
+            "Claim audit result",
+            audit.publicationReady
+              ? "CLEAN"
+              : `BLOCKED — ${audit.audit.blockingPhrases.join(", ") || "auto-replaceable phrases present"}`,
+          ],
+        ];
+        return (
+          <div className="module-card border-primary/20">
+            <h2 className="text-sm font-mono font-semibold text-foreground uppercase tracking-wide mb-3">
+              Appendix · Reproducibility &amp; Claim Audit
+            </h2>
+            <table className="w-full text-xs">
+              <tbody>
+                {rows.map(([k, v]) => (
+                  <tr key={k} className="border-b border-border/50">
+                    <td className="py-1.5 pr-3 font-mono text-[11px] text-muted-foreground uppercase w-56">{k}</td>
+                    <td className="py-1.5 text-foreground/90 font-mono text-[11px]">{v}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {!audit.publicationReady && (
+              <p className="text-[11px] text-chart-amber mt-2 font-mono">
+                ⚠ {DRAFT_AUDIT_WATERMARK} Draft export remains available; resolve flagged phrases on the Claim Audit panel before publication.
+              </p>
+            )}
+          </div>
+        );
+      })()}
       <div className="text-center py-4 border-t border-border">
         <p className="text-[10px] font-mono text-muted-foreground">
           TEMPEST v2.1.0 · Tumor Evolution Mapping Platform for Ensemble Statistical Tracking · Report generated {now}

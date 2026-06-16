@@ -12,6 +12,7 @@ import TTIPanel from "@/components/tempest/TTIPanel";
 import ArticlePanel from "@/components/tempest/ArticlePanel";
 import ImmuneRiskPanel from "@/components/tempest/ImmuneRiskPanel";
 import PredictivePanel from "@/components/tempest/PredictivePanel";
+import ClaimAuditPanel from "@/components/tempest/ClaimAuditPanel";
 import { TempestProvider } from "@/contexts/TempestContext";
 
 const Index = () => {
@@ -40,6 +41,8 @@ const Index = () => {
         return <PredictivePanel />;
       case "article":
         return <ArticlePanel onNavigate={(m) => setActive(m as Module)} />;
+      case "claimaudit":
+        return <ClaimAuditPanel />;
       default:
         return <ModulePanel module={active} cohort={cohort} />;
     }
