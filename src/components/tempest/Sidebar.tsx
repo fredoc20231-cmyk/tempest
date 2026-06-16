@@ -18,7 +18,7 @@ import {
   BookOpen,
 } from "lucide-react";
 
-type Module = "home" | "overview" | "motf" | "gbsc" | "bctn" | "cnis" | "msrs" | "trajectory" | "tti" | "immune" | "predict" | "chat" | "report" | "datasources" | "article" | "claimaudit";
+type Module = "home" | "overview" | "motf" | "gbsc" | "bctn" | "cnis" | "msrs" | "trajectory" | "tti" | "immune" | "predict" | "chat" | "report" | "datasources" | "article" | "claimaudit" | "wizard" | "asktempest";
 
 interface SidebarProps {
   active: Module;
@@ -33,7 +33,8 @@ const sections: Section[] = [
     section: "1 · Start",
     items: [
       { id: "home", label: "Home", icon: Home },
-      { id: "datasources", label: "Data Sources", desc: "Upload & Public DB", icon: Database, step: 1 },
+      { id: "wizard", label: "Analysis Wizard", desc: "Guided pipeline", icon: GitBranch, step: 1 },
+      { id: "datasources", label: "Data Sources", desc: "Upload & Public DB", icon: Database, step: 2 },
     ],
   },
   {
@@ -61,13 +62,14 @@ const sections: Section[] = [
       { id: "overview", label: "Results Dashboard", desc: "Integrated Findings", icon: LayoutDashboard, step: 6 },
       { id: "report", label: "Analysis Report", desc: "Full Report", icon: FileText, step: 7 },
       { id: "claimaudit", label: "Claim Audit", desc: "Phrase scan & gate", icon: Shield, step: 8 },
-      { id: "article", label: "Article", desc: "Scientific Paper", icon: BookOpen, step: 9 },
+      { id: "asktempest", label: "Ask TEMPEST", desc: "Grounded Q&A", icon: MessageSquare, step: 9 },
+      { id: "article", label: "Article", desc: "Scientific Paper", icon: BookOpen, step: 10 },
     ],
   },
   {
     section: "6 · Assistant",
     items: [
-      { id: "chat", label: "AI Agent", desc: "NL Search & Q&A", icon: MessageSquare, step: 10 },
+      { id: "chat", label: "AI Agent", desc: "NL Search & Q&A", icon: MessageSquare, step: 11 },
     ],
   },
 ];
