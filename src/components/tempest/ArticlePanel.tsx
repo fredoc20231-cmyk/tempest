@@ -115,13 +115,13 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
       <div className="text-center mb-10">
         <div className="flex items-center justify-center gap-2 text-muted-foreground text-xs font-mono tracking-widest mb-4">
           <BookOpen className="w-4 h-4" />
-          RESEARCH ARTICLE — PREPRINT
+          METHODS / PLATFORM PREPRINT — RESEARCH USE ONLY
         </div>
         <h1 className="text-3xl md:text-4xl font-bold text-foreground leading-tight font-serif mb-4">
-          TEMPEST: A Multi-Omic Computational Platform for Predictive Tumor Evolution Modeling in High-Grade Serous Ovarian Carcinoma
+          TEMPEST: A Claim-Controlled Multi-Omic Computational Platform for Characterising Candidate Transition Windows in High-Grade Serous Ovarian Carcinoma
         </h1>
         <p className="text-base text-muted-foreground mb-2 font-serif italic">
-          Integrating Topological Data Analysis, Dynamical Systems Theory, and Machine Learning for Longitudinal Cancer Trajectory Prediction
+          Integrating Tensor Decomposition, Vietoris–Rips Persistent Homology, and a Publication-Gate Intelligence Layer — Illustrated on a Bundled HGSOC Reference Cohort
         </p>
         <div className="mt-5 text-sm text-foreground">
           <p className="font-semibold">Ahmed Fadiel<sup>1,*</sup>, Kunle Odunsi<sup>1,2</sup></p>
@@ -144,6 +144,49 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
           <span className="text-border">|</span>
           <span className="text-accent">RESEARCH USE ONLY</span>
         </div>
+      </div>
+
+      {/* ── Provenance & Integrity Notice ── */}
+      <div className="bg-chart-amber/5 border-2 border-chart-amber/40 rounded-lg p-5 mb-8">
+        <h2 className="text-xs font-bold text-chart-amber font-mono tracking-wider mb-2">
+          PROVENANCE & INTEGRITY NOTICE — READ BEFORE CITING
+        </h2>
+        <ul className="text-xs text-foreground leading-relaxed list-disc pl-5 space-y-1.5">
+          <li>
+            This document is a <strong>methods / platform preprint</strong> describing the TEMPEST software. It is
+            <em> not</em> a report of an independently completed wet-lab study and has <em>not</em> undergone peer
+            review.
+          </li>
+          <li>
+            All numerical values reported in §5 (Results) — including variant counts, missense:synonymous ratios,
+            fusion counts, fTTI scores, conductance φ, Pearson correlations, clonal cluster counts, Shannon diversity,
+            and neoantigen tier assignments — are <strong>deterministic outputs of the platform run on the bundled
+            HGSOC reference cohort</strong> distributed with the application. They are <em>illustrative of platform
+            behaviour</em>, not independently generated experimental measurements.
+          </li>
+          <li>
+            The GEM-model design described in §3.1 (Pax8-Cre; <em>Trp53</em><sup>fl/fl</sup>;
+            <em> Rb1</em><sup>fl/fl</sup>; LSL-<em>Kras</em><sup>G12D</sup>, tamoxifen induction, D0–D122 sampling) is
+            the <strong>protocol the platform is designed to analyse</strong>. Tissue collection, sequencing, IACUC
+            approvals, and pathologist annotations described in §3 are <em>protocol specifications</em>, not a claim
+            that this specific cohort has been independently executed by the authors.
+          </li>
+          <li>
+            No clinical, prognostic, diagnostic, or therapeutic claims are made. The Claim-Audit and Publication-Gate
+            layers (§3.5, §5.11) actively block prohibited language (e.g. <code>predicts resistance</code>,
+            <code> vaccine target</code>, <code>validated threshold</code>, <code>clinical-grade</code>) from any
+            artefact released by the platform.
+          </li>
+          <li>
+            <strong>Submission readiness.</strong> A submission to <em>Nature</em>, <em>Science</em>, or
+            <em> Cell</em> would require independently generated wet-lab data (mouse cohort, sequencing libraries,
+            spatial transcriptomics slides, ELISpot/tetramer immunogenicity validation) plus prospective external
+            cohorts. As written, this manuscript is appropriate for venues that accept <em>methods/software</em>
+            contributions (e.g. <em>Nature Methods</em>, <em>Bioinformatics</em>, <em>Genome Biology</em>,
+            <em> Briefings in Bioinformatics</em>) once the illustrative cohort is replaced with the user's own data
+            and the validation roadmap is executed.
+          </li>
+        </ul>
       </div>
 
       <hr className="border-border mb-8" />
@@ -174,24 +217,25 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
           manuscript-safe nomenclature across every report, figure, and AI summary.
         </p>
         <p className="text-sm text-foreground leading-relaxed mb-3">
-          Applied to a genetically engineered mouse (GEM) model of high-grade serous ovarian carcinoma (HGSOC) sampled
-          at eight longitudinal timepoints (D0–D122), TEMPEST flags a candidate bifurcation window at D88–D99 where the
-          system geometry separates parental from cisplatin-resistant regulatory states. Cross-comparison with three
-          human cell-line pairs (OVCAR3, SKOV3, OVCAR8) yields convergent fTTI<sup>primary</sup> scores (all &gt; 6.0)
-          and conductance values (φ &lt; 0.02), consistent with — but not proof of — an epigenetic phase-transition
-          hypothesis. Because <em>endpoint</em> comparisons cannot be used as prospective predictions, AUROC is reported
-          only for binary-labelled benchmarks; single-class geometry analyses suppress classification metrics. Mutational
-          dynamics show a missense:synonymous ratio peak of 2.65 at D88 collapsing to 1.16 at D122; PyClone resolves 17
-          clonal clusters with Shannon diversity peaking at D52 (H = 2.83). Spatial transcriptomics identifies the D116
-          STIC–tumor boundary as molecularly indistinguishable (Pearson r = 0.94).
+          To illustrate platform behaviour, TEMPEST was executed on a bundled high-grade serous ovarian carcinoma
+          (HGSOC) reference cohort organised along the platform's D0–D122 longitudinal schema (eight timepoints).
+          On this reference cohort, the platform surfaces a candidate bifurcation window at D88–D99 in which the
+          system geometry separates parental from cisplatin-resistant regulatory states, and reports
+          fTTI<sup>primary</sup> &gt; 6.0 with conductance φ &lt; 0.02. These values are <em>illustrative outputs of
+          the platform</em>; they are not independent experimental discoveries and should not be cited as such.
+          Because endpoint comparisons cannot be re-interpreted as prospective predictions, AUROC is reported only
+          when the Benchmark Panel detects a binary-labelled longitudinal benchmark; single-class geometry analyses
+          suppress all classification metrics by design.
         </p>
         <p className="text-sm text-foreground leading-relaxed">
-          The neoantigen module (v2, March 2026 redo) returns <strong>two Tier 1 computationally nominated candidates</strong>
-          — Amz1 p.Glu78Gln and Csprs p.Gln208Arg — after enforced exclusion of MEIS1 rs239018671 and all germline-risk
-          variants. A NAD⁺-mediated metabolic immune-suppression axis is characterised, with PRPS1 highlighted as a
-          mechanistically plausible vulnerability requiring experimental validation. TEMPEST delivers an end-to-end,
-          reproducible workflow from raw multi-omic data to claim-audited research reports, with every assertion tagged
-          by evidence type (synthetic, retrospective, endpoint, longitudinal, or prospective) and provenance.
+          The neoantigen module (v2, March 2026 schema) returns two illustrative Tier 1 computationally nominated
+          candidates on the bundled cohort — <em>Amz1</em> p.Glu78Gln and <em>Csprs</em> p.Gln208Arg — after enforced
+          exclusion of <em>MEIS1</em> rs239018671 and all variants tagged <code>germline</code> /
+          <code>germline-risk</code> / <code>unknown</code>. A NAD⁺-mediated metabolic immune-suppression axis is
+          discussed as a mechanistically plausible hypothesis requiring independent experimental validation; no
+          therapeutic or prognostic claim is made. TEMPEST's contribution is the end-to-end, claim-audited workflow
+          — from raw multi-omic input to a publication-gated report in which every assertion is tagged by evidence
+          type (synthetic, retrospective, endpoint, longitudinal, prospective) and data provenance.
         </p>
         <div className="mt-4 pt-3 border-t border-border">
           <p className="text-xs text-muted-foreground">
@@ -643,7 +687,19 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
       {/* ══════════════════════════════════════════════════════════
           5. RESULTS
       ══════════════════════════════════════════════════════════ */}
-      <SectionHeading id="results" number="5" title="Results" />
+      <SectionHeading id="results" number="5" title="Results — Illustrative Outputs on the Bundled HGSOC Reference Cohort" />
+
+      <div className="bg-secondary/40 border-l-4 border-chart-amber rounded-r-md p-4 mb-6">
+        <p className="text-xs text-foreground leading-relaxed">
+          <strong className="text-chart-amber font-mono">SECTION-LEVEL PROVENANCE.</strong> Every number, table cell,
+          and figure in §5 is a deterministic output of the TEMPEST modules executed against the bundled HGSOC
+          reference cohort distributed with the platform. None of these values are independently generated
+          experimental measurements, none have been externally replicated, and none constitute clinical evidence.
+          Readers reproducing the platform on their own cohort will obtain different values; the purpose of §5 is to
+          document <em>platform behaviour</em>, evidence-typing, and the operation of the validity / claim-audit
+          gates — not to assert biological discovery.
+        </p>
+      </div>
 
       {/* 5.1 GEM Staging */}
       <SubHeading number="5.1" title="GEM Model Longitudinal Staging Framework" />
