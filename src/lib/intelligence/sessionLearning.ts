@@ -51,7 +51,7 @@ const EMPTY: SessionContext = {
 function load(): SessionContext {
   if (typeof window === "undefined") return { ...EMPTY };
   try {
-    const raw = window.sessionStorage.getItem(KEY);
+    const raw = window.localStorage.getItem(KEY);
     if (!raw) return { ...EMPTY };
     return { ...EMPTY, ...(JSON.parse(raw) as SessionContext) };
   } catch {
@@ -62,7 +62,7 @@ function load(): SessionContext {
 function save(ctx: SessionContext): void {
   if (typeof window === "undefined") return;
   try {
-    window.sessionStorage.setItem(KEY, JSON.stringify(ctx));
+    window.localStorage.setItem(KEY, JSON.stringify(ctx));
   } catch {
     /* quota / private mode — silently degrade */
   }
@@ -74,7 +74,7 @@ export function getSessionContext(): SessionContext {
 
 export function resetSessionContext(): void {
   if (typeof window === "undefined") return;
-  window.sessionStorage.removeItem(KEY);
+  window.localStorage.removeItem(KEY);
 }
 
 export function rememberUploadedDatasetSummary(summary: UploadedDatasetSummary): void {
