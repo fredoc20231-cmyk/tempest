@@ -237,12 +237,13 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
         matrix methods destroy (Kolda & Bader, <em>SIAM Review</em>, 2009).
       </p>
       <p className="text-sm text-foreground leading-relaxed mb-4">
-        TEMPEST synthesises these advances into a unified, seven-module computational platform. Applied to a
-        longitudinal GEM model of HGSOC cisplatin resistance sampled at eight post-induction timepoints, the
-        platform identifies a discrete bifurcation window, resolves clonal architecture dynamics, discovers
-        experimentally tractable neoantigen vaccine candidates, and characterises a NAD⁺-mediated immune
-        suppression axis. This article describes the experimental design, computational methods, algorithmic
-        frameworks, and biological results of each module.
+        TEMPEST synthesises these advances into a unified, seven-module computational platform wrapped in a
+        claim-controlled intelligence layer. Applied to a longitudinal GEM model of HGSOC cisplatin resistance
+        sampled at eight post-induction timepoints, the platform flags a candidate bifurcation window, resolves
+        clonal architecture dynamics, nominates computationally derived neoantigen peptides pending immunogenicity
+        validation, and characterises a NAD⁺-mediated immune suppression axis. This article describes the
+        experimental design, computational methods, algorithmic frameworks, validity gates, and biological
+        results of each module.
       </p>
 
       {/* ══════════════════════════════════════════════════════════
