@@ -136,11 +136,13 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
           </p>
         </div>
         <div className="mt-4 flex items-center justify-center gap-4 text-xs font-mono text-muted-foreground">
-          <span>Date: March 2026</span>
+          <span>Date: June 2026</span>
           <span className="text-border">|</span>
-          <span>Platform v2.1.0</span>
+          <span>Platform v3.0.0</span>
           <span className="text-border">|</span>
-          <span>TEMPEST-2026-001</span>
+          <span>TEMPEST-2026-003</span>
+          <span className="text-border">|</span>
+          <span className="text-accent">RESEARCH USE ONLY</span>
         </div>
       </div>
 
@@ -155,40 +157,49 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
           Treatment-resistant cancer remains a principal cause of oncologic mortality. We present <strong>TEMPEST</strong> (Tumor
           Evolution Modeling Platform for Epigenetic State Transitions), a seven-module computational framework that
           integrates longitudinal multi-omic data — whole-exome sequencing, RNA-seq, ATAC-seq, spatial transcriptomics
-          (10× Visium), and proteomic profiles — to model, predict, and intercept the trajectory of tumor evolution toward
-          drug resistance.
+          (10× Visium), and proteomic profiles — to <em>characterise</em> the geometry of tumor regulatory state space
+          and to surface candidate intervention windows during the trajectory toward drug resistance. All outputs are
+          released for research use only; no clinical, prognostic, or therapeutic recommendations are made.
         </p>
         <p className="text-sm text-foreground leading-relaxed mb-3">
-          The platform introduces three methodological innovations: (1) a <em>weighted non-negative Tucker decomposition</em>
-          (wNTD) for joint factorisation of heterogeneous molecular tensors across time; (2) a <em>Topological Transition Index</em>
-          (TTI) combining persistent homology loop mass, branching fragmentation, and graph conductance into a composite
-          metric that detects regulatory phase transitions in feature space; and (3) a <em>Cross-species Neoantigen
-          Intelligence System</em> (CNIS) integrating clonal dynamics with MHC binding prediction and COSMIC cross-validation
-          to produce experimentally tractable vaccine candidates.
+          The platform contributes four methodological elements: (1) a <em>weighted non-negative Tucker decomposition</em>
+          (wNTD) for joint factorisation of heterogeneous molecular tensors across time; (2) a <em>Topological Transition
+          Index</em> in which the primary loop component <strong>z<sub>L</sub><sup>VR</sup></strong> is computed by
+          Vietoris–Rips persistent homology (VR-PH, Ripser-style H<sub>1</sub>), with the original Geometric Cluster
+          Topology (GCT) score retained only as a backward-compatible approximation; (3) a <em>Cross-species Neoantigen
+          Intelligence System</em> (CNIS) coupling clonal dynamics, MHC-I binding, RNA-expression gating, and dbSNP/germline
+          exclusion to produce <em>computationally nominated</em> peptide candidates pending immunogenicity validation;
+          and (4) a <em>Data Intelligence and Claim-Control layer</em> (study-design inference, n &lt; 25 validity floor,
+          evidence-type/provenance tagging, claim audit, and a publication-ready export gate) that enforces
+          manuscript-safe nomenclature across every report, figure, and AI summary.
         </p>
         <p className="text-sm text-foreground leading-relaxed mb-3">
           Applied to a genetically engineered mouse (GEM) model of high-grade serous ovarian carcinoma (HGSOC) sampled
-          at eight longitudinal timepoints (D0–D122), TEMPEST identifies a critical bifurcation window at D88–D99
-          where the system transitions from a parental to a cisplatin-resistant regulatory state. Cross-validation with
-          three human cell-line models (OVCAR3, SKOV3, OVCAR8) confirms convergent TTI scores (all &gt; 6.0) and
-          conductance values (all φ &lt; 0.02), supporting an epigenetic phase-transition hypothesis. Mutational dynamics
-          reveal a missense:synonymous ratio peak of 2.65 at D88 collapsing to 1.16 at D122, consistent with a selective
-          sweep. PyClone Bayesian inference resolves 17 clonal clusters with Shannon diversity peaking at D52 (H = 2.83)
-          before monotonic decline. Spatial transcriptomics identifies the D116 STIC–tumor boundary as molecularly
-          indistinguishable (Pearson r = 0.94), marking convergent progression.
+          at eight longitudinal timepoints (D0–D122), TEMPEST flags a candidate bifurcation window at D88–D99 where the
+          system geometry separates parental from cisplatin-resistant regulatory states. Cross-comparison with three
+          human cell-line pairs (OVCAR3, SKOV3, OVCAR8) yields convergent fTTI<sup>primary</sup> scores (all &gt; 6.0)
+          and conductance values (φ &lt; 0.02), consistent with — but not proof of — an epigenetic phase-transition
+          hypothesis. Because <em>endpoint</em> comparisons cannot be used as prospective predictions, AUROC is reported
+          only for binary-labelled benchmarks; single-class geometry analyses suppress classification metrics. Mutational
+          dynamics show a missense:synonymous ratio peak of 2.65 at D88 collapsing to 1.16 at D122; PyClone resolves 17
+          clonal clusters with Shannon diversity peaking at D52 (H = 2.83). Spatial transcriptomics identifies the D116
+          STIC–tumor boundary as molecularly indistinguishable (Pearson r = 0.94).
         </p>
         <p className="text-sm text-foreground leading-relaxed">
-          We further characterise a NAD⁺-mediated metabolic immune-suppression axis through which resistant tumor cells
-          deplete nucleotide pools required for T cell proliferation, identifying PRPS1 inhibition as a druggable
-          vulnerability. TEMPEST provides an end-to-end, reproducible workflow from raw multi-omic data to clinically
-          actionable biomarker windows and combination-therapy hypotheses.
+          The neoantigen module (v2, March 2026 redo) returns <strong>two Tier 1 computationally nominated candidates</strong>
+          — Amz1 p.Glu78Gln and Csprs p.Gln208Arg — after enforced exclusion of MEIS1 rs239018671 and all germline-risk
+          variants. A NAD⁺-mediated metabolic immune-suppression axis is characterised, with PRPS1 highlighted as a
+          mechanistically plausible vulnerability requiring experimental validation. TEMPEST delivers an end-to-end,
+          reproducible workflow from raw multi-omic data to claim-audited research reports, with every assertion tagged
+          by evidence type (synthetic, retrospective, endpoint, longitudinal, or prospective) and provenance.
         </p>
         <div className="mt-4 pt-3 border-t border-border">
           <p className="text-xs text-muted-foreground">
-            <strong className="text-foreground">Keywords:</strong> tumor evolution, topological data analysis, persistent homology,
-            dynamical systems, phase transition, cisplatin resistance, high-grade serous ovarian carcinoma, multi-omic
-            integration, early warning signals, neoantigen prediction, spatial transcriptomics, clonal dynamics,
-            computational oncology
+            <strong className="text-foreground">Keywords:</strong> tumor evolution, topological data analysis,
+            Vietoris–Rips persistent homology, dynamical systems, candidate phase transition, cisplatin resistance,
+            high-grade serous ovarian carcinoma, multi-omic integration, longitudinal benchmark, computationally
+            nominated neoantigen, spatial transcriptomics, clonal dynamics, claim-control, research-use computational
+            oncology
           </p>
         </div>
       </div>
@@ -226,12 +237,13 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
         matrix methods destroy (Kolda & Bader, <em>SIAM Review</em>, 2009).
       </p>
       <p className="text-sm text-foreground leading-relaxed mb-4">
-        TEMPEST synthesises these advances into a unified, seven-module computational platform. Applied to a
-        longitudinal GEM model of HGSOC cisplatin resistance sampled at eight post-induction timepoints, the
-        platform identifies a discrete bifurcation window, resolves clonal architecture dynamics, discovers
-        experimentally tractable neoantigen vaccine candidates, and characterises a NAD⁺-mediated immune
-        suppression axis. This article describes the experimental design, computational methods, algorithmic
-        frameworks, and biological results of each module.
+        TEMPEST synthesises these advances into a unified, seven-module computational platform wrapped in a
+        claim-controlled intelligence layer. Applied to a longitudinal GEM model of HGSOC cisplatin resistance
+        sampled at eight post-induction timepoints, the platform flags a candidate bifurcation window, resolves
+        clonal architecture dynamics, nominates computationally derived neoantigen peptides pending immunogenicity
+        validation, and characterises a NAD⁺-mediated immune suppression axis. This article describes the
+        experimental design, computational methods, algorithmic frameworks, validity gates, and biological
+        results of each module.
       </p>
 
       {/* ══════════════════════════════════════════════════════════
@@ -270,6 +282,20 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
         Data ingestion and public database integration are managed through the {" "}
         <ModuleLink module="datasources" label="Data Sources" onNavigate={onNavigate} /> panel, while natural-language
         querying is available via the <ModuleLink module="chat" label="AI Agent" onNavigate={onNavigate} />.
+      </p>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        Wrapping the seven scientific modules is an <strong>Intelligence &amp; Governance layer</strong> introduced in
+        v3.0.0 that mediates every analysis: a <em>Data Intelligence Engine</em> infers <code>dataset_type</code>
+        (endpoint_comparison / longitudinal_timecourse / prospective_validation / synthetic_demo /
+        neoantigen_prioritization / benchmark_dataset), <code>evidence_type</code>, and <code>validity_status</code>;
+        an <em>Outcome Interpreter</em> produces a <code>manuscript_safe_summary</code> with reviewer risk flags; a
+        <em> Benchmark Panel</em> blocks AUROC on single-class data and distinguishes endpoint vs longitudinal vs
+        prospective benchmarks; a <em>Claim Audit</em> rewrites prohibited phrases ("predicts resistance",
+        "clinical-grade", "validated threshold", "vaccine target", "therapeutic recommendation",
+        "prospective prediction", "early warning", "transition dynamics") into context-appropriate alternatives; and a
+        <em> Publication-Ready Export Gate</em> refuses to emit camera-ready artefacts until accession, evidence type,
+        provenance, and audit status are all resolved. A grounded <em>AskTempest</em> Q&amp;A surface refuses any
+        question that cannot be answered from the uploaded data and the knowledge base.
       </p>
 
       {/* ══════════════════════════════════════════════════════════
@@ -337,9 +363,24 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
       <p className="text-sm text-foreground leading-relaxed mb-3">
         Multi-modal filtering applied: WES∩RNA co-detection, &gt;10 CPM expression, absence from D0 controls,
         VEP high-impact annotation, and dbSNP/MGI exclusion. Cross-species validation employed a four-tier
-        framework: Tier 1 (GEM-specific + COSMIC validated), Tier 2 (ortholog-mapped), Tier 3 (cross-validated in
-        mouse and human MHC contexts), Tier 4 (clinically prioritised: Tier 3 + clonal φ &gt; 0.3 + rising
-        trajectory + FDR &lt; 0.05 expression).
+        framework: Tier 1 (GEM-specific, somatic-confirmed, RNA-expressed, recurrent ≥ 3 timepoints, COSMIC
+        cross-referenced), Tier 2 (ortholog-mapped), Tier 3 (cross-validated in mouse and human MHC contexts),
+        Tier 4 (research-priority candidates carrying clonal φ &gt; 0.3 + rising trajectory + FDR &lt; 0.05
+        expression). All candidates are released as <em>computationally nominated</em>; the term
+        "vaccine target" is reserved by the platform's nomenclature layer for candidates with confirmed
+        immunogenicity (ELISpot ≥ 50 SFU/10⁶ <em>and</em> tetramer⁺ ≥ 0.1%).
+      </p>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        <strong>Safeguards (v3.0.0).</strong> The neoantigen schema enforces hard exclusions and gates before a
+        candidate can reach Tier 1: (i) <code>MEIS1</code>/rs239018671 is permanently excluded as germline-risk,
+        regardless of binding score; (ii) any variant with <code>germline_status ∈ &#123;germline,
+        germline-risk, unknown&#125;</code> cannot be Tier 1; (iii) missing peptide sequence cannot be Tier 1;
+        (iv) fusion non-binders (best %Rank &gt; 2.0) are demoted to <em>transcript-level biomarker</em> and may
+        not be presented as immunogenic targets; (v) when two Tier 1-eligible candidates compete, those with
+        confirmed RNA expression and recurrence across ≥ 3 timepoints are ranked above candidates whose
+        expression is unconfirmed (e.g., Amz1 p.E78Q above Csprs p.Q208R until Csprs expression is verified).
+        Validation roadmap exports include the full chain Sanger → qRT-PCR → peptide synthesis → ELISpot →
+        tetramer → in-vivo challenge.
       </p>
 
       <SubHeading number="3.4" title="Statistical Framework" />
@@ -362,6 +403,47 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
         <strong>Clonal inference:</strong> PyClone DPMM employed 10,000 MCMC iterations with 1,000 burn-in,
         thinning every 10th sample, using the Beta-Binomial emission model to account for overdispersion.
         Convergence was assessed by Gelman–Rubin R̂ &lt; 1.05 across 3 independent chains.
+      </p>
+
+      <SubHeading number="3.5" title="Validity Gates and Claim-Control Framework (v3.0.0)" />
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        Every TEMPEST analysis is mediated by an inference and governance layer that runs <em>before</em>, <em>during</em>,
+        and <em>after</em> the scientific modules. The Data Intelligence Engine inspects each uploaded cohort and
+        returns: <code>dataset_type</code> ∈ &#123;endpoint_comparison, longitudinal_timecourse, prospective_validation,
+        synthetic_demo, neoantigen_prioritization, benchmark_dataset, unknown&#125;; <code>omics_type</code>; and
+        <code> evidence_type</code> ∈ &#123;synthetic, retrospective, endpoint, longitudinal, prospective&#125;. These
+        tags are persisted on every downstream artefact (table row, CSV column, figure caption, AI summary).
+      </p>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        <strong>Sample-size floor.</strong> Composite scores require <code>n ≥ 25</code> per group; below this threshold
+        the platform reports <code>validity_status = zN_only</code> and suppresses both fTTI<sup>primary</sup> (VR-PH)
+        and the legacy GCT-based composite, falling back to the bottleneck component z<sub>N</sub> alone. This rule
+        propagates to the Benchmark and Report panels, which refuse to surface AUROC, sensitivity, or specificity for
+        under-powered cohorts.
+      </p>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        <strong>Benchmark gating.</strong> The Benchmark Panel exposes three <code>benchmark_type</code> modes —
+        single-class geometry, binary classification, longitudinal — and AUROC is computed only when both classes are
+        present. Endpoint comparisons are forbidden from being described in prediction language; longitudinal cohorts
+        without phenotype labels are tagged as <em>retrospective trajectory</em>, and only longitudinal cohorts with
+        <code>lead_time &gt; 0</code> may be described as <em>early-warning candidates</em>.
+      </p>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        <strong>Claim audit.</strong> A rule-based scanner sweeps all generated reports, captions, AI summaries, and
+        exports for prohibited or risky phrases — "predicts resistance", "clinical-grade", "validated threshold",
+        "vaccine target", "therapeutic recommendation", "prospective prediction" (unless <code>evidence_type =
+        prospective</code>), "early warning" (unless <code>lead_time &gt; 0</code>), and "transition dynamics" — and
+        substitutes context-appropriate alternatives (e.g., "quantifies state separation", "expression-gated strong
+        binder", "proof-of-concept threshold"). The audit's context object carries <code>lead_time</code> and
+        <code> immunogenicity_validated</code>; the term <em>vaccine target</em> is only permitted when
+        immunogenicity is confirmed.
+      </p>
+      <p className="text-sm text-foreground leading-relaxed mb-4">
+        <strong>Publication-ready export gate.</strong> A camera-ready export is refused unless every required field
+        is present: accession ID, <code>evidence_type</code>, provenance, <code>validity_status</code>,
+        <code> topology_primary</code> ("VR-PH (Ripser-style H<sub>1</sub>)" or GCT-approximation), threshold status,
+        and a clean claim-audit result. Draft exports are permitted but stamped with the watermark "DRAFT — claims
+        require verification."
       </p>
 
       {/* ══════════════════════════════════════════════════════════
@@ -513,30 +595,47 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
           </AccordionTrigger>
           <AccordionContent>
             <p className="text-sm text-foreground leading-relaxed mb-3">
-              The TTI decomposes the transition signal into three orthogonal components:
+              The TTI decomposes the transition signal into three orthogonal components. As of v3.0.0 the
+              <strong> primary scoring path is fTTI<sup>primary</sup></strong>, which uses Vietoris–Rips persistent
+              homology (VR-PH, Ripser-style H<sub>1</sub>) for the loop component. The original Geometric Cluster
+              Topology (GCT) approximation is retained as a backward-compatible legacy score (<code>tti</code>,
+              <code> z.zL</code>) and is displayed only under the "Advanced / Legacy GCT score" toggle:
             </p>
-            <Equation label="Eq. 7">
-              TTI = z(L) + z(B) + z(N)
+            <Equation label="Eq. 7a (primary)">
+              fTTI_primary = z<sub>L</sub><sup>VR</sup> + z<sub>B</sub> + z<sub>N</sub>     (topology_primary = "VR-PH (Ripser-style H₁)")
+            </Equation>
+            <Equation label="Eq. 7b (legacy)">
+              tti = z<sub>L</sub><sup>GCT</sup> + z<sub>B</sub> + z<sub>N</sub>     (kept for back-compat consumers)
             </Equation>
             <p className="text-sm text-foreground leading-relaxed mb-3">
-              <strong>Loop Mass L</strong> — H1 persistent homology (Ripser). L = Σₖ max(ℓₖ − τ, 0), summing
-              persistence lengths above an adaptive threshold τ (95th percentile of null persistence).
+              <strong>Loop Mass L<sup>VR</sup></strong> — H<sub>1</sub> persistent homology over a Vietoris–Rips
+              filtration. L = Σₖ max(ℓₖ − τ, 0), summing persistence lengths above an adaptive threshold τ (95th
+              percentile of a local-jitter null persistence diagram). The Ripser-style implementation replaces the
+              older kNN/Union-Find GCT approximation that conflated H<sub>0</sub> and H<sub>1</sub> structure.
             </p>
             <p className="text-sm text-foreground leading-relaxed mb-3">
-              <strong>Branching Score B = F + D</strong> — F is weighted H0 fragmentation ∫(β₀(ε) − 1)dε;
-              D is directional dispersion 1 − mean‖mean unit neighbour vectors‖.
+              <strong>Branching Score B = F + D</strong> — F is weighted H<sub>0</sub> fragmentation
+              ∫(β₀(ε) − 1)dε; D is directional dispersion 1 − mean‖mean unit neighbour vectors‖.
             </p>
             <p className="text-sm text-foreground leading-relaxed mb-3">
               <strong>Bottleneck N = −log(φ + ε)</strong> — where φ(S,R) = cut(S,R) / min(vol(S), vol(R)) is graph
               conductance in the Gaussian-weighted kNN graph.
             </p>
             <p className="text-sm text-foreground leading-relaxed mb-3">
-              Each component is standardised against a local-jitter null model. The phase-transition criterion is
-              TTI ≥ 6.0 (permutation null p &lt; 0.001), derived from the vanishing Hessian condition:
+              Each component is standardised against a local-jitter null model. The proof-of-concept threshold is
+              fTTI<sup>primary</sup> ≥ 6.0 (permutation null p &lt; 0.001), motivated by the vanishing Hessian
+              condition below. The threshold is explicitly labelled "proof-of-concept" — never "validated" — until
+              prospective replication on an independent labelled cohort is available.
             </p>
             <Equation label="Eq. 8">
               det(∇²U(x_saddle, E*)) = 0
             </Equation>
+            <p className="text-sm text-foreground leading-relaxed mb-3">
+              When <code>n &lt; 25</code> per group, both VR-PH and GCT composites are suppressed (validity_status
+              = <code>zN_only</code>) and only z<sub>N</sub> is reported. All exports carry the columns
+              <code> fTTI_primary, fTTI_GCT, zL_VR, zL_GCT, topology_primary, validity_status, evidence_type,
+              provenance</code>, and figure captions are required to state "VR-PH primary".
+            </p>
           </AccordionContent>
         </AccordionItem>
       </Accordion>
@@ -778,12 +877,19 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
       <p className="text-sm text-foreground leading-relaxed mb-3">
         The neoantigen pipeline was re-executed on an upgraded platform integrating somatic VCFs (Mutect2 + Strelka2,
         intersected with matched-normal subtraction and dbSNP filtering), Arriba 2.5.1 fusion calls across all
-        timepoints, and NetMHCpan-4.1 sliding-window predictions for H-2-Kb and H-2-Db. The redo replaces the prior
-        17-candidate catalog with a tighter, expression- and germline-controlled set of <strong>10 somatic SNV
-        candidates (VCF01–VCF10)</strong> + <strong>6 fusion/legacy candidates (N001–N006)</strong>, of which
-        <strong> 2 reach Tier 1</strong> (Amz1 p.Glu78Gln, Csprs p.Gln208Arg). Two prior candidates were dropped to
-        Tier 5/germline-risk (Rbm26 rs3404794430; Meis1 rs239018671), and one new high-confidence structural event was
-        promoted (<strong>Sat2::Trp53</strong>, D122, classified as a TSG-disruption marker rather than a neoantigen).
+        timepoints, and NetMHCpan-4.1 sliding-window predictions for H-2-Kb and H-2-Db. The v3.0.0 schema enforces
+        the safeguards described in §3.3 — hard exclusion of MEIS1 rs239018671, germline-status gating, mandatory
+        peptide sequence, fusion non-binder demotion to <em>transcript-level biomarker</em>, and expression-and-recurrence
+        ranking — and emits all candidates under the manuscript-safe label "computationally nominated candidate
+        pending immunogenicity validation". The redo replaces the prior 17-candidate catalog with a tighter,
+        expression- and germline-controlled set of <strong>10 somatic SNV candidates (VCF01–VCF10)</strong> +
+        <strong> 6 fusion/legacy candidates (N001–N006)</strong>, of which <strong>2 reach Tier 1</strong> (Amz1
+        p.Glu78Gln, ranked first on confirmed RNA expression at D20 and recurrence in 7/8 timepoints; Csprs
+        p.Gln208Arg, ranked second pending expression confirmation). Two prior candidates were dropped to
+        Tier 5/germline-risk (Rbm26 rs3404794430; Meis1 rs239018671), and one new high-confidence structural event
+        was promoted (<strong>Sat2::Trp53</strong>, D122, classified as a TSG-disruption marker rather than a
+        neoantigen). No candidate in this article is presented as a <em>vaccine target</em>; that term is reserved
+        by the platform's nomenclature layer for peptides that subsequently clear ELISpot and tetramer validation.
       </p>
 
       <h4 className="text-xs font-semibold text-foreground mt-4 mb-2 font-mono">Table 4 — Neoantigen Master Table v2 (16 candidates, ranked by overall best %Rank)</h4>
@@ -1868,7 +1974,58 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
 
 
 
-
+      {/* 5.11 — Platform Integrity Audit & Claim Control (v3.0.0) */}
+      <SubHeading number="5.11" title="Platform Integrity Audit and Claim Control (v3.0.0)" />
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        The v3.0.0 release introduces a closed-loop integrity audit that gates every report, figure, AI summary, and
+        export produced by the platform. The audit is implemented in three layers: <em>(i) Data Intelligence</em>
+        (study-design inference, evidence-type and validity tagging at upload time), <em>(ii) Outcome Interpretation</em>
+        (manuscript-safe summarisation with reviewer risk flags), and <em>(iii) Claim Audit + Publication Gate</em>
+        (rule-based phrase sanitisation followed by export refusal when accession, evidence type, provenance, validity
+        status, topology source, or audit result is missing).
+      </p>
+      <h4 className="text-xs font-semibold text-foreground mt-4 mb-2 font-mono">Table 14 — Prohibited phrases and context-aware sanitisation</h4>
+      <div className="overflow-x-auto mb-3">
+        <table className="w-full border-collapse text-sm font-mono">
+          <thead className="bg-secondary">
+            <tr>
+              <ThCell>Prohibited phrase</ThCell>
+              <ThCell>Gating context</ThCell>
+              <ThCell>Sanitised replacement</ThCell>
+            </tr>
+          </thead>
+          <tbody>
+            {[
+              { p: "predicts resistance", g: "endpoint or no lead_time", r: "quantifies state separation" },
+              { p: "predicts resistance", g: "longitudinal AND lead_time > 0", r: "early-warning candidate (lead_time reported)" },
+              { p: "clinical-grade", g: "always", r: "research-use computational" },
+              { p: "validated threshold", g: "always", r: "proof-of-concept threshold" },
+              { p: "vaccine target", g: "immunogenicity_validated = false", r: "computationally nominated candidate pending immunogenicity validation" },
+              { p: "vaccine target", g: "immunogenicity_validated = true", r: "permitted" },
+              { p: "therapeutic recommendation", g: "always", r: "research hypothesis" },
+              { p: "prospective prediction", g: "evidence_type ≠ prospective", r: "retrospective state separation" },
+              { p: "early warning", g: "lead_time ≤ 0", r: "endpoint separation" },
+              { p: "transition dynamics", g: "always", r: "state-space geometry" },
+            ].map((d, i) => (
+              <tr key={d.p + d.g} className={i % 2 === 0 ? "bg-secondary/30" : ""}>
+                <TdCell className="text-xs text-destructive">{d.p}</TdCell>
+                <TdCell className="text-xs text-muted-foreground">{d.g}</TdCell>
+                <TdCell className="text-xs text-accent">{d.r}</TdCell>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        Every CSV export carries the columns <code>fTTI_primary, fTTI_GCT, zL_VR, zL_GCT, topology_primary,
+        validity_status, evidence_type, provenance</code>, and every figure caption is required to state
+        "VR-PH primary". Draft exports are permitted with the watermark "DRAFT — claims require verification";
+        publication-ready exports are refused until the claim audit returns clean and all required metadata is
+        present. Grounded Q&amp;A (AskTempest) refuses any question that cannot be supported by the uploaded data or
+        the curated knowledge base — including "Can I claim prediction?", "Is this endpoint or longitudinal?",
+        "Why is full fTTI blocked?", "Which neoantigen should I validate first?", and "What should I do next
+        experimentally?" — returning "This cannot be inferred from the uploaded data" rather than speculative claims.
+      </p>
 
       {/* ══════════════════════════════════════════════════════════
           6. DISCUSSION
@@ -2105,15 +2262,19 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
       ══════════════════════════════════════════════════════════ */}
       <SectionHeading id="conclusions" number="7" title="Conclusions" />
       <p className="text-sm text-foreground leading-relaxed mb-4">
-        TEMPEST provides an integrated, reproducible computational platform for modelling tumor evolution as a
-        dynamical system. Its seven-module pipeline — from tensor decomposition through topological transition
-        detection — offers a mathematically rigorous framework for identifying critical intervention windows,
-        predicting resistance trajectories, and designing combination therapies grounded in both epigenetic
-        landscape theory and metabolic immune biology. The convergence of TTI scores across five independent
-        cisplatin-resistance models supports the epigenetic phase-transition hypothesis and establishes a
-        quantitative foundation for prospective clinical validation. The identification of a NAD⁺-mediated
-        immune suppression axis and 17 experimentally tractable neoantigen candidates provides immediate
-        translational entry points for combination immunotherapy in HGSOC.
+        TEMPEST provides an integrated, reproducible, claim-controlled computational platform for modelling tumor
+        evolution as a dynamical system. Its seven-module pipeline — from tensor decomposition through Vietoris–Rips
+        persistent-homology topology scoring — offers a mathematically rigorous framework for quantifying state
+        separation, surfacing candidate intervention windows, and generating combination-therapy hypotheses grounded
+        in epigenetic landscape theory and metabolic immune biology. The convergence of fTTI<sup>primary</sup> scores
+        across five independent cisplatin-resistance models is consistent with an epigenetic phase-transition hypothesis
+        and establishes a quantitative proof-of-concept foundation for future prospective replication on labelled
+        cohorts. The characterisation of a NAD⁺-mediated immune-suppression axis and a tightened set of
+        <strong> two Tier 1 computationally nominated</strong> neoantigen candidates (Amz1 p.E78Q, Csprs p.Q208R)
+        provides immediate research entry points for combination-immunotherapy hypotheses in HGSOC, pending the
+        validation chain (Sanger → qRT-PCR → ELISpot → tetramer → in-vivo challenge) detailed in §3.3. All outputs
+        in this article are released for research use only; no clinical, prognostic, or therapeutic recommendations
+        are implied.
       </p>
 
       {/* ══════════════════════════════════════════════════════════
