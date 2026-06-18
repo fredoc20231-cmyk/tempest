@@ -157,40 +157,49 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
           Treatment-resistant cancer remains a principal cause of oncologic mortality. We present <strong>TEMPEST</strong> (Tumor
           Evolution Modeling Platform for Epigenetic State Transitions), a seven-module computational framework that
           integrates longitudinal multi-omic data — whole-exome sequencing, RNA-seq, ATAC-seq, spatial transcriptomics
-          (10× Visium), and proteomic profiles — to model, predict, and intercept the trajectory of tumor evolution toward
-          drug resistance.
+          (10× Visium), and proteomic profiles — to <em>characterise</em> the geometry of tumor regulatory state space
+          and to surface candidate intervention windows during the trajectory toward drug resistance. All outputs are
+          released for research use only; no clinical, prognostic, or therapeutic recommendations are made.
         </p>
         <p className="text-sm text-foreground leading-relaxed mb-3">
-          The platform introduces three methodological innovations: (1) a <em>weighted non-negative Tucker decomposition</em>
-          (wNTD) for joint factorisation of heterogeneous molecular tensors across time; (2) a <em>Topological Transition Index</em>
-          (TTI) combining persistent homology loop mass, branching fragmentation, and graph conductance into a composite
-          metric that detects regulatory phase transitions in feature space; and (3) a <em>Cross-species Neoantigen
-          Intelligence System</em> (CNIS) integrating clonal dynamics with MHC binding prediction and COSMIC cross-validation
-          to produce experimentally tractable vaccine candidates.
+          The platform contributes four methodological elements: (1) a <em>weighted non-negative Tucker decomposition</em>
+          (wNTD) for joint factorisation of heterogeneous molecular tensors across time; (2) a <em>Topological Transition
+          Index</em> in which the primary loop component <strong>z<sub>L</sub><sup>VR</sup></strong> is computed by
+          Vietoris–Rips persistent homology (VR-PH, Ripser-style H<sub>1</sub>), with the original Geometric Cluster
+          Topology (GCT) score retained only as a backward-compatible approximation; (3) a <em>Cross-species Neoantigen
+          Intelligence System</em> (CNIS) coupling clonal dynamics, MHC-I binding, RNA-expression gating, and dbSNP/germline
+          exclusion to produce <em>computationally nominated</em> peptide candidates pending immunogenicity validation;
+          and (4) a <em>Data Intelligence and Claim-Control layer</em> (study-design inference, n &lt; 25 validity floor,
+          evidence-type/provenance tagging, claim audit, and a publication-ready export gate) that enforces
+          manuscript-safe nomenclature across every report, figure, and AI summary.
         </p>
         <p className="text-sm text-foreground leading-relaxed mb-3">
           Applied to a genetically engineered mouse (GEM) model of high-grade serous ovarian carcinoma (HGSOC) sampled
-          at eight longitudinal timepoints (D0–D122), TEMPEST identifies a critical bifurcation window at D88–D99
-          where the system transitions from a parental to a cisplatin-resistant regulatory state. Cross-validation with
-          three human cell-line models (OVCAR3, SKOV3, OVCAR8) confirms convergent TTI scores (all &gt; 6.0) and
-          conductance values (all φ &lt; 0.02), supporting an epigenetic phase-transition hypothesis. Mutational dynamics
-          reveal a missense:synonymous ratio peak of 2.65 at D88 collapsing to 1.16 at D122, consistent with a selective
-          sweep. PyClone Bayesian inference resolves 17 clonal clusters with Shannon diversity peaking at D52 (H = 2.83)
-          before monotonic decline. Spatial transcriptomics identifies the D116 STIC–tumor boundary as molecularly
-          indistinguishable (Pearson r = 0.94), marking convergent progression.
+          at eight longitudinal timepoints (D0–D122), TEMPEST flags a candidate bifurcation window at D88–D99 where the
+          system geometry separates parental from cisplatin-resistant regulatory states. Cross-comparison with three
+          human cell-line pairs (OVCAR3, SKOV3, OVCAR8) yields convergent fTTI<sup>primary</sup> scores (all &gt; 6.0)
+          and conductance values (φ &lt; 0.02), consistent with — but not proof of — an epigenetic phase-transition
+          hypothesis. Because <em>endpoint</em> comparisons cannot be used as prospective predictions, AUROC is reported
+          only for binary-labelled benchmarks; single-class geometry analyses suppress classification metrics. Mutational
+          dynamics show a missense:synonymous ratio peak of 2.65 at D88 collapsing to 1.16 at D122; PyClone resolves 17
+          clonal clusters with Shannon diversity peaking at D52 (H = 2.83). Spatial transcriptomics identifies the D116
+          STIC–tumor boundary as molecularly indistinguishable (Pearson r = 0.94).
         </p>
         <p className="text-sm text-foreground leading-relaxed">
-          We further characterise a NAD⁺-mediated metabolic immune-suppression axis through which resistant tumor cells
-          deplete nucleotide pools required for T cell proliferation, identifying PRPS1 inhibition as a druggable
-          vulnerability. TEMPEST provides an end-to-end, reproducible workflow from raw multi-omic data to clinically
-          actionable biomarker windows and combination-therapy hypotheses.
+          The neoantigen module (v2, March 2026 redo) returns <strong>two Tier 1 computationally nominated candidates</strong>
+          — Amz1 p.Glu78Gln and Csprs p.Gln208Arg — after enforced exclusion of MEIS1 rs239018671 and all germline-risk
+          variants. A NAD⁺-mediated metabolic immune-suppression axis is characterised, with PRPS1 highlighted as a
+          mechanistically plausible vulnerability requiring experimental validation. TEMPEST delivers an end-to-end,
+          reproducible workflow from raw multi-omic data to claim-audited research reports, with every assertion tagged
+          by evidence type (synthetic, retrospective, endpoint, longitudinal, or prospective) and provenance.
         </p>
         <div className="mt-4 pt-3 border-t border-border">
           <p className="text-xs text-muted-foreground">
-            <strong className="text-foreground">Keywords:</strong> tumor evolution, topological data analysis, persistent homology,
-            dynamical systems, phase transition, cisplatin resistance, high-grade serous ovarian carcinoma, multi-omic
-            integration, early warning signals, neoantigen prediction, spatial transcriptomics, clonal dynamics,
-            computational oncology
+            <strong className="text-foreground">Keywords:</strong> tumor evolution, topological data analysis,
+            Vietoris–Rips persistent homology, dynamical systems, candidate phase transition, cisplatin resistance,
+            high-grade serous ovarian carcinoma, multi-omic integration, longitudinal benchmark, computationally
+            nominated neoantigen, spatial transcriptomics, clonal dynamics, claim-control, research-use computational
+            oncology
           </p>
         </div>
       </div>
