@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { MessageCircleQuestion, Send } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { MessageCircleQuestion, Send, RotateCcw } from "lucide-react";
 import { askTempest, QUICK_QUESTIONS, REFUSAL } from "@/lib/intelligence/askTempest";
 
 interface Turn {
@@ -9,9 +9,33 @@ interface Turn {
   refused: boolean;
 }
 
+const STORAGE_KEY = "tempest.asktempest.turns.v1";
+
+function loadTurns(): Turn[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
 export default function AskTempestPanel() {
   const [question, setQuestion] = useState("");
-  const [turns, setTurns] = useState<Turn[]>([]);
+  const [turns, setTurns] = useState<Turn[]>(() => loadTurns());
+
+  // Persist on every change so navigation/reload preserves history.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(turns));
+    } catch {
+      /* quota — silently degrade */
+    }
+  }, [turns]);
 
   const submit = (q: string) => {
     const text = q.trim();
@@ -21,6 +45,17 @@ export default function AskTempestPanel() {
     setQuestion("");
   };
 
+  const handleReset = () => {
+    if (turns.length === 0) return;
+    if (!confirm("Reset Ask TEMPEST history? Your dataset context and module results are preserved.")) return;
+    setTurns([]);
+    try {
+      window.localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      /* noop */
+    }
+  };
+
   const groundedInfo = useMemo(
     () => `Grounded only in: uploaded dataset summary · DatasetContext · module results · TEMPEST knowledge base · safe-language rules. If unsupported: "${REFUSAL}"`,
     [],
@@ -28,11 +63,22 @@ export default function AskTempestPanel() {
 
   return (
     <div className="p-6 space-y-4 max-w-4xl mx-auto">
-      <div>
-        <h1 className="text-xl font-semibold text-foreground flex items-center gap-2">
-          <MessageCircleQuestion className="w-5 h-5 text-primary" /> Ask TEMPEST
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">{groundedInfo}</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-semibold text-foreground flex items-center gap-2">
+            <MessageCircleQuestion className="w-5 h-5 text-primary" /> Ask TEMPEST
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">{groundedInfo}</p>
+        </div>
+        <button
+          onClick={handleReset}
+          disabled={turns.length === 0}
+          title="Reset Ask TEMPEST history (preserves dataset context)"
+          className="flex items-center gap-1.5 text-xs font-mono px-3 py-1.5 rounded-md border border-border text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          <RotateCcw className="w-3.5 h-3.5" />
+          Reset
+        </button>
       </div>
 
       <div className="module-card space-y-2">
