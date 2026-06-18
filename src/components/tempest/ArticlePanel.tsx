@@ -217,24 +217,25 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
           manuscript-safe nomenclature across every report, figure, and AI summary.
         </p>
         <p className="text-sm text-foreground leading-relaxed mb-3">
-          Applied to a genetically engineered mouse (GEM) model of high-grade serous ovarian carcinoma (HGSOC) sampled
-          at eight longitudinal timepoints (D0–D122), TEMPEST flags a candidate bifurcation window at D88–D99 where the
-          system geometry separates parental from cisplatin-resistant regulatory states. Cross-comparison with three
-          human cell-line pairs (OVCAR3, SKOV3, OVCAR8) yields convergent fTTI<sup>primary</sup> scores (all &gt; 6.0)
-          and conductance values (φ &lt; 0.02), consistent with — but not proof of — an epigenetic phase-transition
-          hypothesis. Because <em>endpoint</em> comparisons cannot be used as prospective predictions, AUROC is reported
-          only for binary-labelled benchmarks; single-class geometry analyses suppress classification metrics. Mutational
-          dynamics show a missense:synonymous ratio peak of 2.65 at D88 collapsing to 1.16 at D122; PyClone resolves 17
-          clonal clusters with Shannon diversity peaking at D52 (H = 2.83). Spatial transcriptomics identifies the D116
-          STIC–tumor boundary as molecularly indistinguishable (Pearson r = 0.94).
+          To illustrate platform behaviour, TEMPEST was executed on a bundled high-grade serous ovarian carcinoma
+          (HGSOC) reference cohort organised along the platform's D0–D122 longitudinal schema (eight timepoints).
+          On this reference cohort, the platform surfaces a candidate bifurcation window at D88–D99 in which the
+          system geometry separates parental from cisplatin-resistant regulatory states, and reports
+          fTTI<sup>primary</sup> &gt; 6.0 with conductance φ &lt; 0.02. These values are <em>illustrative outputs of
+          the platform</em>; they are not independent experimental discoveries and should not be cited as such.
+          Because endpoint comparisons cannot be re-interpreted as prospective predictions, AUROC is reported only
+          when the Benchmark Panel detects a binary-labelled longitudinal benchmark; single-class geometry analyses
+          suppress all classification metrics by design.
         </p>
         <p className="text-sm text-foreground leading-relaxed">
-          The neoantigen module (v2, March 2026 redo) returns <strong>two Tier 1 computationally nominated candidates</strong>
-          — Amz1 p.Glu78Gln and Csprs p.Gln208Arg — after enforced exclusion of MEIS1 rs239018671 and all germline-risk
-          variants. A NAD⁺-mediated metabolic immune-suppression axis is characterised, with PRPS1 highlighted as a
-          mechanistically plausible vulnerability requiring experimental validation. TEMPEST delivers an end-to-end,
-          reproducible workflow from raw multi-omic data to claim-audited research reports, with every assertion tagged
-          by evidence type (synthetic, retrospective, endpoint, longitudinal, or prospective) and provenance.
+          The neoantigen module (v2, March 2026 schema) returns two illustrative Tier 1 computationally nominated
+          candidates on the bundled cohort — <em>Amz1</em> p.Glu78Gln and <em>Csprs</em> p.Gln208Arg — after enforced
+          exclusion of <em>MEIS1</em> rs239018671 and all variants tagged <code>germline</code> /
+          <code>germline-risk</code> / <code>unknown</code>. A NAD⁺-mediated metabolic immune-suppression axis is
+          discussed as a mechanistically plausible hypothesis requiring independent experimental validation; no
+          therapeutic or prognostic claim is made. TEMPEST's contribution is the end-to-end, claim-audited workflow
+          — from raw multi-omic input to a publication-gated report in which every assertion is tagged by evidence
+          type (synthetic, retrospective, endpoint, longitudinal, prospective) and data provenance.
         </p>
         <div className="mt-4 pt-3 border-t border-border">
           <p className="text-xs text-muted-foreground">
