@@ -405,6 +405,47 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
         Convergence was assessed by Gelman–Rubin R̂ &lt; 1.05 across 3 independent chains.
       </p>
 
+      <SubHeading number="3.5" title="Validity Gates and Claim-Control Framework (v3.0.0)" />
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        Every TEMPEST analysis is mediated by an inference and governance layer that runs <em>before</em>, <em>during</em>,
+        and <em>after</em> the scientific modules. The Data Intelligence Engine inspects each uploaded cohort and
+        returns: <code>dataset_type</code> ∈ &#123;endpoint_comparison, longitudinal_timecourse, prospective_validation,
+        synthetic_demo, neoantigen_prioritization, benchmark_dataset, unknown&#125;; <code>omics_type</code>; and
+        <code> evidence_type</code> ∈ &#123;synthetic, retrospective, endpoint, longitudinal, prospective&#125;. These
+        tags are persisted on every downstream artefact (table row, CSV column, figure caption, AI summary).
+      </p>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        <strong>Sample-size floor.</strong> Composite scores require <code>n ≥ 25</code> per group; below this threshold
+        the platform reports <code>validity_status = zN_only</code> and suppresses both fTTI<sup>primary</sup> (VR-PH)
+        and the legacy GCT-based composite, falling back to the bottleneck component z<sub>N</sub> alone. This rule
+        propagates to the Benchmark and Report panels, which refuse to surface AUROC, sensitivity, or specificity for
+        under-powered cohorts.
+      </p>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        <strong>Benchmark gating.</strong> The Benchmark Panel exposes three <code>benchmark_type</code> modes —
+        single-class geometry, binary classification, longitudinal — and AUROC is computed only when both classes are
+        present. Endpoint comparisons are forbidden from being described in prediction language; longitudinal cohorts
+        without phenotype labels are tagged as <em>retrospective trajectory</em>, and only longitudinal cohorts with
+        <code>lead_time &gt; 0</code> may be described as <em>early-warning candidates</em>.
+      </p>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        <strong>Claim audit.</strong> A rule-based scanner sweeps all generated reports, captions, AI summaries, and
+        exports for prohibited or risky phrases — "predicts resistance", "clinical-grade", "validated threshold",
+        "vaccine target", "therapeutic recommendation", "prospective prediction" (unless <code>evidence_type =
+        prospective</code>), "early warning" (unless <code>lead_time &gt; 0</code>), and "transition dynamics" — and
+        substitutes context-appropriate alternatives (e.g., "quantifies state separation", "expression-gated strong
+        binder", "proof-of-concept threshold"). The audit's context object carries <code>lead_time</code> and
+        <code> immunogenicity_validated</code>; the term <em>vaccine target</em> is only permitted when
+        immunogenicity is confirmed.
+      </p>
+      <p className="text-sm text-foreground leading-relaxed mb-4">
+        <strong>Publication-ready export gate.</strong> A camera-ready export is refused unless every required field
+        is present: accession ID, <code>evidence_type</code>, provenance, <code>validity_status</code>,
+        <code> topology_primary</code> ("VR-PH (Ripser-style H<sub>1</sub>)" or GCT-approximation), threshold status,
+        and a clean claim-audit result. Draft exports are permitted but stamped with the watermark "DRAFT — claims
+        require verification."
+      </p>
+
       {/* ══════════════════════════════════════════════════════════
           4. ALGORITHMIC FRAMEWORK
       ══════════════════════════════════════════════════════════ */}
