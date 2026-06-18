@@ -1974,7 +1974,58 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
 
 
 
-
+      {/* 5.11 — Platform Integrity Audit & Claim Control (v3.0.0) */}
+      <SubHeading number="5.11" title="Platform Integrity Audit and Claim Control (v3.0.0)" />
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        The v3.0.0 release introduces a closed-loop integrity audit that gates every report, figure, AI summary, and
+        export produced by the platform. The audit is implemented in three layers: <em>(i) Data Intelligence</em>
+        (study-design inference, evidence-type and validity tagging at upload time), <em>(ii) Outcome Interpretation</em>
+        (manuscript-safe summarisation with reviewer risk flags), and <em>(iii) Claim Audit + Publication Gate</em>
+        (rule-based phrase sanitisation followed by export refusal when accession, evidence type, provenance, validity
+        status, topology source, or audit result is missing).
+      </p>
+      <h4 className="text-xs font-semibold text-foreground mt-4 mb-2 font-mono">Table 14 — Prohibited phrases and context-aware sanitisation</h4>
+      <div className="overflow-x-auto mb-3">
+        <table className="w-full border-collapse text-sm font-mono">
+          <thead className="bg-secondary">
+            <tr>
+              <ThCell>Prohibited phrase</ThCell>
+              <ThCell>Gating context</ThCell>
+              <ThCell>Sanitised replacement</ThCell>
+            </tr>
+          </thead>
+          <tbody>
+            {[
+              { p: "predicts resistance", g: "endpoint or no lead_time", r: "quantifies state separation" },
+              { p: "predicts resistance", g: "longitudinal AND lead_time > 0", r: "early-warning candidate (lead_time reported)" },
+              { p: "clinical-grade", g: "always", r: "research-use computational" },
+              { p: "validated threshold", g: "always", r: "proof-of-concept threshold" },
+              { p: "vaccine target", g: "immunogenicity_validated = false", r: "computationally nominated candidate pending immunogenicity validation" },
+              { p: "vaccine target", g: "immunogenicity_validated = true", r: "permitted" },
+              { p: "therapeutic recommendation", g: "always", r: "research hypothesis" },
+              { p: "prospective prediction", g: "evidence_type ≠ prospective", r: "retrospective state separation" },
+              { p: "early warning", g: "lead_time ≤ 0", r: "endpoint separation" },
+              { p: "transition dynamics", g: "always", r: "state-space geometry" },
+            ].map((d, i) => (
+              <tr key={d.p + d.g} className={i % 2 === 0 ? "bg-secondary/30" : ""}>
+                <TdCell className="text-xs text-destructive">{d.p}</TdCell>
+                <TdCell className="text-xs text-muted-foreground">{d.g}</TdCell>
+                <TdCell className="text-xs text-accent">{d.r}</TdCell>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        Every CSV export carries the columns <code>fTTI_primary, fTTI_GCT, zL_VR, zL_GCT, topology_primary,
+        validity_status, evidence_type, provenance</code>, and every figure caption is required to state
+        "VR-PH primary". Draft exports are permitted with the watermark "DRAFT — claims require verification";
+        publication-ready exports are refused until the claim audit returns clean and all required metadata is
+        present. Grounded Q&amp;A (AskTempest) refuses any question that cannot be supported by the uploaded data or
+        the curated knowledge base — including "Can I claim prediction?", "Is this endpoint or longitudinal?",
+        "Why is full fTTI blocked?", "Which neoantigen should I validate first?", and "What should I do next
+        experimentally?" — returning "This cannot be inferred from the uploaded data" rather than speculative claims.
+      </p>
 
       {/* ══════════════════════════════════════════════════════════
           6. DISCUSSION
