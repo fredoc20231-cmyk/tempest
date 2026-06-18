@@ -115,13 +115,13 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
       <div className="text-center mb-10">
         <div className="flex items-center justify-center gap-2 text-muted-foreground text-xs font-mono tracking-widest mb-4">
           <BookOpen className="w-4 h-4" />
-          RESEARCH ARTICLE — PREPRINT
+          METHODS / PLATFORM PREPRINT — RESEARCH USE ONLY
         </div>
         <h1 className="text-3xl md:text-4xl font-bold text-foreground leading-tight font-serif mb-4">
-          TEMPEST: A Multi-Omic Computational Platform for Predictive Tumor Evolution Modeling in High-Grade Serous Ovarian Carcinoma
+          TEMPEST: A Claim-Controlled Multi-Omic Computational Platform for Characterising Candidate Transition Windows in High-Grade Serous Ovarian Carcinoma
         </h1>
         <p className="text-base text-muted-foreground mb-2 font-serif italic">
-          Integrating Topological Data Analysis, Dynamical Systems Theory, and Machine Learning for Longitudinal Cancer Trajectory Prediction
+          Integrating Tensor Decomposition, Vietoris–Rips Persistent Homology, and a Publication-Gate Intelligence Layer — Illustrated on a Bundled HGSOC Reference Cohort
         </p>
         <div className="mt-5 text-sm text-foreground">
           <p className="font-semibold">Ahmed Fadiel<sup>1,*</sup>, Kunle Odunsi<sup>1,2</sup></p>
@@ -144,6 +144,49 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
           <span className="text-border">|</span>
           <span className="text-accent">RESEARCH USE ONLY</span>
         </div>
+      </div>
+
+      {/* ── Provenance & Integrity Notice ── */}
+      <div className="bg-chart-amber/5 border-2 border-chart-amber/40 rounded-lg p-5 mb-8">
+        <h2 className="text-xs font-bold text-chart-amber font-mono tracking-wider mb-2">
+          PROVENANCE & INTEGRITY NOTICE — READ BEFORE CITING
+        </h2>
+        <ul className="text-xs text-foreground leading-relaxed list-disc pl-5 space-y-1.5">
+          <li>
+            This document is a <strong>methods / platform preprint</strong> describing the TEMPEST software. It is
+            <em> not</em> a report of an independently completed wet-lab study and has <em>not</em> undergone peer
+            review.
+          </li>
+          <li>
+            All numerical values reported in §5 (Results) — including variant counts, missense:synonymous ratios,
+            fusion counts, fTTI scores, conductance φ, Pearson correlations, clonal cluster counts, Shannon diversity,
+            and neoantigen tier assignments — are <strong>deterministic outputs of the platform run on the bundled
+            HGSOC reference cohort</strong> distributed with the application. They are <em>illustrative of platform
+            behaviour</em>, not independently generated experimental measurements.
+          </li>
+          <li>
+            The GEM-model design described in §3.1 (Pax8-Cre; <em>Trp53</em><sup>fl/fl</sup>;
+            <em> Rb1</em><sup>fl/fl</sup>; LSL-<em>Kras</em><sup>G12D</sup>, tamoxifen induction, D0–D122 sampling) is
+            the <strong>protocol the platform is designed to analyse</strong>. Tissue collection, sequencing, IACUC
+            approvals, and pathologist annotations described in §3 are <em>protocol specifications</em>, not a claim
+            that this specific cohort has been independently executed by the authors.
+          </li>
+          <li>
+            No clinical, prognostic, diagnostic, or therapeutic claims are made. The Claim-Audit and Publication-Gate
+            layers (§3.5, §5.11) actively block prohibited language (e.g. <code>predicts resistance</code>,
+            <code> vaccine target</code>, <code>validated threshold</code>, <code>clinical-grade</code>) from any
+            artefact released by the platform.
+          </li>
+          <li>
+            <strong>Submission readiness.</strong> A submission to <em>Nature</em>, <em>Science</em>, or
+            <em> Cell</em> would require independently generated wet-lab data (mouse cohort, sequencing libraries,
+            spatial transcriptomics slides, ELISpot/tetramer immunogenicity validation) plus prospective external
+            cohorts. As written, this manuscript is appropriate for venues that accept <em>methods/software</em>
+            contributions (e.g. <em>Nature Methods</em>, <em>Bioinformatics</em>, <em>Genome Biology</em>,
+            <em> Briefings in Bioinformatics</em>) once the illustrative cohort is replaced with the user's own data
+            and the validation roadmap is executed.
+          </li>
+        </ul>
       </div>
 
       <hr className="border-border mb-8" />
