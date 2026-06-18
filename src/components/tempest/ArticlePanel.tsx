@@ -2211,15 +2211,19 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
       ══════════════════════════════════════════════════════════ */}
       <SectionHeading id="conclusions" number="7" title="Conclusions" />
       <p className="text-sm text-foreground leading-relaxed mb-4">
-        TEMPEST provides an integrated, reproducible computational platform for modelling tumor evolution as a
-        dynamical system. Its seven-module pipeline — from tensor decomposition through topological transition
-        detection — offers a mathematically rigorous framework for identifying critical intervention windows,
-        predicting resistance trajectories, and designing combination therapies grounded in both epigenetic
-        landscape theory and metabolic immune biology. The convergence of TTI scores across five independent
-        cisplatin-resistance models supports the epigenetic phase-transition hypothesis and establishes a
-        quantitative foundation for prospective clinical validation. The identification of a NAD⁺-mediated
-        immune suppression axis and 17 experimentally tractable neoantigen candidates provides immediate
-        translational entry points for combination immunotherapy in HGSOC.
+        TEMPEST provides an integrated, reproducible, claim-controlled computational platform for modelling tumor
+        evolution as a dynamical system. Its seven-module pipeline — from tensor decomposition through Vietoris–Rips
+        persistent-homology topology scoring — offers a mathematically rigorous framework for quantifying state
+        separation, surfacing candidate intervention windows, and generating combination-therapy hypotheses grounded
+        in epigenetic landscape theory and metabolic immune biology. The convergence of fTTI<sup>primary</sup> scores
+        across five independent cisplatin-resistance models is consistent with an epigenetic phase-transition hypothesis
+        and establishes a quantitative proof-of-concept foundation for future prospective replication on labelled
+        cohorts. The characterisation of a NAD⁺-mediated immune-suppression axis and a tightened set of
+        <strong> two Tier 1 computationally nominated</strong> neoantigen candidates (Amz1 p.E78Q, Csprs p.Q208R)
+        provides immediate research entry points for combination-immunotherapy hypotheses in HGSOC, pending the
+        validation chain (Sanger → qRT-PCR → ELISpot → tetramer → in-vivo challenge) detailed in §3.3. All outputs
+        in this article are released for research use only; no clinical, prognostic, or therapeutic recommendations
+        are implied.
       </p>
 
       {/* ══════════════════════════════════════════════════════════
