@@ -595,30 +595,47 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
           </AccordionTrigger>
           <AccordionContent>
             <p className="text-sm text-foreground leading-relaxed mb-3">
-              The TTI decomposes the transition signal into three orthogonal components:
+              The TTI decomposes the transition signal into three orthogonal components. As of v3.0.0 the
+              <strong> primary scoring path is fTTI<sup>primary</sup></strong>, which uses Vietoris–Rips persistent
+              homology (VR-PH, Ripser-style H<sub>1</sub>) for the loop component. The original Geometric Cluster
+              Topology (GCT) approximation is retained as a backward-compatible legacy score (<code>tti</code>,
+              <code> z.zL</code>) and is displayed only under the "Advanced / Legacy GCT score" toggle:
             </p>
-            <Equation label="Eq. 7">
-              TTI = z(L) + z(B) + z(N)
+            <Equation label="Eq. 7a (primary)">
+              fTTI_primary = z<sub>L</sub><sup>VR</sup> + z<sub>B</sub> + z<sub>N</sub>     (topology_primary = "VR-PH (Ripser-style H₁)")
+            </Equation>
+            <Equation label="Eq. 7b (legacy)">
+              tti = z<sub>L</sub><sup>GCT</sup> + z<sub>B</sub> + z<sub>N</sub>     (kept for back-compat consumers)
             </Equation>
             <p className="text-sm text-foreground leading-relaxed mb-3">
-              <strong>Loop Mass L</strong> — H1 persistent homology (Ripser). L = Σₖ max(ℓₖ − τ, 0), summing
-              persistence lengths above an adaptive threshold τ (95th percentile of null persistence).
+              <strong>Loop Mass L<sup>VR</sup></strong> — H<sub>1</sub> persistent homology over a Vietoris–Rips
+              filtration. L = Σₖ max(ℓₖ − τ, 0), summing persistence lengths above an adaptive threshold τ (95th
+              percentile of a local-jitter null persistence diagram). The Ripser-style implementation replaces the
+              older kNN/Union-Find GCT approximation that conflated H<sub>0</sub> and H<sub>1</sub> structure.
             </p>
             <p className="text-sm text-foreground leading-relaxed mb-3">
-              <strong>Branching Score B = F + D</strong> — F is weighted H0 fragmentation ∫(β₀(ε) − 1)dε;
-              D is directional dispersion 1 − mean‖mean unit neighbour vectors‖.
+              <strong>Branching Score B = F + D</strong> — F is weighted H<sub>0</sub> fragmentation
+              ∫(β₀(ε) − 1)dε; D is directional dispersion 1 − mean‖mean unit neighbour vectors‖.
             </p>
             <p className="text-sm text-foreground leading-relaxed mb-3">
               <strong>Bottleneck N = −log(φ + ε)</strong> — where φ(S,R) = cut(S,R) / min(vol(S), vol(R)) is graph
               conductance in the Gaussian-weighted kNN graph.
             </p>
             <p className="text-sm text-foreground leading-relaxed mb-3">
-              Each component is standardised against a local-jitter null model. The phase-transition criterion is
-              TTI ≥ 6.0 (permutation null p &lt; 0.001), derived from the vanishing Hessian condition:
+              Each component is standardised against a local-jitter null model. The proof-of-concept threshold is
+              fTTI<sup>primary</sup> ≥ 6.0 (permutation null p &lt; 0.001), motivated by the vanishing Hessian
+              condition below. The threshold is explicitly labelled "proof-of-concept" — never "validated" — until
+              prospective replication on an independent labelled cohort is available.
             </p>
             <Equation label="Eq. 8">
               det(∇²U(x_saddle, E*)) = 0
             </Equation>
+            <p className="text-sm text-foreground leading-relaxed mb-3">
+              When <code>n &lt; 25</code> per group, both VR-PH and GCT composites are suppressed (validity_status
+              = <code>zN_only</code>) and only z<sub>N</sub> is reported. All exports carry the columns
+              <code> fTTI_primary, fTTI_GCT, zL_VR, zL_GCT, topology_primary, validity_status, evidence_type,
+              provenance</code>, and figure captions are required to state "VR-PH primary".
+            </p>
           </AccordionContent>
         </AccordionItem>
       </Accordion>
