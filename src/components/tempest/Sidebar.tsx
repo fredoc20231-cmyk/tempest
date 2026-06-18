@@ -83,6 +83,7 @@ const groupedModules: Record<string, Module> = {
 };
 
 const Sidebar = ({ active, onNavigate }: SidebarProps) => {
+  const { user, signOut } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
 
   return (
