@@ -1,12 +1,13 @@
 /**
- * Session-level adaptive analysis memory.
+ * Persistent adaptive analysis memory.
  *
- * NOT model training. This is a per-browser-session scratchpad that lets the
+ * NOT model training. This is a per-browser scratchpad that lets the
  * wizard, knowledge base, and Ask-TEMPEST panel remember the user's column
- * mappings, overrides, module results, and warnings across navigations.
+ * mappings, overrides, module results, and warnings.
  *
- * Backed by sessionStorage so it clears when the tab closes. Pure functions
- * (no React state) — call from any component.
+ * Backed by localStorage so it persists across tab close, browser restart,
+ * and navigation. Only cleared when the user explicitly resets. Pure
+ * functions (no React state) — call from any component.
  */
 import type { DatasetContext, DetectedColumns } from "./dataIntelligenceEngine";
 
@@ -50,7 +51,7 @@ const EMPTY: SessionContext = {
 function load(): SessionContext {
   if (typeof window === "undefined") return { ...EMPTY };
   try {
-    const raw = window.sessionStorage.getItem(KEY);
+    const raw = window.localStorage.getItem(KEY);
     if (!raw) return { ...EMPTY };
     return { ...EMPTY, ...(JSON.parse(raw) as SessionContext) };
   } catch {
@@ -61,7 +62,7 @@ function load(): SessionContext {
 function save(ctx: SessionContext): void {
   if (typeof window === "undefined") return;
   try {
-    window.sessionStorage.setItem(KEY, JSON.stringify(ctx));
+    window.localStorage.setItem(KEY, JSON.stringify(ctx));
   } catch {
     /* quota / private mode — silently degrade */
   }
@@ -73,7 +74,7 @@ export function getSessionContext(): SessionContext {
 
 export function resetSessionContext(): void {
   if (typeof window === "undefined") return;
-  window.sessionStorage.removeItem(KEY);
+  window.localStorage.removeItem(KEY);
 }
 
 export function rememberUploadedDatasetSummary(summary: UploadedDatasetSummary): void {
