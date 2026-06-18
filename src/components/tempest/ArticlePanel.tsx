@@ -362,9 +362,24 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
       <p className="text-sm text-foreground leading-relaxed mb-3">
         Multi-modal filtering applied: WES∩RNA co-detection, &gt;10 CPM expression, absence from D0 controls,
         VEP high-impact annotation, and dbSNP/MGI exclusion. Cross-species validation employed a four-tier
-        framework: Tier 1 (GEM-specific + COSMIC validated), Tier 2 (ortholog-mapped), Tier 3 (cross-validated in
-        mouse and human MHC contexts), Tier 4 (clinically prioritised: Tier 3 + clonal φ &gt; 0.3 + rising
-        trajectory + FDR &lt; 0.05 expression).
+        framework: Tier 1 (GEM-specific, somatic-confirmed, RNA-expressed, recurrent ≥ 3 timepoints, COSMIC
+        cross-referenced), Tier 2 (ortholog-mapped), Tier 3 (cross-validated in mouse and human MHC contexts),
+        Tier 4 (research-priority candidates carrying clonal φ &gt; 0.3 + rising trajectory + FDR &lt; 0.05
+        expression). All candidates are released as <em>computationally nominated</em>; the term
+        "vaccine target" is reserved by the platform's nomenclature layer for candidates with confirmed
+        immunogenicity (ELISpot ≥ 50 SFU/10⁶ <em>and</em> tetramer⁺ ≥ 0.1%).
+      </p>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        <strong>Safeguards (v3.0.0).</strong> The neoantigen schema enforces hard exclusions and gates before a
+        candidate can reach Tier 1: (i) <code>MEIS1</code>/rs239018671 is permanently excluded as germline-risk,
+        regardless of binding score; (ii) any variant with <code>germline_status ∈ &#123;germline,
+        germline-risk, unknown&#125;</code> cannot be Tier 1; (iii) missing peptide sequence cannot be Tier 1;
+        (iv) fusion non-binders (best %Rank &gt; 2.0) are demoted to <em>transcript-level biomarker</em> and may
+        not be presented as immunogenic targets; (v) when two Tier 1-eligible candidates compete, those with
+        confirmed RNA expression and recurrence across ≥ 3 timepoints are ranked above candidates whose
+        expression is unconfirmed (e.g., Amz1 p.E78Q above Csprs p.Q208R until Csprs expression is verified).
+        Validation roadmap exports include the full chain Sanger → qRT-PCR → peptide synthesis → ELISpot →
+        tetramer → in-vivo challenge.
       </p>
 
       <SubHeading number="3.4" title="Statistical Framework" />
