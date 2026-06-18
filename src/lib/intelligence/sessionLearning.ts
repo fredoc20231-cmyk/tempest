@@ -1,12 +1,13 @@
 /**
- * Session-level adaptive analysis memory.
+ * Persistent adaptive analysis memory.
  *
- * NOT model training. This is a per-browser-session scratchpad that lets the
+ * NOT model training. This is a per-browser scratchpad that lets the
  * wizard, knowledge base, and Ask-TEMPEST panel remember the user's column
- * mappings, overrides, module results, and warnings across navigations.
+ * mappings, overrides, module results, and warnings.
  *
- * Backed by sessionStorage so it clears when the tab closes. Pure functions
- * (no React state) — call from any component.
+ * Backed by localStorage so it persists across tab close, browser restart,
+ * and navigation. Only cleared when the user explicitly resets. Pure
+ * functions (no React state) — call from any component.
  */
 import type { DatasetContext, DetectedColumns } from "./dataIntelligenceEngine";
 
