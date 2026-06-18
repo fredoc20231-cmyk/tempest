@@ -16,7 +16,9 @@ import {
   GitBranch,
   Hexagon,
   BookOpen,
+  LogOut,
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 type Module = "home" | "overview" | "motf" | "gbsc" | "bctn" | "cnis" | "msrs" | "trajectory" | "tti" | "immune" | "predict" | "chat" | "report" | "datasources" | "article" | "claimaudit" | "wizard" | "asktempest";
 
@@ -81,6 +83,7 @@ const groupedModules: Record<string, Module> = {
 };
 
 const Sidebar = ({ active, onNavigate }: SidebarProps) => {
+  const { user, signOut } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
 
   return (
@@ -153,8 +156,20 @@ const Sidebar = ({ active, onNavigate }: SidebarProps) => {
         ))}
       </nav>
 
-      {/* Collapse toggle */}
-      <div className="p-2 border-t border-sidebar-border">
+      {/* Account + collapse */}
+      <div className="p-2 border-t border-sidebar-border space-y-1">
+        <button
+          onClick={() => signOut()}
+          title={user?.email ? `Sign out (${user.email.split("@")[0]})` : "Sign out"}
+          className={`w-full flex items-center ${collapsed ? "justify-center" : "justify-start gap-2 px-3"} py-2 text-muted-foreground hover:text-primary transition-all duration-300 rounded-md hover:bg-primary/10`}
+        >
+          <LogOut className="w-4 h-4" />
+          {!collapsed && (
+            <span className="text-xs font-mono truncate">
+              Sign out{user?.email ? ` · ${user.email.split("@")[0]}` : ""}
+            </span>
+          )}
+        </button>
         <button
           onClick={() => setCollapsed(!collapsed)}
           className="w-full flex items-center justify-center py-2 text-muted-foreground hover:text-primary transition-all duration-300 rounded-md hover:bg-primary/10"
