@@ -877,12 +877,19 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
       <p className="text-sm text-foreground leading-relaxed mb-3">
         The neoantigen pipeline was re-executed on an upgraded platform integrating somatic VCFs (Mutect2 + Strelka2,
         intersected with matched-normal subtraction and dbSNP filtering), Arriba 2.5.1 fusion calls across all
-        timepoints, and NetMHCpan-4.1 sliding-window predictions for H-2-Kb and H-2-Db. The redo replaces the prior
-        17-candidate catalog with a tighter, expression- and germline-controlled set of <strong>10 somatic SNV
-        candidates (VCF01–VCF10)</strong> + <strong>6 fusion/legacy candidates (N001–N006)</strong>, of which
-        <strong> 2 reach Tier 1</strong> (Amz1 p.Glu78Gln, Csprs p.Gln208Arg). Two prior candidates were dropped to
-        Tier 5/germline-risk (Rbm26 rs3404794430; Meis1 rs239018671), and one new high-confidence structural event was
-        promoted (<strong>Sat2::Trp53</strong>, D122, classified as a TSG-disruption marker rather than a neoantigen).
+        timepoints, and NetMHCpan-4.1 sliding-window predictions for H-2-Kb and H-2-Db. The v3.0.0 schema enforces
+        the safeguards described in §3.3 — hard exclusion of MEIS1 rs239018671, germline-status gating, mandatory
+        peptide sequence, fusion non-binder demotion to <em>transcript-level biomarker</em>, and expression-and-recurrence
+        ranking — and emits all candidates under the manuscript-safe label "computationally nominated candidate
+        pending immunogenicity validation". The redo replaces the prior 17-candidate catalog with a tighter,
+        expression- and germline-controlled set of <strong>10 somatic SNV candidates (VCF01–VCF10)</strong> +
+        <strong> 6 fusion/legacy candidates (N001–N006)</strong>, of which <strong>2 reach Tier 1</strong> (Amz1
+        p.Glu78Gln, ranked first on confirmed RNA expression at D20 and recurrence in 7/8 timepoints; Csprs
+        p.Gln208Arg, ranked second pending expression confirmation). Two prior candidates were dropped to
+        Tier 5/germline-risk (Rbm26 rs3404794430; Meis1 rs239018671), and one new high-confidence structural event
+        was promoted (<strong>Sat2::Trp53</strong>, D122, classified as a TSG-disruption marker rather than a
+        neoantigen). No candidate in this article is presented as a <em>vaccine target</em>; that term is reserved
+        by the platform's nomenclature layer for peptides that subsequently clear ELISpot and tetramer validation.
       </p>
 
       <h4 className="text-xs font-semibold text-foreground mt-4 mb-2 font-mono">Table 4 — Neoantigen Master Table v2 (16 candidates, ranked by overall best %Rank)</h4>
