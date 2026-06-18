@@ -687,7 +687,19 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
       {/* ══════════════════════════════════════════════════════════
           5. RESULTS
       ══════════════════════════════════════════════════════════ */}
-      <SectionHeading id="results" number="5" title="Results" />
+      <SectionHeading id="results" number="5" title="Results — Illustrative Outputs on the Bundled HGSOC Reference Cohort" />
+
+      <div className="bg-secondary/40 border-l-4 border-chart-amber rounded-r-md p-4 mb-6">
+        <p className="text-xs text-foreground leading-relaxed">
+          <strong className="text-chart-amber font-mono">SECTION-LEVEL PROVENANCE.</strong> Every number, table cell,
+          and figure in §5 is a deterministic output of the TEMPEST modules executed against the bundled HGSOC
+          reference cohort distributed with the platform. None of these values are independently generated
+          experimental measurements, none have been externally replicated, and none constitute clinical evidence.
+          Readers reproducing the platform on their own cohort will obtain different values; the purpose of §5 is to
+          document <em>platform behaviour</em>, evidence-typing, and the operation of the validity / claim-audit
+          gates — not to assert biological discovery.
+        </p>
+      </div>
 
       {/* 5.1 GEM Staging */}
       <SubHeading number="5.1" title="GEM Model Longitudinal Staging Framework" />
