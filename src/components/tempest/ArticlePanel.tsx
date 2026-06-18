@@ -282,6 +282,20 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
         <ModuleLink module="datasources" label="Data Sources" onNavigate={onNavigate} /> panel, while natural-language
         querying is available via the <ModuleLink module="chat" label="AI Agent" onNavigate={onNavigate} />.
       </p>
+      <p className="text-sm text-foreground leading-relaxed mb-3">
+        Wrapping the seven scientific modules is an <strong>Intelligence &amp; Governance layer</strong> introduced in
+        v3.0.0 that mediates every analysis: a <em>Data Intelligence Engine</em> infers <code>dataset_type</code>
+        (endpoint_comparison / longitudinal_timecourse / prospective_validation / synthetic_demo /
+        neoantigen_prioritization / benchmark_dataset), <code>evidence_type</code>, and <code>validity_status</code>;
+        an <em>Outcome Interpreter</em> produces a <code>manuscript_safe_summary</code> with reviewer risk flags; a
+        <em> Benchmark Panel</em> blocks AUROC on single-class data and distinguishes endpoint vs longitudinal vs
+        prospective benchmarks; a <em>Claim Audit</em> rewrites prohibited phrases ("predicts resistance",
+        "clinical-grade", "validated threshold", "vaccine target", "therapeutic recommendation",
+        "prospective prediction", "early warning", "transition dynamics") into context-appropriate alternatives; and a
+        <em> Publication-Ready Export Gate</em> refuses to emit camera-ready artefacts until accession, evidence type,
+        provenance, and audit status are all resolved. A grounded <em>AskTempest</em> Q&amp;A surface refuses any
+        question that cannot be answered from the uploaded data and the knowledge base.
+      </p>
 
       {/* ══════════════════════════════════════════════════════════
           3. METHODS
