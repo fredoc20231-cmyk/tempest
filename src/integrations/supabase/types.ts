@@ -21,6 +21,7 @@ export type Database = {
           id: string
           module: string
           results: Json
+          user_id: string | null
         }
         Insert: {
           config?: Json
@@ -28,6 +29,7 @@ export type Database = {
           id?: string
           module: string
           results?: Json
+          user_id?: string | null
         }
         Update: {
           config?: Json
@@ -35,6 +37,7 @@ export type Database = {
           id?: string
           module?: string
           results?: Json
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -46,6 +49,7 @@ export type Database = {
           id: string
           role: string
           tools: Json | null
+          user_id: string | null
         }
         Insert: {
           action?: Json | null
@@ -54,6 +58,7 @@ export type Database = {
           id?: string
           role: string
           tools?: Json | null
+          user_id?: string | null
         }
         Update: {
           action?: Json | null
@@ -62,6 +67,7 @@ export type Database = {
           id?: string
           role?: string
           tools?: Json | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -75,6 +81,7 @@ export type Database = {
           samples: number
           tensor_shape: string | null
           timepoints: Json | null
+          user_id: string | null
           variance_explained: string | null
         }
         Insert: {
@@ -86,6 +93,7 @@ export type Database = {
           samples?: number
           tensor_shape?: string | null
           timepoints?: Json | null
+          user_id?: string | null
           variance_explained?: string | null
         }
         Update: {
@@ -97,6 +105,7 @@ export type Database = {
           samples?: number
           tensor_shape?: string | null
           timepoints?: Json | null
+          user_id?: string | null
           variance_explained?: string | null
         }
         Relationships: []
@@ -115,6 +124,7 @@ export type Database = {
           source: string
           source_id: string | null
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           category?: string
@@ -129,6 +139,7 @@ export type Database = {
           source: string
           source_id?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           category?: string
@@ -143,6 +154,7 @@ export type Database = {
           source?: string
           source_id?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -155,6 +167,7 @@ export type Database = {
           progress: number
           started_at: string | null
           status: string
+          user_id: string | null
         }
         Insert: {
           completed_at?: string | null
@@ -164,6 +177,7 @@ export type Database = {
           progress?: number
           started_at?: string | null
           status?: string
+          user_id?: string | null
         }
         Update: {
           completed_at?: string | null
@@ -173,6 +187,7 @@ export type Database = {
           progress?: number
           started_at?: string | null
           status?: string
+          user_id?: string | null
         }
         Relationships: []
       }
