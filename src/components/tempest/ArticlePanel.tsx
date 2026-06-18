@@ -136,11 +136,13 @@ const ArticlePanel = ({ onNavigate }: ArticlePanelProps) => {
           </p>
         </div>
         <div className="mt-4 flex items-center justify-center gap-4 text-xs font-mono text-muted-foreground">
-          <span>Date: March 2026</span>
+          <span>Date: June 2026</span>
           <span className="text-border">|</span>
-          <span>Platform v2.1.0</span>
+          <span>Platform v3.0.0</span>
           <span className="text-border">|</span>
-          <span>TEMPEST-2026-001</span>
+          <span>TEMPEST-2026-003</span>
+          <span className="text-border">|</span>
+          <span className="text-accent">RESEARCH USE ONLY</span>
         </div>
       </div>
 
