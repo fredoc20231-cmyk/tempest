@@ -191,6 +191,48 @@ export type Database = {
         }
         Relationships: []
       }
+      sealed_predictions: {
+        Row: {
+          cohort_label: string
+          created_at: string
+          id: string
+          outcome_payload: Json | null
+          scored_at: string | null
+          scoring_result: Json | null
+          sealed_at: string
+          sealed_hash: string
+          sealed_payload: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cohort_label: string
+          created_at?: string
+          id?: string
+          outcome_payload?: Json | null
+          scored_at?: string | null
+          scoring_result?: Json | null
+          sealed_at?: string
+          sealed_hash: string
+          sealed_payload: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cohort_label?: string
+          created_at?: string
+          id?: string
+          outcome_payload?: Json | null
+          scored_at?: string | null
+          scoring_result?: Json | null
+          sealed_at?: string
+          sealed_hash?: string
+          sealed_payload?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

@@ -15,6 +15,7 @@ import PredictivePanel from "@/components/tempest/PredictivePanel";
 import ClaimAuditPanel from "@/components/tempest/ClaimAuditPanel";
 import AnalysisWizard from "@/components/tempest/AnalysisWizard";
 import AskTempestPanel from "@/components/tempest/AskTempestPanel";
+import ValidationHarnessPanel from "@/components/tempest/ValidationHarnessPanel";
 import { TempestProvider } from "@/contexts/TempestContext";
 
 const Index = () => {
@@ -49,6 +50,8 @@ const Index = () => {
         return <AnalysisWizard />;
       case "asktempest":
         return <AskTempestPanel />;
+      case "validation":
+        return <ValidationHarnessPanel />;
       default:
         return <ModulePanel module={active} cohort={cohort} />;
     }

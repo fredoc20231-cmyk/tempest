@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
-type Module = "home" | "overview" | "motf" | "gbsc" | "bctn" | "cnis" | "msrs" | "trajectory" | "tti" | "immune" | "predict" | "chat" | "report" | "datasources" | "article" | "claimaudit" | "wizard" | "asktempest";
+type Module = "home" | "overview" | "motf" | "gbsc" | "bctn" | "cnis" | "msrs" | "trajectory" | "tti" | "immune" | "predict" | "chat" | "report" | "datasources" | "article" | "claimaudit" | "wizard" | "asktempest" | "validation";
 
 interface SidebarProps {
   active: Module;
@@ -56,6 +56,7 @@ const sections: Section[] = [
     section: "4 · Predictive Modeling",
     items: [
       { id: "predict", label: "Predictive", desc: "Trajectory · TTI", icon: Hexagon, step: 5 },
+      { id: "validation", label: "Validation Harness", desc: "Multi-cohort · LOOCV · Sealed", icon: FlaskConical, step: 6 },
     ],
   },
   {
