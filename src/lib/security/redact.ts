@@ -40,17 +40,22 @@ export function containsSecret(input: unknown): boolean {
  *  - { ok: false, reason } when a secret shape is detected — caller MUST
  *    refuse to send, show `reason` to the user, and not log the raw text.
  */
-export function preflightUserInput(text: string):
-  | { ok: true; text: string }
-  | { ok: false; reason: string } {
+export interface PreflightResult {
+  ok: boolean;
+  text: string;
+  reason: string;
+}
+
+export function preflightUserInput(text: string): PreflightResult {
   if (containsSecret(text)) {
     return {
       ok: false,
+      text: "",
       reason:
         "Your message looks like it contains an API key or credential. It was NOT sent. Please remove the secret and try again.",
     };
   }
-  return { ok: true, text };
+  return { ok: true, text, reason: "" };
 }
 
 function safeStringify(v: unknown): string {

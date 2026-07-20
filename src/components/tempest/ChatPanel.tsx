@@ -173,7 +173,6 @@ const ChatPanel = ({ onNavigate, onCohortLoaded }: ChatPanelProps) => {
 
     // Preflight: block API keys / credentials from ever entering chat state,
     // logs, storage, or the network payload.
-    const { preflightUserInput } = await import("@/lib/security/redact");
     const guard = preflightUserInput(input);
     if (!guard.ok) {
       setInput("");
