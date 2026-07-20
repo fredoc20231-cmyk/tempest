@@ -83,7 +83,10 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { module, scenario, dataSignature } = await req.json();
+    const _reqBody = await req.json();
+    const _pf = preflightRejectSecrets(_reqBody, corsHeaders);
+    if (_pf) return _pf;
+    const { module, scenario, dataSignature } = _reqBody as any;
     if (!module || !MODULE_PROMPTS[module]) {
       return new Response(JSON.stringify({ error: "Invalid module" }), {
         status: 400,

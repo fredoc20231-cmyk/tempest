@@ -283,7 +283,10 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages } = await req.json();
+    const _reqBody = await req.json();
+    const _pf = preflightRejectSecrets(_reqBody, corsHeaders);
+    if (_pf) return _pf;
+    const { messages } = _reqBody as any;
     const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
     if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not configured");
 
