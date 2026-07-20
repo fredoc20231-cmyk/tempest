@@ -7,6 +7,7 @@ import { useTempest } from "@/contexts/TempestContext";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { preflightUserInput } from "@/lib/security/redact";
 
 interface Message {
   id: string;
