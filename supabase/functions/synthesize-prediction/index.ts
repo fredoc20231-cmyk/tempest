@@ -37,8 +37,8 @@ serve(async (req) => {
     const sourceCount = (dsData || []).length;
     const trainingCount = (dsData || []).filter((d: any) => d.is_training).length;
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+    const LOVABLE_API_KEY = Deno.env.get("GEMINI_API_KEY");
+    if (!LOVABLE_API_KEY) throw new Error("GEMINI_API_KEY not configured");
 
     const summary = `You are TEMPEST's senior oncology AI Agent. Synthesize the analyses below into:
 1. A cross-module interpretation (what each module agrees/disagrees about).
@@ -57,11 +57,11 @@ ${modules.map(m => `\n=== ${m.toUpperCase()} ===\n${moduleResults[m] ? JSON.stri
 
 Return your synthesis as Markdown with clear section headers (## Current State, ## Cross-Module Agreement, ## Predicted Next Phase, ## Therapeutic Window, ## Resistance Risk, ## Monitoring Plan). Use tables where useful. Be specific with timepoints, %, and gene symbols.`;
 
-    const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const aiResp = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
       method: "POST",
-      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+      headers: { Authorization: `Bearer ${GEMINI_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "gemini-2.5-flash",
         messages: [
           { role: "system", content: "You are an expert computational oncology AI agent. Be specific, quantitative, and evidence-grounded." },
           { role: "user", content: summary },
