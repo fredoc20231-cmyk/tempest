@@ -1,3 +1,4 @@
+import { preflightRejectSecrets, redact } from "../_shared/redact.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
@@ -31,9 +32,12 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { prompt } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get("GEMINI_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("GEMINI_API_KEY is not configured");
+    const _reqBody = await req.json();
+    const _pf = preflightRejectSecrets(_reqBody, corsHeaders);
+    if (_pf) return _pf;
+    const { prompt } = _reqBody as any;
+    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+    if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not configured");
 
     const response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
       method: "POST",

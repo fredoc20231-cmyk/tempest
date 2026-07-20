@@ -1,3 +1,4 @@
+import { preflightRejectSecrets, redact } from "../_shared/redact.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -40,8 +41,8 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
-    const LOVABLE_API_KEY = Deno.env.get("GEMINI_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("GEMINI_API_KEY not configured");
+    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+    if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY not configured");
 
     // Check which datasets we already have to avoid re-fetching
     const { data: existing } = await supabase
@@ -53,7 +54,7 @@ serve(async (req) => {
     const newQueries = LEARNING_QUERIES.filter(q => !existingNames.has(q.name));
     if (newQueries.length === 0) {
       // Even if no new queries, generate a learning summary from existing data
-      const summary = await generateLearningSummary(supabase, LOVABLE_API_KEY);
+      const summary = await generateLearningSummary(supabase, GEMINI_API_KEY);
       return new Response(
         JSON.stringify({ success: true, fetched: 0, total_training: existing?.length || 0, summary }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -104,7 +105,7 @@ serve(async (req) => {
     }
 
     // Generate a learning summary from all training data
-    const summary = await generateLearningSummary(supabase, LOVABLE_API_KEY);
+    const summary = await generateLearningSummary(supabase, GEMINI_API_KEY);
 
     // Store the learning summary as a special dataset
     await supabase.from("datasets").upsert(
