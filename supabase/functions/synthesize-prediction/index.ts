@@ -37,8 +37,8 @@ serve(async (req) => {
     const sourceCount = (dsData || []).length;
     const trainingCount = (dsData || []).filter((d: any) => d.is_training).length;
 
-    const LOVABLE_API_KEY = Deno.env.get("GEMINI_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("GEMINI_API_KEY not configured");
+    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+    if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY not configured");
 
     const summary = `You are TEMPEST's senior oncology AI Agent. Synthesize the analyses below into:
 1. A cross-module interpretation (what each module agrees/disagrees about).
