@@ -37,9 +37,16 @@ export default function AskTempestPanel() {
     }
   }, [turns]);
 
-  const submit = (q: string) => {
+  const submit = async (q: string) => {
     const text = q.trim();
     if (!text) return;
+    const { preflightUserInput } = await import("@/lib/security/redact");
+    const guard = preflightUserInput(text);
+    if (!guard.ok) {
+      setTurns((t) => [...t, { q: "[blocked]", answer: guard.reason, grounded_in: [], refused: true }]);
+      setQuestion("");
+      return;
+    }
     const res = askTempest(text);
     setTurns((t) => [...t, { q: text, ...res }]);
     setQuestion("");

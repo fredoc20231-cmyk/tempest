@@ -169,6 +169,20 @@ const ChatPanel = ({ onNavigate, onCohortLoaded }: ChatPanelProps) => {
 
   const handleSend = async () => {
     if ((!input.trim() && attachedFiles.length === 0) || loading) return;
+
+    // Preflight: block API keys / credentials from ever entering chat state,
+    // logs, storage, or the network payload.
+    const { preflightUserInput } = await import("@/lib/security/redact");
+    const guard = preflightUserInput(input);
+    if (!guard.ok) {
+      setInput("");
+      setMessages((prev) => [
+        ...prev,
+        { id: crypto.randomUUID(), role: "assistant", content: guard.reason },
+      ]);
+      return;
+    }
+
     const fullContent = buildMessageWithFiles(input, attachedFiles);
     const displayContent = attachedFiles.length > 0
       ? `${input || "Analyze uploaded file(s)"}\n\n${attachedFiles.map((f) => `📎 ${f.name} (${(f.size / 1024).toFixed(1)} KB)`).join("\n")}`
