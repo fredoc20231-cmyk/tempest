@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { MessageCircleQuestion, Send, RotateCcw } from "lucide-react";
 import { askTempest, QUICK_QUESTIONS, REFUSAL } from "@/lib/intelligence/askTempest";
+import { preflightUserInput } from "@/lib/security/redact";
 
 interface Turn {
   q: string;
@@ -37,10 +38,9 @@ export default function AskTempestPanel() {
     }
   }, [turns]);
 
-  const submit = async (q: string) => {
+  const submit = (q: string) => {
     const text = q.trim();
     if (!text) return;
-    const { preflightUserInput } = await import("@/lib/security/redact");
     const guard = preflightUserInput(text);
     if (!guard.ok) {
       setTurns((t) => [...t, { q: "[blocked]", answer: guard.reason, grounded_in: [], refused: true }]);
