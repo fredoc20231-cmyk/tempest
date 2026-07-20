@@ -11,7 +11,10 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { scenario } = await req.json().catch(() => ({}));
+    const _reqBody = await req.json().catch(() => ({}));
+    const _pf = preflightRejectSecrets(_reqBody, corsHeaders);
+    if (_pf) return _pf;
+    const { scenario } = _reqBody as any;
     const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
     // Pull latest results from each module
