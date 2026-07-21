@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
-type Module = "home" | "overview" | "motf" | "gbsc" | "bctn" | "cnis" | "msrs" | "trajectory" | "tti" | "immune" | "predict" | "chat" | "report" | "datasources" | "article" | "claimaudit" | "wizard" | "asktempest" | "validation";
+type Module = "home" | "overview" | "motf" | "gbsc" | "bctn" | "cnis" | "msrs" | "trajectory" | "tti" | "immune" | "predict" | "chat" | "report" | "datasources" | "article" | "claimaudit" | "wizard" | "asktempest" | "validation" | "sqlschema";
 
 interface SidebarProps {
   active: Module;
