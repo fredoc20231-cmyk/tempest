@@ -75,6 +75,12 @@ const sections: Section[] = [
       { id: "chat", label: "AI Agent", desc: "NL Search & Q&A", icon: MessageSquare, step: 11 },
     ],
   },
+  {
+    section: "7 · Backend Alternatives",
+    items: [
+      { id: "sqlschema", label: "SQL Schema Generator", desc: "MySQL · Supabase replacement", icon: Database, step: 12 },
+    ],
+  },
 ];
 
 // Track grouped sub-modules so active highlighting works when nested
