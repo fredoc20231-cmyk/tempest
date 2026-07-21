@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { containsSecretLike } from "@/lib/security/redact";
+import { containsSecret } from "@/lib/security/redact";
 
 const SqlSchemaPanel = () => {
   const { toast } = useToast();
