@@ -76,9 +76,9 @@ const sections: Section[] = [
     ],
   },
   {
-    section: "7 · Backend Alternatives",
+    section: "7 · Reference",
     items: [
-      { id: "sqlschema", label: "SQL Schema Generator", desc: "MySQL · Supabase replacement", icon: Database, step: 12 },
+      { id: "sqlschema", label: "Project Schema", desc: "Backend tables & functions", icon: Database, step: 12 },
     ],
   },
 ];
