@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
-type Module = "home" | "overview" | "motf" | "gbsc" | "bctn" | "cnis" | "msrs" | "trajectory" | "tti" | "immune" | "predict" | "chat" | "report" | "datasources" | "article" | "claimaudit" | "wizard" | "asktempest" | "validation";
+type Module = "home" | "overview" | "motf" | "gbsc" | "bctn" | "cnis" | "msrs" | "trajectory" | "tti" | "immune" | "predict" | "chat" | "report" | "datasources" | "article" | "claimaudit" | "wizard" | "asktempest" | "validation" | "sqlschema";
 
 interface SidebarProps {
   active: Module;
@@ -73,6 +73,12 @@ const sections: Section[] = [
     section: "6 · Assistant",
     items: [
       { id: "chat", label: "AI Agent", desc: "NL Search & Q&A", icon: MessageSquare, step: 11 },
+    ],
+  },
+  {
+    section: "7 · Backend Alternatives",
+    items: [
+      { id: "sqlschema", label: "SQL Schema Generator", desc: "MySQL · Supabase replacement", icon: Database, step: 12 },
     ],
   },
 ];
