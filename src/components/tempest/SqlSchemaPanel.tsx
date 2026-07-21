@@ -22,7 +22,7 @@ const SqlSchemaPanel = () => {
       toast({ title: "Description too short", description: "Please describe your app in at least 10 characters.", variant: "destructive" });
       return;
     }
-    if (containsSecretLike(description) || containsSecretLike(appName)) {
+    if (containsSecret(description) || containsSecret(appName)) {
       toast({ title: "Secret detected", description: "Remove API keys or tokens from your input.", variant: "destructive" });
       return;
     }
