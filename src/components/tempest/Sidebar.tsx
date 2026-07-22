@@ -93,7 +93,9 @@ const groupedModules: Record<string, Module> = {
 
 const Sidebar = ({ active, onNavigate }: SidebarProps) => {
   const { user, signOut } = useAuth();
+  const { isAdmin } = useIsAdmin();
   const [collapsed, setCollapsed] = useState(false);
+  const visibleSections = isAdmin ? [...sections, adminSection] : sections;
 
   return (
     <motion.aside
