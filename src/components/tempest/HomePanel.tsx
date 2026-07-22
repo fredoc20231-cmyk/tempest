@@ -1,9 +1,9 @@
 import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
-  Dna, Activity, FlaskConical, Shield, BarChart3, ArrowRight, Zap, Brain,
+  Dna, Activity, Shield, ArrowRight, Zap, Brain,
   Globe, Lock, GitBranch, Upload, Database, CheckCircle2, AlertTriangle,
-  Loader2, FileText, Play,
+  Loader2, FileText, Play, ScrollText, Sparkles, Target, Microscope,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useTempest } from "@/contexts/TempestContext";
