@@ -20,7 +20,7 @@ import SqlSchemaPanel from "@/components/tempest/SqlSchemaPanel";
 import { TempestProvider } from "@/contexts/TempestContext";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 
-const ADMIN_ONLY: Module[] = ["article", "claimaudit", "sqlschema"];
+const ADMIN_ONLY: Module[] = ["article", "claimaudit", "sqlschema", "validation"];
 
 const Index = () => {
   const { isAdmin } = useIsAdmin();
