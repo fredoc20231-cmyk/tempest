@@ -78,6 +78,7 @@ const sections: Section[] = [
 const adminSection: Section = {
   section: "More · Admin",
   items: [
+    { id: "validation", label: "Validation Harness", desc: "Multi-cohort · LOOCV · Sealed", icon: FlaskConical },
     { id: "article", label: "Article", desc: "Scientific Paper", icon: BookOpen },
     { id: "claimaudit", label: "Claim Audit", desc: "Phrase scan & gate", icon: Shield },
     { id: "sqlschema", label: "Project Schema", desc: "Backend tables & functions", icon: Database },
