@@ -1,9 +1,9 @@
 import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
-  Dna, Activity, FlaskConical, Shield, BarChart3, ArrowRight, Zap, Brain,
+  Dna, Activity, Shield, ArrowRight, Zap, Brain,
   Globe, Lock, GitBranch, Upload, Database, CheckCircle2, AlertTriangle,
-  Loader2, FileText, Play,
+  Loader2, FileText, Play, ScrollText, Sparkles, Target, Microscope,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useTempest } from "@/contexts/TempestContext";
@@ -141,22 +141,102 @@ const HomePanel = ({ onNavigate }: HomePanelProps) => {
 
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-10 p-6 max-w-5xl mx-auto">
-      {/* Hero */}
-      <motion.div variants={item} className="text-center pt-8 pb-4">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-mono mb-6">
-          <Dna className="w-3.5 h-3.5" /> Research framework — not a clinical tool
-        </div>
-        <h1 className="text-4xl font-semibold text-foreground tracking-tight leading-tight">
-          State-separation &amp;<br />
-          <span className="text-primary">transition-dynamics framework</span>
-        </h1>
-        <p className="text-muted-foreground mt-4 max-w-2xl mx-auto leading-relaxed">
-          Bring your own cohort or select a public dataset. TEMPEST runs QC then dispatches MOTF, GBSC, Immune &amp; Risk, and Predictive modules end-to-end. All outputs are retrospective; no prospective prediction or clinical use is claimed.
-        </p>
-        <div className="mt-4 inline-block border border-chart-amber/40 bg-chart-amber/5 rounded-md px-3 py-1.5 text-[11px] text-chart-amber font-mono">
-          fTTI threshold is proof-of-concept only; not validated for clinical stratification.
+      {/* Hero — distinctive front page */}
+      <motion.div variants={item} className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-sidebar via-background to-primary/5 pt-12 pb-14 px-8 text-center">
+        <div aria-hidden className="absolute inset-0 opacity-[0.07] pointer-events-none"
+          style={{ backgroundImage: "radial-gradient(circle at 20% 20%, hsl(var(--primary)) 0, transparent 40%), radial-gradient(circle at 80% 70%, hsl(var(--chart-cyan)) 0, transparent 40%)" }} />
+        <div className="relative">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-mono mb-6">
+            <Dna className="w-3.5 h-3.5" /> TEMPEST · Research Framework
+          </div>
+          <h1 className="text-5xl font-semibold text-foreground tracking-tight leading-[1.05]">
+            TEMPEST
+          </h1>
+          <p className="text-sm font-mono text-primary mt-2 tracking-wide">
+            State-separation &amp; transition-dynamics for longitudinal omics
+          </p>
+          <p className="text-muted-foreground mt-5 max-w-2xl mx-auto leading-relaxed">
+            TEMPEST is a modular platform for detecting <em>dynamical state transitions</em> in
+            longitudinal biological data. It combines tensor decomposition (MOTF), Bayesian survival
+            (GBSC), immune &amp; risk scoring, and topological transition prediction (fTTI) into a
+            single reproducible pipeline — so investigators can go from raw cohort → QC → integrated
+            multi-module report in one session.
+          </p>
+          <div className="mt-6 inline-block border border-chart-amber/40 bg-chart-amber/5 rounded-md px-3 py-1.5 text-[11px] text-chart-amber font-mono">
+            Research use only · fTTI thresholds are proof-of-concept · not a clinical tool
+          </div>
         </div>
       </motion.div>
+
+      {/* How to use — Example project walkthrough */}
+      <motion.div variants={item} className="module-card p-6">
+        <div className="flex items-start gap-3 mb-5">
+          <div className="p-2 rounded-md bg-primary/10">
+            <Sparkles className="w-4 h-4 text-primary" />
+          </div>
+          <div>
+            <h2 className="text-base font-semibold text-foreground">Example Project — Detecting an Immune State Transition</h2>
+            <p className="text-xs text-muted-foreground mt-1">
+              A guided walkthrough showing how TEMPEST is used end-to-end on a longitudinal cohort.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="border border-border rounded-lg p-4 bg-card/40">
+            <div className="text-[10px] font-mono uppercase tracking-wider text-primary mb-2">Start with</div>
+            <div className="flex items-center gap-2 mb-2">
+              <Upload className="w-4 h-4 text-chart-cyan" />
+              <span className="text-sm font-medium text-foreground">A longitudinal cohort</span>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Upload a CSV/TSV with samples × features across ≥ 3 timepoints
+              (e.g. columns <code className="font-mono">D0, D44, D122</code>) or pull one from a public
+              source (TCGA, cBioPortal). Recommended minimum: <span className="font-mono">n ≥ 25</span>.
+            </p>
+          </div>
+
+          <div className="border border-border rounded-lg p-4 bg-card/40">
+            <div className="text-[10px] font-mono uppercase tracking-wider text-primary mb-2">Steps</div>
+            <ol className="text-xs text-foreground/85 space-y-2 list-decimal list-inside leading-relaxed">
+              <li><span className="text-muted-foreground">Automated QC</span> — sample size, missingness, timepoint detection.</li>
+              <li><span className="text-muted-foreground">MOTF</span> — Tucker decomposition of the cohort tensor.</li>
+              <li><span className="text-muted-foreground">GBSC</span> — Bayesian survival stratified by latent factors.</li>
+              <li><span className="text-muted-foreground">Immune &amp; Risk</span> — BCTN clonal dynamics, CNIS, MSRS.</li>
+              <li><span className="text-muted-foreground">Predictive</span> — trajectory + fTTI topological transition score.</li>
+            </ol>
+          </div>
+
+          <div className="border border-border rounded-lg p-4 bg-card/40">
+            <div className="text-[10px] font-mono uppercase tracking-wider text-primary mb-2">Outcome</div>
+            <div className="flex items-center gap-2 mb-2">
+              <Target className="w-4 h-4 text-chart-emerald" />
+              <span className="text-sm font-medium text-foreground">Integrated report</span>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              A reproducible, auditable report with per-module figures, an fTTI transition score,
+              provenance metadata, and export-ready tables — separating cohorts that undergo a state
+              transition from those that remain stable, with full evidence trail.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-5 flex flex-wrap gap-2">
+          <button
+            onClick={() => onNavigate("wizard")}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md text-xs font-medium hover:bg-primary/90 transition-colors"
+          >
+            <Play className="w-3.5 h-3.5" /> Launch guided wizard
+          </button>
+          <button
+            onClick={() => onNavigate("datasources")}
+            className="inline-flex items-center gap-2 px-4 py-2 border border-border rounded-md text-xs font-medium hover:bg-muted transition-colors"
+          >
+            <Microscope className="w-3.5 h-3.5" /> Browse example datasets
+          </button>
+        </div>
+      </motion.div>
+
 
       {/* Get Started — two paths */}
       <motion.div variants={item}>
@@ -323,7 +403,39 @@ const HomePanel = ({ onNavigate }: HomePanelProps) => {
           ))}
         </div>
       </motion.div>
+
+      {/* Legal disclaimer */}
+      <motion.div variants={item} className="rounded-xl border border-chart-amber/30 bg-chart-amber/[0.04] p-6">
+        <div className="flex items-start gap-3">
+          <div className="p-2 rounded-md bg-chart-amber/10 flex-shrink-0">
+            <ScrollText className="w-4 h-4 text-chart-amber" />
+          </div>
+          <div className="flex-1 space-y-3">
+            <h3 className="text-sm font-semibold text-foreground">Legal Notice &amp; Citation</h3>
+            <p className="text-xs text-foreground/80 leading-relaxed">
+              Use of the TEMPEST platform is permitted only upon written approval of
+              <span className="font-semibold text-foreground"> Dr. A. Fadiel</span>. No modification
+              of code, algorithms, model weights, or derived methods is allowed without prior written
+              consent from the author. Reverse engineering, redistribution, or commercial use without
+              a signed agreement is prohibited.
+            </p>
+            <div className="border-t border-chart-amber/20 pt-3">
+              <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-1.5">Suggested citation</div>
+              <p className="text-xs font-mono text-foreground/90 leading-relaxed">
+                Fadiel, A. <em>TEMPEST: State-separation &amp; transition-dynamics framework.</em>
+                Center for Ovarian &amp; Breast Uterine (COBU), UChicago Comprehensive Cancer Center (UCCC),
+                The University of Chicago, 2026. <span className="text-chart-amber">Patent pending.</span>
+              </p>
+            </div>
+            <p className="text-[10px] text-muted-foreground italic">
+              Research use only. Not a medical device. No clinical, diagnostic, or therapeutic claims
+              are made or implied. © 2026 A. Fadiel — all rights reserved.
+            </p>
+          </div>
+        </div>
+      </motion.div>
     </motion.div>
+
   );
 };
 
