@@ -19,6 +19,7 @@ import {
   LogOut,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 type Module = "home" | "overview" | "motf" | "gbsc" | "bctn" | "cnis" | "msrs" | "trajectory" | "tti" | "immune" | "predict" | "chat" | "report" | "datasources" | "article" | "claimaudit" | "wizard" | "asktempest" | "validation" | "sqlschema";
 
