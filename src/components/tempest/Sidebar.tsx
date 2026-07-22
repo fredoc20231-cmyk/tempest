@@ -57,7 +57,6 @@ const sections: Section[] = [
     section: "4 · Predictive Modeling",
     items: [
       { id: "predict", label: "Predictive", desc: "Trajectory · TTI", icon: Hexagon, step: 5 },
-      { id: "validation", label: "Validation Harness", desc: "Multi-cohort · LOOCV · Sealed", icon: FlaskConical, step: 6 },
     ],
   },
   {
