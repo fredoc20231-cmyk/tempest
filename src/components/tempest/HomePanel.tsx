@@ -403,7 +403,39 @@ const HomePanel = ({ onNavigate }: HomePanelProps) => {
           ))}
         </div>
       </motion.div>
+
+      {/* Legal disclaimer */}
+      <motion.div variants={item} className="rounded-xl border border-chart-amber/30 bg-chart-amber/[0.04] p-6">
+        <div className="flex items-start gap-3">
+          <div className="p-2 rounded-md bg-chart-amber/10 flex-shrink-0">
+            <ScrollText className="w-4 h-4 text-chart-amber" />
+          </div>
+          <div className="flex-1 space-y-3">
+            <h3 className="text-sm font-semibold text-foreground">Legal Notice &amp; Citation</h3>
+            <p className="text-xs text-foreground/80 leading-relaxed">
+              Use of the TEMPEST platform is permitted only upon written approval of
+              <span className="font-semibold text-foreground"> Dr. A. Fadiel</span>. No modification
+              of code, algorithms, model weights, or derived methods is allowed without prior written
+              consent from the author. Reverse engineering, redistribution, or commercial use without
+              a signed agreement is prohibited.
+            </p>
+            <div className="border-t border-chart-amber/20 pt-3">
+              <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-1.5">Suggested citation</div>
+              <p className="text-xs font-mono text-foreground/90 leading-relaxed">
+                Fadiel, A. <em>TEMPEST: State-separation &amp; transition-dynamics framework.</em>
+                Center for Ovarian &amp; Breast Uterine (COBU), UChicago Comprehensive Cancer Center (UCCC),
+                The University of Chicago, 2026. <span className="text-chart-amber">Patent pending.</span>
+              </p>
+            </div>
+            <p className="text-[10px] text-muted-foreground italic">
+              Research use only. Not a medical device. No clinical, diagnostic, or therapeutic claims
+              are made or implied. © 2026 A. Fadiel — all rights reserved.
+            </p>
+          </div>
+        </div>
+      </motion.div>
     </motion.div>
+
   );
 };
 
