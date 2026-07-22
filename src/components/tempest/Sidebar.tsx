@@ -65,9 +65,7 @@ const sections: Section[] = [
     items: [
       { id: "overview", label: "Results Dashboard", desc: "Integrated Findings", icon: LayoutDashboard, step: 6 },
       { id: "report", label: "Analysis Report", desc: "Full Report", icon: FileText, step: 7 },
-      { id: "claimaudit", label: "Claim Audit", desc: "Phrase scan & gate", icon: Shield, step: 8 },
       { id: "asktempest", label: "Ask TEMPEST", desc: "Grounded Q&A", icon: MessageSquare, step: 9 },
-      { id: "article", label: "Article", desc: "Scientific Paper", icon: BookOpen, step: 10 },
     ],
   },
   {
@@ -76,13 +74,16 @@ const sections: Section[] = [
       { id: "chat", label: "AI Agent", desc: "NL Search & Q&A", icon: MessageSquare, step: 11 },
     ],
   },
-  {
-    section: "7 · Reference",
-    items: [
-      { id: "sqlschema", label: "Project Schema", desc: "Backend tables & functions", icon: Database, step: 12 },
-    ],
-  },
 ];
+
+const adminSection: Section = {
+  section: "More · Admin",
+  items: [
+    { id: "article", label: "Article", desc: "Scientific Paper", icon: BookOpen },
+    { id: "claimaudit", label: "Claim Audit", desc: "Phrase scan & gate", icon: Shield },
+    { id: "sqlschema", label: "Project Schema", desc: "Backend tables & functions", icon: Database },
+  ],
+};
 
 // Track grouped sub-modules so active highlighting works when nested
 const groupedModules: Record<string, Module> = {
