@@ -121,7 +121,7 @@ const Sidebar = ({ active, onNavigate }: SidebarProps) => {
 
       {/* Nav */}
       <nav className="flex-1 py-3 px-2 space-y-3 overflow-y-auto">
-        {sections.map((sec) => (
+        {visibleSections.map((sec) => (
           <div key={sec.section} className="space-y-1">
             {!collapsed && (
               <div className="px-3 pt-1 pb-1 text-[9px] font-mono uppercase tracking-wider text-muted-foreground/70">
