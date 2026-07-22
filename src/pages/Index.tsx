@@ -29,7 +29,7 @@ const Index = () => {
   const effectiveActive: Module = ADMIN_ONLY.includes(active) && !isAdmin ? "home" : active;
 
   const renderContent = () => {
-    switch (active) {
+    switch (effectiveActive) {
       case "home":
         return <HomePanel onNavigate={(m) => setActive(m as Module)} />;
       case "overview":
@@ -61,14 +61,14 @@ const Index = () => {
       case "sqlschema":
         return <SqlSchemaPanel />;
       default:
-        return <ModulePanel module={active} cohort={cohort} />;
+        return <ModulePanel module={effectiveActive} cohort={cohort} />;
     }
   };
 
   return (
     <TempestProvider>
       <div className="flex h-screen bg-background gradient-mesh">
-        <Sidebar active={active} onNavigate={setActive} />
+        <Sidebar active={effectiveActive} onNavigate={setActive} />
         <div className="flex-1 flex flex-col min-w-0">
           <StatusBar />
           <main className="flex-1 overflow-y-auto">{renderContent()}</main>
