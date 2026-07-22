@@ -18,10 +18,15 @@ import AskTempestPanel from "@/components/tempest/AskTempestPanel";
 import ValidationHarnessPanel from "@/components/tempest/ValidationHarnessPanel";
 import SqlSchemaPanel from "@/components/tempest/SqlSchemaPanel";
 import { TempestProvider } from "@/contexts/TempestContext";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
+
+const ADMIN_ONLY: Module[] = ["article", "claimaudit", "sqlschema"];
 
 const Index = () => {
+  const { isAdmin } = useIsAdmin();
   const [active, setActive] = useState<Module>("home");
   const [cohort, setCohort] = useState<CohortPayload | null>(null);
+  const effectiveActive: Module = ADMIN_ONLY.includes(active) && !isAdmin ? "home" : active;
 
   const renderContent = () => {
     switch (active) {
