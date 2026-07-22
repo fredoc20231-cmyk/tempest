@@ -17,6 +17,8 @@ import {
   Hexagon,
   BookOpen,
   LogOut,
+  MoreHorizontal,
+  ChevronDown,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
@@ -95,7 +97,8 @@ const Sidebar = ({ active, onNavigate }: SidebarProps) => {
   const { user, signOut } = useAuth();
   const { isAdmin } = useIsAdmin();
   const [collapsed, setCollapsed] = useState(false);
-  const visibleSections = isAdmin ? [...sections, adminSection] : sections;
+  const adminIds = adminSection.items.map((i) => i.id);
+  const [moreOpen, setMoreOpen] = useState<boolean>(adminIds.includes(active));
 
   return (
     <motion.aside
@@ -121,7 +124,7 @@ const Sidebar = ({ active, onNavigate }: SidebarProps) => {
 
       {/* Nav */}
       <nav className="flex-1 py-3 px-2 space-y-3 overflow-y-auto">
-        {visibleSections.map((sec) => (
+        {sections.map((sec) => (
           <div key={sec.section} className="space-y-1">
             {!collapsed && (
               <div className="px-3 pt-1 pb-1 text-[9px] font-mono uppercase tracking-wider text-muted-foreground/70">
@@ -165,7 +168,60 @@ const Sidebar = ({ active, onNavigate }: SidebarProps) => {
             })}
           </div>
         ))}
+
+        {/* Admin-only "More" collapsible drawer */}
+        {isAdmin && (
+          <div className="space-y-1 pt-2 border-t border-sidebar-border/60">
+            <button
+              onClick={() => setMoreOpen((o) => !o)}
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-left transition-all duration-300 group ${
+                moreOpen ? "text-primary" : "text-sidebar-foreground hover:bg-primary/10 hover:text-primary"
+              }`}
+              title="More (Admin)"
+            >
+              <MoreHorizontal className="w-4 h-4 flex-shrink-0" />
+              {!collapsed && (
+                <div className="flex-1 flex items-center justify-between">
+                  <span className="text-sm font-medium">More</span>
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${moreOpen ? "rotate-180" : ""}`} />
+                </div>
+              )}
+            </button>
+            {moreOpen && (
+              <div className="space-y-1">
+                {!collapsed && (
+                  <div className="px-3 pt-1 pb-1 text-[9px] font-mono uppercase tracking-wider text-muted-foreground/70">
+                    Admin
+                  </div>
+                )}
+                {adminSection.items.map((mod) => {
+                  const isActive = active === mod.id;
+                  return (
+                    <button
+                      key={mod.id}
+                      onClick={() => onNavigate(mod.id)}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-left transition-all duration-300 ease-in-out group relative ${
+                        isActive
+                          ? "bg-primary/15 text-primary shadow-sm"
+                          : "text-sidebar-foreground hover:bg-primary/10 hover:text-primary hover:translate-x-1"
+                      }`}
+                    >
+                      <mod.icon className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-primary" : "text-muted-foreground group-hover:text-primary"}`} />
+                      {!collapsed && (
+                        <div className="overflow-hidden flex-1">
+                          <span className="text-sm font-medium block">{mod.label}</span>
+                          {mod.desc && <span className="text-[10px] text-muted-foreground block">{mod.desc}</span>}
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
       </nav>
+
 
       {/* Account + collapse */}
       <div className="p-2 border-t border-sidebar-border space-y-1">
